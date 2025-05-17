@@ -1,48 +1,58 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { TerminusModule } from '@nestjs/terminus';
-import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from 'nestjs-throttler';
-import { HealthController } from './controllers/health.controller';
-import { AuthController } from './controllers/auth.controller';
-import { UsersController } from './controllers/users.controller';
-import { AuthService } from './services/auth.service';
-import { UsersService } from './services/users.service';
-import { CognitoService } from './services/cognito.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { TerminusModule } from '@nestjs/terminus';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
+import { HealthModule } from './health/health.module';
+import configuration from './config/configuration';
+import { User } from './entities/user.entity';
 
 @Module({
   imports: [
+    // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [configuration],
     }),
-    ThrottlerModule.forRoot({
-      ttl: 60,
-      limit: 30,
+    
+    // Database
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('database.host'),
+        port: configService.get('database.port'),
+        username: configService.get('database.username'),
+        password: configService.get('database.password'),
+        database: configService.get('database.name'),
+        entities: [User],
+        synchronize: configService.get('environment') !== 'production',
+        ssl: configService.get('environment') === 'production',
+      }),
     }),
+    
+    // JWT
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('jwt.secret'),
+        signOptions: {
+          expiresIn: configService.get('jwt.expiresIn'),
+        },
+      }),
+    }),
+    
+    // Health checks
     TerminusModule,
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'default-secret-change-in-production',
-      signOptions: { expiresIn: '1h' },
-    }),
-  ],
-  controllers: [
-    HealthController,
-    AuthController,
-    UsersController,
-  ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-    AuthService,
-    UsersService,
-    CognitoService,
-    JwtStrategy,
+    HealthModule,
+    
+    // Service modules
+    AuthModule,
+    UserModule,
   ],
 })
 export class AppModule {} 
