@@ -1,0 +1,37 @@
+{
+  "name": "mindlyf-backend",
+  "version": "0.1.0",
+  "description": "MindLyf Mental Health Platform Backend Services",
+  "private": true,
+  "workspaces": [
+    "auth-service",
+    "ai-service",
+    "journal-service",
+    "recommender-service",
+    "chat-service",
+    "teletherapy-service",
+    "reporting-service",
+    "api-gateway",
+    "shared"
+  ],
+  "scripts": {
+    "start:auth": "cd auth-service && npm run start",
+    "start:ai": "cd ai-service && npm run start",
+    "start:journal": "cd journal-service && npm run start",
+    "start:recommender": "cd recommender-service && npm run start",
+    "start:chat": "cd chat-service && npm run start",
+    "start:teletherapy": "cd teletherapy-service && npm run start",
+    "start:reporting": "cd reporting-service && npm run start",
+    "start:gateway": "cd api-gateway && npm run start",
+    "start:all": "concurrently \"npm run start:auth\" \"npm run start:ai\" \"npm run start:gateway\"",
+    "test": "lerna run test",
+    "lint": "lerna run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "lerna": "^7.1.4",
+    "typescript": "^5.1.6",
+    "eslint": "^8.45.0",
+    "prettier": "^3.0.0"
+  }
+} 

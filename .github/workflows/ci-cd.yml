@@ -1,0 +1,93 @@
+name: MindLyf CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - auth-service
+          - ai-service
+          - journal-service
+          - recommender-service
+          - chat-service
+          - reporting-service
+          - teletherapy-service
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package.json
+      - name: Install dependencies
+        run: cd backend && npm install
+      - name: Run tests for ${{ matrix.service }}
+        run: cd backend && npm run test:${{ matrix.service }}
+
+  build:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - auth-service
+          - ai-service
+          - journal-service
+          - recommender-service
+          - chat-service
+          - reporting-service
+          - teletherapy-service
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/${{ matrix.service }}
+          push: true
+          tags: ${{ secrets.ECR_REGISTRY }}/${{ matrix.service }}:${{ github.sha }},${{ secrets.ECR_REGISTRY }}/${{ matrix.service }}:latest
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.25.0'
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name mindlyf-cluster --region ${{ secrets.AWS_REGION }}
+      - name: Deploy to EKS
+        run: |
+          cd infrastructure/kubernetes
+          kustomize build overlays/production | kubectl apply -f -
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n mindlyf
+          kubectl get services -n mindlyf 

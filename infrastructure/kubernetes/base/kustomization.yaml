@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - services/api-gateway.yaml
+  - services/auth-service.yaml
+  - services/ai-service.yaml
+  - services/journal-service.yaml
+  - services/recommender-service.yaml
+  - services/chat-service.yaml
+  - services/reporting-service.yaml
+  - services/teletherapy-service.yaml
+  - configmaps/api-config.yaml
+  - configmaps/auth-config.yaml
+  - secrets/secrets.yaml
+  - autoscaling/hpa.yaml 

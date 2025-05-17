@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: logging
+  labels:
+    app: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:8.9.0
+        ports:
+        - containerPort: 5601
+          name: http
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+        env:
+        - name: ELASTICSEARCH_HOSTS
+          value: http://elasticsearch:9200
+        - name: SERVER_BASEPATH
+          value: /kibana
+        - name: SERVER_REWRITEBASEPATH
+          value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: logging
+  labels:
+    app: kibana
+spec:
+  selector:
+    app: kibana
+  ports:
+  - port: 80
+    name: http
+    targetPort: 5601
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana-ingress
+  namespace: logging
+  annotations:
+    kubernetes.io/ingress.class: "alb"
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+spec:
+  rules:
+  - host: monitoring.mindlyf.com
+    http:
+      paths:
+      - path: /kibana
+        pathType: Prefix
+        backend:
+          service:
+            name: kibana
+            port:
+              number: 80 

@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teletherapy-service
+  namespace: mindlyf
+  labels:
+    app: teletherapy-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: teletherapy-service
+  template:
+    metadata:
+      labels:
+        app: teletherapy-service
+    spec:
+      containers:
+      - name: teletherapy-service
+        image: ${ECR_REGISTRY}/teletherapy-service:latest
+        ports:
+        - containerPort: 3005
+        - containerPort: 8443
+          name: webrtc
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: NODE_ENV
+        - name: PORT
+          value: "3005"
+        - name: WEBRTC_PORT
+          value: "8443"
+        - name: AUTH_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: AUTH_SERVICE_URL
+        - name: REDIS_HOST
+          value: "${REDIS_HOST}"
+        - name: REDIS_PORT
+          value: "${REDIS_PORT}"
+        - name: TURN_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: teletherapy-secrets
+              key: TURN_SECRET
+        - name: SSL_KEY
+          valueFrom:
+            secretKeyRef:
+              name: teletherapy-secrets
+              key: SSL_KEY
+        - name: SSL_CERT
+          valueFrom:
+            secretKeyRef:
+              name: teletherapy-secrets
+              key: SSL_CERT
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3005
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3005
+          initialDelaySeconds: 20
+          periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: teletherapy-service
+  namespace: mindlyf
+spec:
+  selector:
+    app: teletherapy-service
+  ports:
+  - port: 80
+    targetPort: 3005
+    name: http
+  - port: 8443
+    targetPort: 8443
+    name: webrtc
+  type: ClusterIP 

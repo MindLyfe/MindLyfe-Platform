@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommender-service
+  namespace: mindlyf
+  labels:
+    app: recommender-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: recommender-service
+  template:
+    metadata:
+      labels:
+        app: recommender-service
+    spec:
+      containers:
+      - name: recommender-service
+        image: ${ECR_REGISTRY}/recommender-service:latest
+        ports:
+        - containerPort: 8002
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+        env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: database-secrets
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: database-secrets
+              key: DB_PORT
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: database-secrets
+              key: DB_NAME
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: database-secrets
+              key: DB_USERNAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-secrets
+              key: DB_PASSWORD
+        - name: PORT
+          value: "8002"
+        - name: JOURNAL_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: JOURNAL_SERVICE_URL
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 20
+          periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommender-service
+  namespace: mindlyf
+spec:
+  selector:
+    app: recommender-service
+  ports:
+  - port: 80
+    targetPort: 8002
+  type: ClusterIP 
