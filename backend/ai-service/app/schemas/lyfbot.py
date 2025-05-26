@@ -9,10 +9,11 @@ class Message(BaseModel):
 
 class ChatMessage(BaseModel):
     content: str = Field(..., description="The message content from the user")
-    history: Optional[List[Message]] = Field(default=[], description="Previous messages in the conversation")
-    context: Optional[Dict[str, Any]] = Field(default={}, description="Additional context for the conversation")
+    history: Optional[List[Dict[str, str]]] = None
+    context: Optional[Dict[str, Any]] = None
 
 class ChatResponse(BaseModel):
     message: str = Field(..., description="The response message from LyfBot")
     success: bool = Field(..., description="Whether the request was successful")
+    metrics: Optional[Dict[str, Any]] = None
     suggestions: Optional[List[str]] = Field(default=[], description="Suggested follow-up messages") 

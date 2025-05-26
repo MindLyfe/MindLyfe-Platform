@@ -1,0 +1,46 @@
+import { Repository } from 'typeorm';
+import { TherapySession, SessionStatus } from './entities/therapy-session.entity';
+import { CreateSessionDto } from './dto/create-session.dto';
+import { JwtUser } from '../auth/interfaces/user.interface';
+import { AddParticipantsDto, RemoveParticipantsDto, UpdateParticipantRoleDto, ManageBreakoutRoomsDto } from './dto/manage-participants.dto';
+import { User } from '../auth/entities/user.entity';
+import { AuthClientService } from '@mindlyf/shared/auth-client';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+export declare class TeletherapyService {
+    private readonly sessionRepository;
+    private readonly userRepository;
+    private readonly authClient;
+    private readonly httpService;
+    private readonly configService;
+    private readonly chatServiceUrl;
+    constructor(sessionRepository: Repository<TherapySession>, userRepository: Repository<User>, authClient: AuthClientService, httpService: HttpService, configService: ConfigService);
+    createSession(createSessionDto: CreateSessionDto, user: JwtUser): Promise<TherapySession>;
+    private validateSessionTypeAndCategory;
+    addParticipants(sessionId: string, addParticipantsDto: AddParticipantsDto, user: JwtUser): Promise<TherapySession>;
+    removeParticipants(sessionId: string, removeParticipantsDto: RemoveParticipantsDto, user: JwtUser): Promise<TherapySession>;
+    updateParticipantRole(sessionId: string, updateRoleDto: UpdateParticipantRoleDto, user: JwtUser): Promise<TherapySession>;
+    manageBreakoutRooms(sessionId: string, breakoutRoomsDto: ManageBreakoutRoomsDto, user: JwtUser): Promise<TherapySession>;
+    joinSession(sessionId: string, user: JwtUser): Promise<TherapySession>;
+    leaveSession(sessionId: string, user: JwtUser): Promise<TherapySession>;
+    private createRecurringSessions;
+    findSchedulingConflicts(therapistId: string, startTime: Date, endTime: Date): Promise<TherapySession[]>;
+    getSessionById(id: string, user: JwtUser): Promise<TherapySession>;
+    getUpcomingSessions(user: JwtUser): Promise<TherapySession[]>;
+    getSessionsByDateRange(startDate: Date, endDate: Date, user: JwtUser): Promise<TherapySession[]>;
+    updateSessionStatus(id: string, status: SessionStatus, user: JwtUser): Promise<TherapySession>;
+    private validateStatusTransition;
+    updateSessionNotes(id: string, notes: {
+        therapistNotes?: string;
+        clientNotes?: string;
+        sharedNotes?: string;
+    }, user: JwtUser): Promise<TherapySession>;
+    cancelSession(id: string, user: JwtUser, reason?: string): Promise<TherapySession>;
+    createChatRoomForSession(sessionId: string, user: JwtUser): Promise<void>;
+    private createChatRoomForCompletedSession;
+    checkTherapistClientRelationship(therapistId: string, clientId: string): Promise<boolean>;
+    getSessionsByUser(userId: string): Promise<TherapySession[]>;
+    getAvailableTherapists(): Promise<any[]>;
+    getAvailableSlots(therapistId: string, date?: string): Promise<any[]>;
+    updateSessionPayment(sessionId: string, paymentInfo: any): Promise<TherapySession>;
+}

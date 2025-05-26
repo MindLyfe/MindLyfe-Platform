@@ -13,12 +13,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('jwt.secret'),
+      secretOrKey: configService.get<string>('jwt.secret', 'mindlyf-dev-secret'),
+      passReqToCallback: true,
     });
   }
 
-  async validate(payload: any) {
+  async validate(request: any, payload: any) {
     try {
+      // Check if token is revoked
+      const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
+      if (await this.authService.isTokenRevoked(token)) {
+        throw new UnauthorizedException('Token has been revoked');
+      }
+
       const user = await this.authService.validateUserById(payload.sub);
       
       if (!user) {
@@ -26,7 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       }
       
       return {
-        sub: payload.sub,
+        userId: payload.sub,
         email: payload.email,
         role: payload.role,
       };

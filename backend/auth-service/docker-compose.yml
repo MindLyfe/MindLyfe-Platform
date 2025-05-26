@@ -1,0 +1,150 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: mindlyf-auth-postgres
+    environment:
+      POSTGRES_DB: mindlyf_auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/database/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - mindlyf-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mindlyf_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: mindlyf-auth-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mindlyf-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mindlyf-auth-service
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      
+      # Database Configuration
+      DATABASE_TYPE: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres123
+      DATABASE_NAME: mindlyf_auth
+      DATABASE_SYNCHRONIZE: true
+      DATABASE_LOGGING: true
+      DATABASE_SSL: false
+      
+      # JWT Configuration
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_EXPIRES_IN: 24h
+      JWT_REFRESH_SECRET: your-super-secret-refresh-key-change-in-production
+      JWT_REFRESH_EXPIRES_IN: 7d
+      
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      
+      # Service Configuration
+      SERVICE_NAME: auth-service
+      SERVICE_VERSION: 1.0.0
+      
+      # Rate Limiting
+      THROTTLE_TTL: 60
+      THROTTLE_LIMIT: 100
+      
+      # Payment Configuration (Mock for testing)
+      PAYMENT_PROVIDER_API_KEY: test-api-key
+      PAYMENT_WEBHOOK_SECRET: test-webhook-secret
+      
+      # Feature Flags
+      ENABLE_ORGANIZATION_PLANS: true
+      ENABLE_CREDIT_SYSTEM: true
+      ENABLE_AUTO_RENEWAL: true
+      
+      # Security
+      BCRYPT_ROUNDS: 10
+      
+      # Email Configuration (Mock for testing)
+      EMAIL_HOST: smtp.example.com
+      EMAIL_PORT: 587
+      EMAIL_USER: test@example.com
+      EMAIL_PASS: test-password
+      
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mindlyf-network
+    volumes:
+      - ./src:/app/src
+      - ./package.json:/app/package.json
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health/ping"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+  # Database Migration Runner
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mindlyf-auth-migration
+    environment:
+      NODE_ENV: development
+      DATABASE_TYPE: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres123
+      DATABASE_NAME: mindlyf_auth
+      DATABASE_SYNCHRONIZE: false
+      DATABASE_LOGGING: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - mindlyf-network
+    command: ["sh", "-c", "sleep 10 && npm run migration:run"]
+    profiles:
+      - migration
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  mindlyf-network:
+    driver: bridge 

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Therapy Session Reminder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background-color: #4A90E2;
+      padding: 20px;
+      color: white;
+      text-align: center;
+    }
+    .content {
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    .session-card {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 20px 0;
+      background-color: white;
+    }
+    .session-info {
+      margin: 5px 0;
+    }
+    .session-button {
+      display: inline-block;
+      background-color: #4A90E2;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    .footer {
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Upcoming Therapy Session</h1>
+    </div>
+    <div class="content">
+      <p>Hello {{firstName}},</p>
+      <p>This is a friendly reminder about your upcoming therapy session:</p>
+      
+      <div class="session-card">
+        <h3 class="session-info">{{sessionTitle}}</h3>
+        <p class="session-info"><strong>Date:</strong> {{sessionDate}}</p>
+        <p class="session-info"><strong>Time:</strong> {{sessionTime}} ({{sessionTimezone}})</p>
+        <p class="session-info"><strong>Therapist:</strong> {{therapistName}}</p>
+        <p class="session-info"><strong>Session Type:</strong> {{sessionType}}</p>
+        <div style="text-align: center; margin-top: 15px;">
+          <a href="{{sessionJoinUrl}}" class="session-button">Join Session</a>
+        </div>
+      </div>
+      
+      <p>Please ensure you're in a quiet, private space with a stable internet connection for your session.</p>
+      
+      <p>Need to reschedule? Please give at least 24 hours notice by:</p>
+      <ul>
+        <li>Using the reschedule feature in your MindLyf dashboard</li>
+        <li>Contacting your therapist directly</li>
+        <li>Emailing our support team at support@mindlyf.com</li>
+      </ul>
+      
+      <p>We look forward to supporting your mental health journey.</p>
+      <p>Warm regards,<br>The MindLyf Team</p>
+    </div>
+    <div class="footer">
+      <p>© {{year}} MindLyf. All rights reserved.</p>
+      <p>
+        <a href="{{unsubscribeUrl}}">Unsubscribe</a> | 
+        <a href="{{privacyUrl}}">Privacy Policy</a> | 
+        <a href="{{termsUrl}}">Terms of Service</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html> 

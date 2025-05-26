@@ -1,0 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+🚨 Project Rule – MindLyf Compliance 🚨
+
+You must follow the project’s official documentation and architectural standards at all times. This includes:
+
+✅ Using NestJS + TypeScript for backend services  
+✅ Using Python (FastAPI/Flask) for AI microservices  
+✅ Hosting on AWS (use ECS Fargate, Lambda, RDS, DynamoDB, etc.)  
+✅ Integrating OpenAI via a secure AI Service Layer  
+✅ Enforcing data privacy, consent management, and audit logging  
+✅ Following the documented AI-powered features (LyfBot, Journaling, Recommendations)
+
+❌ Do NOT introduce alternative stacks, libraries, or frameworks unless the documentation allows or the user asks for it.  
+❌ Do NOT rewrite service structure, routing layers, or messaging queues without justification aligned to the architecture.
+
+If uncertain about alignment with project docs, ask the user before proceeding.

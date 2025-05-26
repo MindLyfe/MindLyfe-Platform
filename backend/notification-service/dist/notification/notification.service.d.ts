@@ -1,0 +1,55 @@
+import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import { EmailService } from '../email/email.service';
+import { NotificationEntity, NotificationType } from './entities/notification.entity';
+import { NotificationChannelEntity, ChannelType } from './entities/notification-channel.entity';
+import { NotificationTemplateEntity } from './entities/notification-template.entity';
+import { NotificationPreferenceEntity } from './entities/notification-preference.entity';
+import { CreateNotificationDto } from './dto/create-notification.dto';
+import { AuthService } from '../auth/auth.service';
+import { NotificationChannelFactory } from './channels/notification-channel.factory';
+import { NotificationQueueService } from './queue/notification-queue.service';
+export declare class NotificationService {
+    private notificationRepository;
+    private channelRepository;
+    private templateRepository;
+    private preferenceRepository;
+    private readonly emailService;
+    private readonly configService;
+    private readonly authService;
+    private readonly channelFactory;
+    private readonly queueService;
+    private readonly logger;
+    constructor(notificationRepository: Repository<NotificationEntity>, channelRepository: Repository<NotificationChannelEntity>, templateRepository: Repository<NotificationTemplateEntity>, preferenceRepository: Repository<NotificationPreferenceEntity>, emailService: EmailService, configService: ConfigService, authService: AuthService, channelFactory: NotificationChannelFactory, queueService: NotificationQueueService);
+    createNotification(dto: CreateNotificationDto): Promise<NotificationEntity>;
+    sendNotification(notification: NotificationEntity | string, channels?: ChannelType[]): Promise<NotificationEntity>;
+    private sendThroughChannel;
+    private getUserDetails;
+    private getContextAwareChannels;
+    private getEnabledChannelsForUser;
+    private filterChannelsByPreferences;
+    private isWithinTimeWindows;
+    private isInDoNotDisturbPeriod;
+    private getEndOfDoNotDisturbPeriod;
+    private isTransactionalNotification;
+    private requiresImmediateDelivery;
+    private isGamificationNotification;
+    private isGamificationEnabled;
+    private isWithinFrequencyLimits;
+    private getDefaultChannelsForType;
+    private getPriorityForNotificationType;
+    markAsRead(id: string, userId: string): Promise<NotificationEntity>;
+    findOne(id: string): Promise<NotificationEntity>;
+    findAllForUser(userId: string, options?: {
+        page?: number;
+        limit?: number;
+        type?: NotificationType;
+        read?: boolean;
+    }): Promise<{
+        notifications: NotificationEntity[];
+        total: number;
+    }>;
+    remove(id: string, userId: string): Promise<void>;
+    updateUserOnlineStatus(userId: string, isOnline: boolean): Promise<void>;
+    getInAppAdapter(): any;
+}

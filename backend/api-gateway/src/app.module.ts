@@ -3,17 +3,29 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { TerminusModule } from '@nestjs/terminus';
-import { HealthController } from './health/health.controller';
-import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
-import { AiModule } from './ai/ai.module';
-import { JournalModule } from './journal/journal.module';
-import { RecommenderModule } from './recommender/recommender.module';
-import { ChatModule } from './chat/chat.module';
-import { TeletherapyModule } from './teletherapy/teletherapy.module';
-import { ReportingModule } from './reporting/reporting.module';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+// import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+
+// Configuration
 import configuration from './config/configuration';
+
+// Controllers
+import { HealthController } from './health/health.controller';
+import { ProxyController } from './controllers/proxy.controller';
+
+// Services
+import { ProxyService } from './services/proxy.service';
+
+// Auth
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+
+// Service Modules
+import { UserModule } from './user/user.module';
+import { AiModule } from './modules/ai.module';
+import { CommunityModule } from './modules/community.module';
+import { NotificationModule } from './modules/notification.module';
+import { LyfbotModule } from './modules/lyfbot.module';
+import { TherapyModule } from './modules/therapy.module';
 
 @Module({
   imports: [
@@ -38,22 +50,27 @@ import configuration from './config/configuration';
     // Health checks
     TerminusModule,
     
-    // Service modules
+    // Auth Module
     AuthModule,
+    
+    // Service modules
     UserModule,
     AiModule,
-    JournalModule,
-    RecommenderModule,
-    ChatModule,
-    TeletherapyModule,
-    ReportingModule,
+    CommunityModule,
+    NotificationModule,
+    LyfbotModule,
+    TherapyModule,
   ],
-  controllers: [HealthController],
+  controllers: [
+    HealthController,
+    ProxyController,
+  ],
   providers: [
+    ProxyService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
   ],
 })
-export class AppModule {} 
+export class AppModule {}

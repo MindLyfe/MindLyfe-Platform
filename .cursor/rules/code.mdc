@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Please follow this core rule for all code modifications:
+**Only apply or suggest code changes when you're ≥ 95% confident that the change is correct, safe, and contextually appropriate.**
+If you're < 95% confident:
+- DO NOT auto-apply changes
+- Show a disclaimer and ask clarifying questions
+- Offer multiple code paths if the solution is ambiguous
+
+This rule is mandatory for critical areas like auth, database writes, and AI integration.

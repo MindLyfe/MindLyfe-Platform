@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { HealthCheck, HealthCheckService, HttpHealthIndicator, TypeOrmHealthIndicator } from '@nestjs/terminus';
+import { HealthCheck, HealthCheckService, TypeOrmHealthIndicator } from '@nestjs/terminus';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('health')
@@ -7,25 +7,20 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 export class HealthController {
   constructor(
     private health: HealthCheckService,
-    private http: HttpHealthIndicator,
     private db: TypeOrmHealthIndicator,
   ) {}
 
   @Get()
   @HealthCheck()
-  @ApiOperation({ summary: 'Check health status of the Auth Service and its dependencies' })
-  async check() {
+  @ApiOperation({ summary: 'Check service health' })
+  check() {
     return this.health.check([
-      // Basic self-check
-      () => this.http.pingCheck('self', 'http://localhost:3001/health/ping'),
-      
-      // Database check
-      () => this.db.pingCheck('database'),
+      () => this.db.pingCheck('database', { timeout: 300 }),
     ]);
   }
 
   @Get('ping')
-  @ApiOperation({ summary: 'Simple ping endpoint for the Auth Service' })
+  @ApiOperation({ summary: 'Simple ping endpoint' })
   ping() {
     return {
       status: 'ok',

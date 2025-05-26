@@ -1,0 +1,291 @@
+import { TeletherapyService } from './teletherapy.service';
+import { BookSessionDto } from './dto/book-session.dto';
+export declare class SessionBookingController {
+    private readonly teletherapyService;
+    constructor(teletherapyService: TeletherapyService);
+    bookSession(req: any, bookSessionDto: BookSessionDto): Promise<{
+        paymentInfo: any;
+        availableSessions: number;
+        id: string;
+        therapistId: string;
+        clientId: string;
+        participantIds: string[];
+        startTime: Date;
+        endTime: Date;
+        status: import("./entities/therapy-session.entity").SessionStatus;
+        type: import("./entities/therapy-session.entity").SessionType;
+        category: import("./entities/therapy-session.entity").SessionCategory;
+        focus: import("./entities/therapy-session.entity").SessionFocus[];
+        title: string;
+        description: string;
+        maxParticipants: number;
+        currentParticipants: number;
+        notes: {
+            therapistNotes?: string;
+            clientNotes?: string;
+            sharedNotes?: string;
+            groupNotes?: string;
+            individualNotes?: Record<string, string>;
+        };
+        metadata: {
+            roomId?: string;
+            recordingUrl?: string;
+            attachments?: string[];
+            tags?: string[];
+            meetingLink?: string;
+            waitingRoomEnabled?: boolean;
+            chatEnabled?: boolean;
+            recordingEnabled?: boolean;
+            breakoutRooms?: {
+                id: string;
+                name: string;
+                participants: string[];
+            }[];
+            resources?: {
+                title: string;
+                type: "link" | "document" | "video";
+                url: string;
+                description?: string;
+            }[];
+            feedback?: {
+                userId: string;
+                rating: number;
+                comment?: string;
+                timestamp: Date;
+            }[];
+        };
+        isRecurring: boolean;
+        recurringSchedule: {
+            frequency: "weekly" | "biweekly" | "monthly";
+            daysOfWeek?: number[];
+            dayOfMonth?: number;
+            endDate?: Date;
+            maxOccurrences?: number;
+            skipDates?: Date[];
+        };
+        isPrivate: boolean;
+        invitedEmails: string[];
+        pricing: {
+            amount: number;
+            currency: string;
+            perParticipant?: boolean;
+            discountCode?: string;
+            earlyBirdPrice?: number;
+            earlyBirdEndDate?: Date;
+        };
+        requirements: {
+            minAge?: number;
+            maxAge?: number;
+            prerequisites?: string[];
+            requiredDocuments?: string[];
+            consentRequired?: boolean;
+        };
+        recording: {
+            url?: string;
+            startTime?: Date;
+            endTime?: Date;
+            duration?: number;
+            format?: string;
+            size?: number;
+            status?: "processing" | "completed" | "failed";
+            thumbnailUrl?: string;
+            chapters?: {
+                title: string;
+                startTime: number;
+                endTime: number;
+                description?: string;
+            }[];
+            accessControl?: {
+                allowedUsers: string[];
+                password?: string;
+                expiresAt?: Date;
+            };
+        };
+        chat: {
+            enabled: boolean;
+            messages: {
+                id: string;
+                userId: string;
+                content: string;
+                timestamp: Date;
+                type: "text" | "system" | "private";
+                recipientId?: string;
+                attachments?: string[];
+                status: "sent" | "delivered" | "read";
+                metadata?: Record<string, any>;
+            }[];
+            settings: {
+                allowPrivateChat: boolean;
+                allowFileSharing: boolean;
+                moderationEnabled: boolean;
+                autoArchive: boolean;
+                archiveAfterDays: number;
+            };
+        };
+        resources: {
+            files: {
+                id: string;
+                name: string;
+                type: string;
+                url: string;
+                size: number;
+                uploadedBy: string;
+                uploadedAt: Date;
+                category: string;
+                tags: string[];
+                accessControl: {
+                    allowedUsers: string[];
+                    password?: string;
+                    expiresAt?: Date;
+                };
+                metadata: {
+                    description?: string;
+                    thumbnailUrl?: string;
+                    duration?: number;
+                    pages?: number;
+                };
+            }[];
+            links: {
+                id: string;
+                title: string;
+                url: string;
+                description?: string;
+                category: string;
+                tags: string[];
+                addedBy: string;
+                addedAt: Date;
+            }[];
+        };
+        analytics: {
+            attendance: {
+                totalInvited: number;
+                totalAttended: number;
+                averageDuration: number;
+                lateJoins: number;
+                earlyLeaves: number;
+            };
+            engagement: {
+                chatMessages: number;
+                reactions: number;
+                resourceDownloads: number;
+                participationScore: number;
+            };
+            feedback: {
+                averageRating: number;
+                totalRatings: number;
+                sentimentScore: number;
+                commonTopics: string[];
+            };
+            technical: {
+                averageConnectionQuality: number;
+                disconnections: number;
+                deviceTypes: Record<string, number>;
+                browserTypes: Record<string, number>;
+            };
+        };
+        payment: {
+            status: import("./entities/therapy-session.entity").PaymentStatus;
+            amount: number;
+            currency: string;
+            paymentMethod?: string;
+            transactionId?: string;
+            invoiceId?: string;
+            paidAt?: Date;
+            refundedAt?: Date;
+            refundAmount?: number;
+            paymentDetails?: {
+                provider: string;
+                last4?: string;
+                expiryDate?: string;
+                billingAddress?: Record<string, any>;
+            };
+            discounts?: {
+                code: string;
+                amount: number;
+                type: "fixed" | "percentage";
+            }[];
+        };
+        notifications: {
+            sent: {
+                type: string;
+                recipient: string;
+                sentAt: Date;
+                status: "failed" | "sent" | "delivered";
+                channel: "push" | "email" | "sms";
+                content: string;
+                metadata?: Record<string, any>;
+            }[];
+            settings: {
+                reminderBeforeSession: boolean;
+                reminderMinutes: number;
+                sendRecordingLink: boolean;
+                sendFeedbackRequest: boolean;
+                customNotifications: {
+                    type: string;
+                    enabled: boolean;
+                    template: string;
+                    channels: string[];
+                }[];
+            };
+        };
+        calendar: {
+            eventId?: string;
+            provider: "google" | "outlook" | "ical";
+            syncStatus: "failed" | "synced" | "pending";
+            lastSyncedAt?: Date;
+            timezone: string;
+            availability: {
+                startTime: string;
+                endTime: string;
+                daysOfWeek: number[];
+                exceptions: {
+                    date: Date;
+                    available: boolean;
+                    reason?: string;
+                }[];
+            };
+            reminders: {
+                type: string;
+                minutes: number;
+                enabled: boolean;
+            }[];
+        };
+        template: {
+            type: import("./entities/therapy-session.entity").SessionTemplateType;
+            name: string;
+            description?: string;
+            defaultDuration: number;
+            defaultSettings: {
+                maxParticipants?: number;
+                category: import("./entities/therapy-session.entity").SessionCategory;
+                type: import("./entities/therapy-session.entity").SessionType;
+                focus: import("./entities/therapy-session.entity").SessionFocus[];
+                pricing?: {
+                    amount: number;
+                    currency: string;
+                    perParticipant: boolean;
+                };
+                requirements?: {
+                    minAge?: number;
+                    maxAge?: number;
+                    prerequisites?: string[];
+                };
+            };
+            customFields?: Record<string, any>;
+            createdBy: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isPublic: boolean;
+            tags: string[];
+        };
+        createdAt: Date;
+        updatedAt: Date;
+        therapist: User;
+        client: User;
+        participants: User[];
+    }>;
+    getMySessions(req: any): Promise<import("./entities/therapy-session.entity").TherapySession[]>;
+    getAvailableTherapists(): Promise<any[]>;
+    getAvailableSlots(therapistId: string, req: any): Promise<any[]>;
+    getSubscriptionStatus(req: any): Promise<any>;
+}

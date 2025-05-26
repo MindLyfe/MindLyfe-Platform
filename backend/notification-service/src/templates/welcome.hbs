@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to MindLyf</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background-color: #4A90E2;
+      padding: 20px;
+      color: white;
+      text-align: center;
+    }
+    .content {
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    .footer {
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #777;
+    }
+    .button {
+      display: inline-block;
+      background-color: #4A90E2;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Welcome to MindLyf</h1>
+    </div>
+    <div class="content">
+      <p>Hello {{firstName}},</p>
+      <p>Welcome to MindLyf! We're excited to have you join our community for mental health and well-being.</p>
+      <p>With MindLyf, you can:</p>
+      <ul>
+        <li>Connect with licensed therapists</li>
+        <li>Join supportive communities</li>
+        <li>Track your mental health journey</li>
+        <li>Access resources for personal growth</li>
+      </ul>
+      <p>To get started, complete your profile and explore our platform:</p>
+      <div style="text-align: center;">
+        <a href="{{loginUrl}}" class="button">Sign In to Your Account</a>
+      </div>
+      <p>If you have any questions or need assistance, our support team is here to help.</p>
+      <p>Warm regards,<br>The MindLyf Team</p>
+    </div>
+    <div class="footer">
+      <p>© {{year}} MindLyf. All rights reserved.</p>
+      <p>
+        <a href="{{unsubscribeUrl}}">Unsubscribe</a> | 
+        <a href="{{privacyUrl}}">Privacy Policy</a> | 
+        <a href="{{termsUrl}}">Terms of Service</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html> 

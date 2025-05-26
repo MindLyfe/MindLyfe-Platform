@@ -1,92 +1,451 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Req, Get, UseGuards, Patch } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Post, Body, HttpCode, HttpStatus, Req, Get, UseGuards, Patch, Headers, Param, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiHeader, ApiBody, ApiParam, ApiConsumes, ApiProduces } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { VerifyEmailDto } from './dto/verify-email.dto';
+import { RegisterDto, LoginDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, ChangePasswordDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { Throttle } from '@nestjs/throttler';
+import { ServiceTokenGuard } from './guards/service-token.guard';
+import { JwtService } from '@nestjs/jwt';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly jwtService: JwtService
+  ) {}
 
   @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User successfully created' })
-  @ApiResponse({ status: 400, description: 'Invalid input' })
-  @ApiResponse({ status: 409, description: 'User already exists' })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  @Throttle({ default: { limit: 5, ttl: 60 } }) // Strict rate limiting for registration
+  @ApiOperation({ 
+    summary: 'Register a new user',
+    description: 'Creates a new user account in the system. An email verification link will be sent to the provided email address.'
+  })
+  @ApiBody({ 
+    type: RegisterDto,
+    description: 'User registration data including email, password, and personal details'
+  })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'User successfully created',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Registration successful. Please check your email to verify your account.' },
+        userId: { type: 'string', example: '5f8d7e6b-d3f4-4c2a-9f6a-8d7c9e6b5f4a' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input - Validation errors in the registration data' })
+  @ApiResponse({ status: 409, description: 'User already exists with this email address' })
+  @ApiProduces('application/json')
+  @ApiConsumes('application/json')
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Headers('user-agent') userAgent: string,
+    @Headers('x-forwarded-for') ipAddress: string
+  ) {
+    return this.authService.register(registerDto, { ipAddress, userAgent });
   }
 
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify email with token' })
-  @ApiResponse({ status: 200, description: 'Email successfully verified' })
-  @ApiResponse({ status: 404, description: 'Invalid verification token' })
-  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
-    return this.authService.verifyEmail(verifyEmailDto);
+  @ApiOperation({ 
+    summary: 'Verify email with token',
+    description: 'Verifies a user\'s email address using the token sent to their email. This step is required to activate the account.'
+  })
+  @ApiBody({ 
+    type: VerifyEmailDto,
+    description: 'The verification token that was sent to the user\'s email'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Email successfully verified',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Email verification successful. You can now log in.' }
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: 'Invalid verification token or token expired' })
+  @ApiProduces('application/json')
+  @ApiConsumes('application/json')
+  async verifyEmail(
+    @Body() verifyEmailDto: VerifyEmailDto,
+    @Headers('user-agent') userAgent: string,
+    @Headers('x-forwarded-for') ipAddress: string
+  ) {
+    return this.authService.verifyEmail(verifyEmailDto, { ipAddress, userAgent });
   }
 
   @Post('login')
+  @Throttle({ default: { limit: 5, ttl: 60 } }) // Strict rate limiting for login
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'User login' })
-  @ApiResponse({ status: 200, description: 'Login successful' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  @ApiOperation({ 
+    summary: 'User login',
+    description: 'Authenticates a user and provides JWT access and refresh tokens. If MFA is enabled, an MFA verification step will be required.'
+  })
+  @ApiBody({ 
+    type: LoginDto,
+    description: 'User credentials (email and password)'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Login successful',
+    schema: {
+      type: 'object',
+      properties: {
+        userId: { type: 'string', example: '5f8d7e6b-d3f4-4c2a-9f6a-8d7c9e6b5f4a' },
+        email: { type: 'string', example: 'user@mindlyf.com' },
+        firstName: { type: 'string', example: 'John' },
+        lastName: { type: 'string', example: 'Doe' },
+        role: { type: 'string', example: 'user' },
+        accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+        refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+        sessionId: { type: 'string', example: '7e8f9g0h-1i2j-3k4l-5m6n-7o8p9q0r1s2t' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'MFA verification required',
+    schema: {
+      type: 'object',
+      properties: {
+        requiresMfa: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'MFA verification required' },
+        userId: { type: 'string', example: '5f8d7e6b-d3f4-4c2a-9f6a-8d7c9e6b5f4a' },
+        tempToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Invalid credentials or account not verified' })
+  @ApiProduces('application/json')
+  @ApiConsumes('application/json')
+  async login(
+    @Body() loginDto: LoginDto,
+    @Headers('user-agent') userAgent: string,
+    @Headers('x-forwarded-for') ipAddress: string
+  ) {
+    return this.authService.login(loginDto, { 
+      ipAddress, 
+      userAgent,
+      deviceInfo: userAgent // simplified, could extract device info from UA
+    });
   }
 
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Refresh JWT token' })
-  @ApiResponse({ status: 200, description: 'Token refreshed successfully' })
-  @ApiResponse({ status: 401, description: 'Invalid refresh token' })
-  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshToken(refreshTokenDto);
+  @ApiOperation({ 
+    summary: 'Refresh JWT token',
+    description: 'Gets a new access token using a valid refresh token. This allows extending the user\'s session without requiring re-authentication.'
+  })
+  @ApiBody({ 
+    type: RefreshTokenDto,
+    description: 'The refresh token obtained during login or previous refresh'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Token refreshed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+        refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+        sessionId: { type: 'string', example: '7e8f9g0h-1i2j-3k4l-5m6n-7o8p9q0r1s2t' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Invalid refresh token or token expired' })
+  @ApiProduces('application/json')
+  @ApiConsumes('application/json')
+  async refreshToken(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Headers('user-agent') userAgent: string,
+    @Headers('x-forwarded-for') ipAddress: string
+  ) {
+    return this.authService.refreshToken(refreshTokenDto, { ipAddress, userAgent });
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Logout user' })
-  @ApiResponse({ status: 200, description: 'Logout successful' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async logout(@Req() req) {
-    return this.authService.logout(req.user.sub);
+  @ApiOperation({ 
+    summary: 'Logout user',
+    description: 'Invalidates the user\'s current session, or optionally all sessions. This revokes the refresh token(s).'
+  })
+  @ApiHeader({
+    name: 'x-session-id',
+    description: 'Optional session ID to specify which session to terminate. If not provided, all sessions will be terminated.',
+    required: false
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Logout successful',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Logged out successfully' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid or expired token' })
+  @ApiProduces('application/json')
+  async logout(
+    @Req() req,
+    @Headers('x-session-id') sessionId: string,
+    @Headers('user-agent') userAgent: string,
+    @Headers('x-forwarded-for') ipAddress: string
+  ) {
+    return this.authService.logout(req.user.sub, sessionId, { ipAddress, userAgent });
   }
 
   @Patch('change-password')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Change user password' })
-  @ApiResponse({ status: 200, description: 'Password successfully changed' })
-  @ApiResponse({ status: 400, description: 'Invalid input' })
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ 
+    summary: 'Change user password',
+    description: 'Allows an authenticated user to change their password. Requires the current password for verification and invalidates all sessions.'
+  })
+  @ApiBody({ 
+    type: ChangePasswordDto,
+    description: 'Contains current password for verification and the new password'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Password successfully changed',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Password changed successfully. Please log in again with your new password.' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input - New passwords don\'t match or validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized or incorrect current password' })
-  async changePassword(@Req() req, @Body() changePasswordDto: ChangePasswordDto) {
-    return this.authService.changePassword(req.user.sub, changePasswordDto);
+  @ApiProduces('application/json')
+  @ApiConsumes('application/json')
+  async changePassword(
+    @Req() req, 
+    @Body() changePasswordDto: ChangePasswordDto,
+    @Headers('user-agent') userAgent: string,
+    @Headers('x-forwarded-for') ipAddress: string
+  ) {
+    return this.authService.changePassword(req.user.sub, changePasswordDto, { ipAddress, userAgent });
   }
 
   @Post('forgot-password')
+  @Throttle({ default: { limit: 5, ttl: 60 } }) // Strict rate limiting
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Request password reset' })
-  @ApiResponse({ status: 200, description: 'Password reset email sent' })
-  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(forgotPasswordDto);
+  @ApiOperation({ 
+    summary: 'Request password reset',
+    description: 'Initiates the password reset process by sending a reset link to the user\'s email'
+  })
+  @ApiBody({ 
+    type: ForgotPasswordDto,
+    description: 'Email address for the account that needs password reset'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Password reset email sent',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'If your email is registered, you will receive password reset instructions.' }
+      }
+    }
+  })
+  @ApiProduces('application/json')
+  @ApiConsumes('application/json')
+  async forgotPassword(
+    @Body() forgotPasswordDto: ForgotPasswordDto,
+    @Headers('user-agent') userAgent: string,
+    @Headers('x-forwarded-for') ipAddress: string
+  ) {
+    return this.authService.forgotPassword(forgotPasswordDto, { ipAddress, userAgent });
   }
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Reset password with token' })
-  @ApiResponse({ status: 200, description: 'Password successfully reset' })
-  @ApiResponse({ status: 400, description: 'Invalid token or passwords do not match' })
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return this.authService.resetPassword(resetPasswordDto);
+  @ApiOperation({ 
+    summary: 'Reset password with token',
+    description: 'Completes the password reset process using the token sent to the user\'s email'
+  })
+  @ApiBody({ 
+    type: ResetPasswordDto,
+    description: 'Reset token from email and new password'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Password successfully reset',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Password has been reset successfully. You can now log in with your new password.' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid token, token expired, or passwords do not match' })
+  @ApiProduces('application/json')
+  @ApiConsumes('application/json')
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+    @Headers('user-agent') userAgent: string,
+    @Headers('x-forwarded-for') ipAddress: string
+  ) {
+    return this.authService.resetPassword(resetPasswordDto, { ipAddress, userAgent });
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ 
+    summary: 'Get current user profile',
+    description: 'Returns the profile information of the currently authenticated user'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Current user profile',
+    schema: {
+      type: 'object',
+      properties: {
+        userId: { type: 'string', example: '5f8d7e6b-d3f4-4c2a-9f6a-8d7c9e6b5f4a' },
+        email: { type: 'string', example: 'user@mindlyf.com' },
+        firstName: { type: 'string', example: 'John' },
+        lastName: { type: 'string', example: 'Doe' },
+        role: { type: 'string', example: 'user' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid or expired token' })
+  @ApiProduces('application/json')
+  async getProfile(@Req() req) {
+    return req.user;
+  }
+
+  @Post('validate-token')
+  @UseGuards(ServiceTokenGuard)
+  @ApiOperation({ summary: 'Validate a JWT token' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Token is valid and user information is returned',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token is invalid or expired',
+  })
+  @ApiHeader({
+    name: 'X-Service-Name',
+    description: 'Name of the service making the request',
+    required: true,
+  })
+  async validateToken(@Body() body: { token: string }) {
+    try {
+      const payload = this.jwtService.verify(body.token);
+      const user = await this.authService.validateUserById(payload.sub);
+      
+      if (!user) {
+        throw new UnauthorizedException('User not found or inactive');
+      }
+
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          status: user.status,
+          emailVerified: user.emailVerified,
+          twoFactorEnabled: user.twoFactorEnabled,
+        },
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid token');
+    }
+  }
+
+  @Post('validate-service-token')
+  @UseGuards(ServiceTokenGuard)
+  @ApiOperation({ summary: 'Validate a service-to-service token' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Service token is valid',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Service token is invalid',
+  })
+  @ApiHeader({
+    name: 'X-Service-Name',
+    description: 'Name of the service making the request',
+    required: true,
+  })
+  async validateServiceToken(
+    @Body() body: { serviceName: string; token: string },
+    @Headers('X-Service-Name') requestingService: string,
+  ) {
+    const isValid = await this.authService.validateServiceToken(
+      body.serviceName,
+      body.token,
+      requestingService,
+    );
+
+    return { valid: isValid };
+  }
+
+  @Post('revoke-token')
+  @UseGuards(ServiceTokenGuard)
+  @ApiOperation({ summary: 'Revoke a JWT token' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Token has been revoked',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid service token',
+  })
+  @ApiHeader({
+    name: 'X-Service-Name',
+    description: 'Name of the service making the request',
+    required: true,
+  })
+  async revokeToken(@Body() body: { token: string }) {
+    await this.authService.revokeToken(body.token);
+    return { message: 'Token revoked successfully' };
+  }
+
+  @Get('users/:userId')
+  @UseGuards(ServiceTokenGuard)
+  @ApiOperation({ summary: 'Get user information (service-to-service)' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User information retrieved successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found',
+  })
+  @ApiHeader({
+    name: 'X-Service-Name',
+    description: 'Name of the service making the request',
+    required: true,
+  })
+  async getUserInfo(@Param('userId') userId: string) {
+    const user = await this.authService.validateUserById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        emailVerified: user.emailVerified,
+        twoFactorEnabled: user.twoFactorEnabled,
+      },
+    };
   }
 } 

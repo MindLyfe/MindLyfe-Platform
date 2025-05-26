@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    depends_on:
+      - redis
+      - auth-service
+      - teletherapy-service
+      - chat-service
+      - community-service
+      - notification-service
+      # Temporarily removing ai-service dependencies
+      # - ai-service
+      # - journal-service
+      # - recommender-service
+      # - lyfbot-service
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - JWT_SECRET=mindlyf-auth-secret-key-dev
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - TELETHERAPY_SERVICE_URL=http://teletherapy-service:3002
+      - CHAT_SERVICE_URL=http://chat-service:3003
+      - COMMUNITY_SERVICE_URL=http://community-service:3004
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3005
+      # Temporarily commenting out AI service URLs
+      # - AI_SERVICE_URL=http://ai-service:8000
+      # - JOURNAL_SERVICE_URL=http://journal-service:8001
+      # - RECOMMENDER_SERVICE_URL=http://recommender-service:8002
+      # - LYFBOT_SERVICE_URL=http://lyfbot-service:8003
+      - CORS_ORIGIN=http://localhost:3000

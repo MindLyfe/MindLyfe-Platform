@@ -1,58 +1,77 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
 import { TerminusModule } from '@nestjs/terminus';
+import { HttpModule } from '@nestjs/axios';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
+import configuration from './config/configuration';
+import { validateEnv } from './config/env.validator';
+import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
-import { HealthModule } from './health/health.module';
-import configuration from './config/configuration';
+import { SubscriptionModule } from './subscription/subscription.module';
+import { OrganizationModule } from './organization/organization.module';
+import { SharedModule } from './shared/shared.module';
 import { User } from './entities/user.entity';
+import { UserSession } from './entities/user-session.entity';
+import { Organization } from './entities/organization.entity';
+import { Subscription } from './entities/subscription.entity';
+import { TherapySession } from './entities/therapy-session.entity';
+import { Payment } from './entities/payment.entity';
 
 @Module({
   imports: [
-    // Configuration
+    // Configuration with validation
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
+      validate: validateEnv,
     }),
     
-    // Database
+    // Database connection
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get('database.host'),
-        port: configService.get('database.port'),
-        username: configService.get('database.username'),
-        password: configService.get('database.password'),
-        database: configService.get('database.name'),
-        entities: [User],
-        synchronize: configService.get('environment') !== 'production',
-        ssl: configService.get('environment') === 'production',
+        host: configService.get<string>('DB_HOST', 'localhost'),
+        port: configService.get<number>('DB_PORT', 5432),
+        username: configService.get<string>('DB_USERNAME', 'postgres'),
+        password: configService.get<string>('DB_PASSWORD', 'postgres'),
+        database: configService.get<string>('DB_NAME', 'mindlyf_auth'),
+        entities: [
+          User, 
+          UserSession, 
+          Organization, 
+          Subscription, 
+          TherapySession, 
+          Payment
+        ],
+        synchronize: configService.get<boolean>('DB_SYNCHRONIZE', true),
+        logging: configService.get<boolean>('DB_LOGGING', true),
+        ssl: configService.get<boolean>('DB_SSL', false) ? { rejectUnauthorized: false } : false,
       }),
-    }),
-    
-    // JWT
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get('jwt.secret'),
-        signOptions: {
-          expiresIn: configService.get('jwt.expiresIn'),
-        },
-      }),
     }),
     
-    // Health checks
-    TerminusModule,
-    HealthModule,
+    // Rate limiting
+    ThrottlerModule.forRoot([{
+      ttl: 60,
+      limit: 10,
+    }]),
     
-    // Service modules
+    // Shared services
+    SharedModule,
+    
+    // Application modules
     AuthModule,
     UserModule,
+    SubscriptionModule,
+    OrganizationModule,
+    
+    // Health check
+    TerminusModule,
+    HttpModule,
   ],
+  controllers: [AppController],
+  providers: [],
 })
-export class AppModule {} 
+export class AppModule {}

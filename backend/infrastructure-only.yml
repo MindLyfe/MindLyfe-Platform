@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mindlyf
+      - POSTGRES_MULTIPLE_DATABASES=mindlyf_auth,mindlyf_notification,mindlyf_teletherapy,mindlyf_chat,mindlyf_community,mindlyf_ai
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
+    networks:
+      - mindlyf-network
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - mindlyf-network
+
+networks:
+  mindlyf-network:
+    external: true
+
+volumes:
+  postgres-data:
+  redis-data: 

@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -17,16 +16,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         },
       }),
     }),
-    ClientsModule.register([
-      {
-        name: 'AUTH_SERVICE',
-        transport: Transport.TCP,
-        options: {
-          host: process.env.AUTH_SERVICE_HOST || 'auth-service',
-          port: parseInt(process.env.AUTH_SERVICE_PORT || '3001'),
-        },
-      },
-    ]),
   ],
   controllers: [],
   providers: [],

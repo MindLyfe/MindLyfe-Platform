@@ -21,21 +21,9 @@ export class HealthController {
   @HealthCheck()
   @ApiOperation({ summary: 'Check health status of the API Gateway and all services' })
   async check(): Promise<HealthCheckResult> {
-    const services = this.configService.get('services');
-    
     return this.health.check([
       // Basic API Gateway health check
       () => this.http.pingCheck('api-gateway', 'http://localhost:3000/api/health/ping'),
-      
-      // Microservices health checks (if they are reachable and their health endpoints are available)
-      ...Object.entries(services).map(([name, service]) => {
-        const url = (service as any).url;
-        return () => this.http.pingCheck(
-          `${name}-service`, 
-          `${url}/health/ping`,
-          { timeout: 3000 }
-        ).catch(() => ({ [name]: { status: 'down' } }));
-      }),
     ]);
   }
 

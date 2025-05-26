@@ -1,89 +1,128 @@
-# MindLyf - Mental Health Support Platform
+# MindLyf - Mental Health Platform
 
-![MindLyf Logo](https://placeholder.com/wp-content/uploads/2018/10/placeholder.com-logo1.png)
+MindLyf is a comprehensive mental health platform that provides therapy services, community support, and secure communication for users and therapists.
 
-## What is MindLyf?
+## Architecture Overview
 
-MindLyf is a comprehensive mental health platform designed to provide accessible, personalized support for your mental wellbeing journey. Our platform combines technology with human expertise to offer a range of services that help you understand, manage, and improve your mental health.
+The platform follows a microservices architecture with the following core services:
 
-## Our Mission
+### 1. Auth Service
+- Centralized authentication and authorization
+- User management and role-based access control
+- JWT token issuance and validation
+- Service-to-service authentication
 
-To make quality mental healthcare accessible to everyone, everywhere. We believe that mental health is just as important as physical health, and everyone deserves access to tools and support that help them thrive.
+### 2. Teletherapy Service
+- Schedule and manage therapy sessions
+- Support for individual and group therapy
+- Video, audio, and chat-based therapy sessions
+- Session management for therapists and clients
 
-## Key Features
+### 3. Chat Service
+- Private and group messaging
+- End-to-end encryption option
+- Support for file sharing and rich media
+- Chat rooms for therapy follow-ups
 
-### 🧠 Personalized Mental Health Journey
+### 4. Community Service
+- Public and private community forums
+- User following system
+- Content moderation
+- Support groups
 
-MindLyf creates a personalized experience for each user. After a brief assessment, the platform recommends resources, activities, and support options tailored to your specific needs.
+### 5. Notification Service
+- Centralized service for emails and notifications
+- Email notifications via AWS SES
+- In-app notifications for real-time updates
+- Push notifications for mobile devices
+- SMS notifications for critical alerts
+- User preference management for notification settings
 
-### 📝 Journaling with AI Insights
+## Service Communication
 
-Express your thoughts and feelings through our journaling feature. Our AI analyzes your entries (with your permission) to identify patterns, suggest coping strategies, and track your progress over time.
+The services communicate with each other as follows:
 
-### 💬 24/7 AI Companion
+1. **Auth Service Integration**:
+   - All services authenticate users through the Auth Service
+   - Auth Client module in shared libraries ensures consistent authentication
+   - Service-to-service communication uses service tokens for authentication
 
-Access immediate support through our AI companion that offers:
-- Coping techniques for anxiety and stress
-- Guided meditation and relaxation exercises
-- Evidence-based suggestions for managing difficult emotions
-- Resources for further support
+2. **Teletherapy ↔ Chat Service**:
+   - Chat Service verifies with Teletherapy Service if a user has booked sessions with a therapist
+   - Teletherapy Service automatically creates chat rooms when group sessions end
+   - Both services preserve session context and participant information
 
-### 👩‍⚕️ Teletherapy Services
+3. **Community ↔ Chat Service**:
+   - Chat Service verifies follow relationships with Community Service
+   - Chat permissions are based on community relationships
+   - Both services enforce consistent privacy rules
 
-Connect with licensed mental health professionals through secure video sessions. Our matching system helps you find therapists who specialize in your specific concerns.
+## Business Rules
 
-### 👥 Community Support
+### Chat Permissions
+- Only therapists and admins can create group chats
+- Users can only chat one-on-one with therapists after booking a session with them
+- Users can chat with other users if they follow each other in the Community Service
+- All chats between users and therapists maintain session context
 
-Join moderated support groups with others who share similar experiences. Learn from others' journeys and share your own in a safe, anonymous environment if you prefer.
+### Therapy Sessions
+- Only verified therapists can create therapy sessions
+- Group sessions automatically create follow-up chat rooms
+- Session notes and records are securely stored
+- Therapists can manage breakout rooms and participant roles
 
-### 📊 Progress Tracking
+## Development Setup
 
-Monitor your mental wellbeing over time with mood tracking, journal analysis, and progress reports. Celebrate improvements and identify areas where you might need additional support.
+### Prerequisites
+- Node.js 16+
+- PostgreSQL 13+
+- Redis (for session management)
 
-## How MindLyf Works
+### Installation
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Configure environment variables (see `.env.example` files in each service)
+4. Start services: `docker-compose up`
 
-1. **Sign Up**: Create a secure account and complete a brief assessment about your mental health needs and goals.
+## Deployment
 
-2. **Personalized Dashboard**: Receive a customized dashboard with recommended resources and activities based on your assessment.
+The application is designed to be deployed on AWS with:
+- ECS Fargate for container orchestration
+- RDS for database storage
+- DynamoDB for session and message storage
+- S3 for file storage
+- Lambda for event processing
 
-3. **Daily Check-ins**: Track your mood and thoughts with quick daily check-ins that help build self-awareness.
+## Security Features
 
-4. **Use Support Tools**: Access the AI companion for immediate support, journaling for reflection, or community forums for peer support.
+- Role-based access control
+- End-to-end encryption for private messages
+- Soft deletion for audit trails
+- Rate limiting for API endpoints
+- Content moderation capabilities 
 
-5. **Connect with Professionals**: Book teletherapy sessions with licensed professionals who can provide clinical guidance.
+## Architecture
 
-6. **Track Progress**: Monitor your mental health journey through visualizations and insights that show your progress over time.
+MindLyf consists of the following microservices:
 
-## Privacy & Security
+- **API Gateway**: Entry point that routes requests to appropriate services
+- **Auth Service**: Handles user authentication, registration, and authorization
+- **Notification Service**: Centralized service for emails and notifications
+- **AI Service**: Handles AI-powered features including LyfBot and recommendations
+- **Community Service**: Manages community features, follows, and posts
+- **Chat Service**: Facilitates real-time and asynchronous messaging
+- **Teletherapy Service**: Manages video sessions, scheduling, and therapist interactions
 
-Your privacy is our highest priority. MindLyf is built with robust security measures that meet healthcare compliance standards:
+### Notification Service
 
-- End-to-end encryption for all communications
-- Anonymous mode for community participation
-- Granular privacy controls so you choose what to share
-- Compliance with global healthcare data protection regulations
-- Option to delete your data at any time
+The Notification Service is a centralized microservice that handles all types of notifications across the MindLyf platform. It provides:
 
-## Who MindLyf Is For
+- Email notifications via AWS SES
+- In-app notifications for real-time updates
+- Push notifications for mobile devices
+- SMS notifications for critical alerts
+- User preference management for notification settings
 
-- **Individuals** seeking to improve their mental wellbeing
-- **People in therapy** looking for between-session support
-- **Those new to mental health care** wanting a private first step
-- **Busy professionals** needing flexible mental health support
-- **Rural residents** with limited access to in-person services
-- **Anyone** wanting to better understand and manage their emotions
+Other services integrate with the Notification Service to send user communications, ensuring consistent delivery and tracking of all platform messages.
 
-## Getting Support
-
-For questions, feedback, or assistance, our support team is available via:
-- Email: support@mindlyf.com
-- In-app chat support
-- Help center: [help.mindlyf.com](https://help.mindlyf.com)
-
-## Join the MindLyf Community
-
-Mental health is a journey, and it's one that's better when we support each other. Join thousands of others who are taking positive steps toward better mental wellbeing with MindLyf.
-
----
-
-© 2023 MindLyf Health Technologies. All rights reserved. 
+## Getting Started 

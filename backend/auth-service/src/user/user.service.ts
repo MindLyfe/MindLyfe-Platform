@@ -1,166 +1,130 @@
-import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User, UserStatus } from '../entities/user.entity';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Repository, MoreThan } from 'typeorm';
+import { User, UserStatus, UserRole } from '../entities/user.entity';
+import * as bcrypt from 'bcrypt';
+
+export type SafeUser = Omit<User, 'password' | 'hashPassword' | 'comparePassword'>;
 
 @Injectable()
 export class UserService {
-  private readonly logger = new Logger(UserService.name);
-
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async findAll(query: any = {}) {
-    const { page = 1, limit = 10, status, role, search } = query;
-
-    const queryBuilder = this.userRepository.createQueryBuilder('user');
-    
-    // Apply filters if provided
-    if (status) {
-      queryBuilder.andWhere('user.status = :status', { status });
-    }
-    
-    if (role) {
-      queryBuilder.andWhere('user.role = :role', { role });
-    }
-    
-    if (search) {
-      queryBuilder.andWhere(
-        '(user.email LIKE :search OR user.firstName LIKE :search OR user.lastName LIKE :search)',
-        { search: `%${search}%` },
-      );
-    }
-    
-    // Pagination
-    const skip = (page - 1) * limit;
-    queryBuilder.skip(skip).take(limit);
-    
-    // Order by creation date
-    queryBuilder.orderBy('user.createdAt', 'DESC');
-    
-    // Select only necessary fields (exclude sensitive data)
-    queryBuilder.select([
-      'user.id',
-      'user.email',
-      'user.firstName',
-      'user.lastName',
-      'user.role',
-      'user.status',
-      'user.emailVerified',
-      'user.createdAt',
-      'user.lastLogin',
-    ]);
-    
-    const [users, total] = await queryBuilder.getManyAndCount();
-    
-    return {
-      data: users,
-      meta: {
-        total,
-        page: Number(page),
-        limit: Number(limit),
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+  async findAll(): Promise<SafeUser[]> {
+    const users = await this.userRepository.find();
+    return users.map(user => this.sanitizeUser(user));
   }
 
-  async findById(id: string) {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      select: [
-        'id',
-        'email',
-        'firstName',
-        'lastName',
-        'phoneNumber',
-        'role',
-        'status',
-        'emailVerified',
-        'twoFactorEnabled',
-        'createdAt',
-        'updatedAt',
-        'lastLogin',
-      ],
-    });
-
+  async findById(id: string): Promise<SafeUser> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(`User with ID ${id} not found`);
     }
-
-    return user;
+    
+    return this.sanitizeUser(user);
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.findOne({
-      where: { id },
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    // Check if email is being changed and if it's already taken
-    if (updateUserDto.email && updateUserDto.email !== user.email) {
-      const existingUser = await this.userRepository.findOne({
-        where: { email: updateUserDto.email },
-      });
-
-      if (existingUser) {
-        throw new ConflictException('Email already in use');
-      }
-
-      // If email is changed, require verification again
-      user.emailVerified = false;
-      user.verificationToken = require('crypto').randomBytes(32).toString('hex');
-      // TODO: Send verification email
-    }
-
-    // Update user with new data
-    Object.assign(user, updateUserDto);
-
-    // Save updated user
-    await this.userRepository.save(user);
-
-    // Return user without sensitive fields
-    const { password, refreshToken, resetPasswordToken, resetPasswordExpires, ...result } = user;
-    return result;
+  // Internal method that returns full User with password - use carefully
+  async findByIdInternal(id: string): Promise<User | undefined> {
+    return await this.userRepository.findOne({ where: { id } });
   }
 
-  async updateStatus(id: string, status: UserStatus) {
-    const user = await this.userRepository.findOne({
-      where: { id },
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    user.status = status;
-    await this.userRepository.save(user);
-
-    return {
-      message: `User status updated to ${status}`,
-    };
+  async findByEmail(email: string): Promise<User | undefined> {
+    return await this.userRepository.findOne({ where: { email } });
   }
 
-  async remove(id: string) {
-    const user = await this.userRepository.findOne({
-      where: { id },
+  async findByResetToken(token: string): Promise<User | undefined> {
+    return await this.userRepository.findOne({ 
+      where: { 
+        resetPasswordToken: token,
+        resetPasswordExpires: MoreThan(new Date())
+      } 
     });
+  }
 
-    if (!user) {
-      throw new NotFoundException('User not found');
+  async createUser(userData: Partial<User>): Promise<SafeUser> {
+    // Hash password if provided
+    let hashedPassword = userData.password;
+    if (userData.password) {
+      hashedPassword = await bcrypt.hash(userData.password, 10);
     }
+    
+    const newUser = this.userRepository.create({
+      ...userData,
+      password: hashedPassword,
+      role: userData.role || UserRole.USER,
+      status: userData.status || UserStatus.PENDING,
+      emailVerified: userData.emailVerified || false,
+      twoFactorEnabled: userData.twoFactorEnabled || false,
+    });
+    
+    const savedUser = await this.userRepository.save(newUser);
+    return this.sanitizeUser(savedUser);
+  }
 
-    // Instead of hard-deleting the user, we can set the status to inactive
+  async updateLastLogin(id: string): Promise<SafeUser> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    
+    user.lastLogin = new Date();
+    const updatedUser = await this.userRepository.save(user);
+    return this.sanitizeUser(updatedUser);
+  }
+
+  async updateResetToken(id: string, token: string, expires: Date): Promise<SafeUser> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = expires;
+    
+    const updatedUser = await this.userRepository.save(user);
+    return this.sanitizeUser(updatedUser);
+  }
+
+  async updatePassword(id: string, password: string): Promise<SafeUser> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    
+    const updatedUser = await this.userRepository.save(user);
+    return this.sanitizeUser(updatedUser);
+  }
+
+  async deactivateUser(id: string): Promise<{ id: string, status: string }> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    
     user.status = UserStatus.INACTIVE;
     await this.userRepository.save(user);
+    
+    return { id, status: 'deactivated' };
+  }
 
-    return {
-      message: 'User has been deactivated',
-    };
+  private sanitizeUser(user: User): SafeUser {
+    const { password, hashPassword, comparePassword, ...result } = user;
+    return result as SafeUser;
   }
 } 
