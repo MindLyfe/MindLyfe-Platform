@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, ParseUUIDPipe, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, ParseUUIDPipe, ForbiddenException } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -87,6 +87,38 @@ export class ChatController {
   @Roles('user', 'therapist', 'admin')
   async markMessagesAsRead(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtUser) {
     await this.chatService.markMessagesAsRead(id, user);
+    return { success: true };
+  }
+
+  @Get('chat-partners')
+  @ApiOperation({ 
+    summary: 'Get chat-eligible users',
+    description: 'Get all users who have mutual follow relationship and can be chatted with'
+  })
+  @ApiResponse({ status: 200, description: 'Returns list of chat-eligible users.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @Roles('user', 'therapist', 'admin')
+  async getChatEligibleUsers(@CurrentUser() user: JwtUser) {
+    return this.chatService.getChatEligibleUsers(user);
+  }
+
+  @Patch('rooms/:id/identity-settings')
+  @ApiOperation({ 
+    summary: 'Update room identity reveal settings',
+    description: 'Update whether real names should be shown or anonymous names in this room'
+  })
+  @ApiParam({ name: 'id', description: 'The chat room ID' })
+  @ApiResponse({ status: 200, description: 'Identity settings updated successfully.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 404, description: 'Chat room not found.' })
+  @Roles('user', 'therapist', 'admin')
+  async updateRoomIdentitySettings(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() settings: { allowRealNames?: boolean; showAnonymousNames?: boolean },
+    @CurrentUser() user: JwtUser
+  ) {
+    await this.chatService.updateRoomIdentitySettings(id, settings, user);
     return { success: true };
   }
 

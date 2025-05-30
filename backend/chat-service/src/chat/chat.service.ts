@@ -11,6 +11,7 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { RoomType } from './entities/chat-room.entity';
 import { ConfigService } from '@nestjs/config';
+import { CommunityClientService } from '../community/community-client.service';
 
 @Injectable()
 export class ChatService {
@@ -25,6 +26,7 @@ export class ChatService {
     private readonly authClient: AuthClientService,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly communityClient: CommunityClientService,
   ) {
     this.communityServiceUrl = this.configService.get<string>('services.communityServiceUrl', 'http://community-service:3004');
     this.teletherapyServiceUrl = this.configService.get<string>('services.teletherapyServiceUrl', 'http://teletherapy-service:3002');
@@ -77,7 +79,7 @@ export class ChatService {
           const therapistId = otherUserIsTherapist ? otherUserId : user.id;
           const clientId = otherUserIsTherapist ? user.id : otherUserId;
           
-          const hasSession = await this.checkTherapistClientRelationship(therapistId, clientId, user.token);
+          const hasSession = await this.communityClient.checkTherapySessionAccess(therapistId, clientId);
           
           if (!hasSession) {
             throw new ForbiddenException(
@@ -85,12 +87,12 @@ export class ChatService {
             );
           }
         } else if (!userInfo.roles.some(role => ['admin', 'therapist'].includes(role.toLowerCase()))) {
-          // If neither user is a therapist, check if they follow each other (for regular users)
-          const canChat = await this.canUsersChat(user.id, otherUserId);
+          // If neither user is a therapist, check if they have mutual follow relationship
+          const canChat = await this.communityClient.validateMutualFollow(user.id, otherUserId);
           
           if (!canChat) {
             throw new ForbiddenException(
-              'You can only chat with users who follow you or whom you follow'
+              'You can only chat with users who have mutual follow relationship with you'
             );
           }
         }
@@ -122,10 +124,24 @@ export class ChatService {
         ...createRoomDto.metadata,
         isPrivate: createRoomDto.metadata?.isPrivate || false,
         isEncrypted: createRoomDto.metadata?.isEncrypted || false,
+        identityRevealSettings: {
+          allowRealNames: true, // Default to allow, users can change per room
+          fallbackToAnonymous: true,
+          showAnonymousNames: true
+        }
       }
     });
 
-    return this.roomRepository.save(room);
+    const savedRoom = await this.roomRepository.save(room);
+
+    // Notify community service about room creation
+    await this.communityClient.notifyChatRoomCreated(
+      savedRoom.id,
+      savedRoom.participants,
+      savedRoom.type
+    );
+
+    return savedRoom;
   }
 
   // Check if users can chat based on follow relationship
@@ -191,20 +207,46 @@ export class ChatService {
     }
   }
 
-  async getRooms(user: JwtUser): Promise<ChatRoom[]> {
+  async getRooms(user: JwtUser): Promise<any[]> {
     // Validate user existence via auth service
     await this.authClient.validateUser(user.id);
     
     // Find rooms where the user is a participant
-    // Using a raw query with the JSONB contains operator
-    return this.roomRepository
+    const rooms = await this.roomRepository
       .createQueryBuilder('room')
       .where(`room.participants @> :userId`, { userId: JSON.stringify([user.id]) })
       .orderBy('room.updatedAt', 'DESC')
       .getMany();
+
+    // Enrich rooms with participant identity information
+    const enrichedRooms = await Promise.all(
+      rooms.map(async (room) => {
+        const participantIdentities = await Promise.all(
+          room.participants
+            .filter(participantId => participantId !== user.id) // Exclude current user
+            .map(async (participantId) => {
+              return await this.communityClient.getUserIdentity(
+                participantId,
+                user.id,
+                room.type as any
+              );
+            })
+        );
+
+        return {
+          ...room,
+          participantIdentities,
+          // Show appropriate names based on room type and user preferences
+          displayName: this.getRoomDisplayName(room, participantIdentities, user.id),
+          participantCount: room.participants.length
+        };
+      })
+    );
+
+    return enrichedRooms;
   }
 
-  async getRoomById(roomId: string, user: JwtUser): Promise<ChatRoom> {
+  async getRoomById(roomId: string, user: JwtUser): Promise<any> {
     // Validate user existence via auth service
     await this.authClient.validateUser(user.id);
     
@@ -219,17 +261,32 @@ export class ChatService {
       throw new ForbiddenException('You are not a participant in this chat room');
     }
 
-    return room;
+    // Enrich room with participant identity information
+    const participantIdentities = await Promise.all(
+      room.participants.map(async (participantId) => {
+        return await this.communityClient.getUserIdentity(
+          participantId,
+          user.id,
+          room.type as any
+        );
+      })
+    );
+
+    return {
+      ...room,
+      participantIdentities,
+      displayName: this.getRoomDisplayName(room, participantIdentities, user.id)
+    };
   }
 
-  async createMessage(createMessageDto: CreateMessageDto, user: JwtUser): Promise<ChatMessage> {
+  async createMessage(createMessageDto: CreateMessageDto, user: JwtUser): Promise<any> {
     // Validate user existence via auth service
     await this.authClient.validateUser(user.id);
     
     // Verify the room exists and user is a participant
     const room = await this.getRoomById(createMessageDto.roomId, user);
 
-    // Apply rate limiting check (this would be better handled by a dedicated middleware)
+    // Apply rate limiting check
     await this.checkRateLimiting(room.id, user.id);
 
     const message = this.messageRepository.create({
@@ -239,6 +296,8 @@ export class ChatService {
       isAnonymous: createMessageDto.metadata?.isAnonymous || false,
     });
 
+    const savedMessage = await this.messageRepository.save(message);
+
     // Update the room's updatedAt timestamp and last message info
     await this.roomRepository.update(room.id, { 
       updatedAt: new Date(),
@@ -246,22 +305,53 @@ export class ChatService {
       lastMessagePreview: createMessageDto.content.substring(0, 50) + (createMessageDto.content.length > 50 ? '...' : '')
     });
 
-    return this.messageRepository.save(message);
+    // Enrich message with sender identity
+    const senderIdentity = await this.communityClient.getUserIdentity(
+      user.id,
+      user.id, // Same user viewing their own message
+      room.type as any
+    );
+
+    return {
+      ...savedMessage,
+      senderIdentity,
+      displayName: this.getMessageSenderDisplayName(savedMessage, senderIdentity, room.type)
+    };
   }
 
-  async getMessages(roomId: string, user: JwtUser, limit = 50, offset = 0): Promise<ChatMessage[]> {
+  async getMessages(roomId: string, user: JwtUser, limit = 50, offset = 0): Promise<any[]> {
     // Validate user existence via auth service
     await this.authClient.validateUser(user.id);
     
     // Verify the room exists and user is a participant
-    await this.getRoomById(roomId, user);
+    const room = await this.getRoomById(roomId, user);
 
-    return this.messageRepository.find({
+    const messages = await this.messageRepository.find({
       where: { roomId },
       order: { createdAt: 'DESC' },
       take: limit,
       skip: offset,
     });
+
+    // Enrich messages with sender identity information
+    const enrichedMessages = await Promise.all(
+      messages.map(async (message) => {
+        const senderIdentity = await this.communityClient.getUserIdentity(
+          message.senderId,
+          user.id,
+          room.type as any
+        );
+
+        return {
+          ...message,
+          senderIdentity,
+          displayName: this.getMessageSenderDisplayName(message, senderIdentity, room.type),
+          isOwnMessage: message.senderId === user.id
+        };
+      })
+    );
+
+    return enrichedMessages;
   }
 
   async markMessagesAsRead(roomId: string, user: JwtUser): Promise<void> {
@@ -318,6 +408,47 @@ export class ChatService {
     return this.messageRepository.save(message);
   }
 
+  /**
+   * Get chat-eligible users from community service
+   */
+  async getChatEligibleUsers(user: JwtUser): Promise<any[]> {
+    await this.authClient.validateUser(user.id);
+    
+    const chatPartners = await this.communityClient.getChatPartners(user.id);
+    
+    return chatPartners.map(partner => ({
+      ...partner,
+      canStartChat: true,
+      relationshipType: 'mutual-follow'
+    }));
+  }
+
+  /**
+   * Update room identity reveal settings
+   */
+  async updateRoomIdentitySettings(
+    roomId: string, 
+    settings: { allowRealNames?: boolean; showAnonymousNames?: boolean }, 
+    user: JwtUser
+  ): Promise<void> {
+    const room = await this.getRoomById(roomId, user);
+    
+    // Only room participants can update settings
+    if (!room.participants.includes(user.id)) {
+      throw new ForbiddenException('Only room participants can update identity settings');
+    }
+
+    const updatedMetadata = {
+      ...room.metadata,
+      identityRevealSettings: {
+        ...room.metadata?.identityRevealSettings,
+        ...settings
+      }
+    };
+
+    await this.roomRepository.update(roomId, { metadata: updatedMetadata });
+  }
+
   // Helper method for rate limiting
   private async checkRateLimiting(roomId: string, userId: string): Promise<void> {
     // Get recent messages from this user in this room
@@ -333,5 +464,60 @@ export class ChatService {
     if (recentMessages > 10) {
       throw new ForbiddenException('Rate limit exceeded. Please wait before sending more messages.');
     }
+  }
+
+  /**
+   * Generate appropriate room display name based on participants and identity settings
+   */
+  private getRoomDisplayName(room: ChatRoom, participantIdentities: any[], currentUserId: string): string {
+    if (room.name && room.name.trim()) {
+      return room.name;
+    }
+
+    if (room.type === RoomType.DIRECT && participantIdentities.length === 1) {
+      const otherParticipant = participantIdentities[0];
+      
+      // Show real name if available and allowed, otherwise anonymous name
+      if (otherParticipant.allowRealNameInChat && otherParticipant.realName) {
+        return otherParticipant.realName;
+      } else {
+        return otherParticipant.anonymousDisplayName;
+      }
+    }
+
+    // For group chats, show participant count or custom name
+    if (room.type === RoomType.GROUP) {
+      return `Group Chat (${room.participants.length} members)`;
+    }
+
+    if (room.type === RoomType.THERAPY) {
+      return 'Therapy Session';
+    }
+
+    if (room.type === RoomType.SUPPORT) {
+      return 'Support Group';
+    }
+
+    return 'Chat Room';
+  }
+
+  /**
+   * Generate appropriate message sender display name
+   */
+  private getMessageSenderDisplayName(message: ChatMessage, senderIdentity: any, roomType: string): string {
+    // If message is explicitly anonymous, always show anonymous name
+    if (message.isAnonymous) {
+      return senderIdentity.anonymousDisplayName;
+    }
+
+    // For direct/therapy chats, prefer real names if allowed
+    if ((roomType === 'direct' || roomType === 'therapy') && 
+        senderIdentity.allowRealNameInChat && 
+        senderIdentity.realName) {
+      return senderIdentity.realName;
+    }
+
+    // Default to anonymous display name
+    return senderIdentity.anonymousDisplayName;
   }
 }

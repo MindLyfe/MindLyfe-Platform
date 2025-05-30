@@ -6,6 +6,7 @@ import { ChatMessage } from './entities/chat-message.entity';
 import { ChatRoom } from './entities/chat-room.entity';
 import { AuthClientModule } from '@mindlyf/shared/auth-client';
 import { HttpModule } from '@nestjs/axios';
+import { CommunityClientService } from '../community/community-client.service';
 
 @Module({
   imports: [
@@ -14,7 +15,10 @@ import { HttpModule } from '@nestjs/axios';
     HttpModule,
   ],
   controllers: [ChatController],
-  providers: [ChatService],
+  providers: [
+    ChatService,
+    CommunityClientService
+  ],
   exports: [ChatService],
 })
 export class ChatModule {}

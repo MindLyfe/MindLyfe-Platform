@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
@@ -14,6 +16,10 @@ import { ModerationModule } from './moderation/moderation.module';
 import { FollowsModule } from './follows/follows.module';
 import { configuration } from './config/configuration';
 import { validate } from './config/env.validator';
+import { AnonymityService } from './common/services/anonymity.service';
+import { PrivacyService } from './common/services/privacy.service';
+import { ModerationService } from './common/services/moderation.service';
+import { CommunityGateway } from './community.gateway';
 
 @Module({
   imports: [

@@ -1,95 +1,91 @@
-import { Controller, Post, Get, Delete, Body, Param, UseGuards, Query, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Controller, Post, Get, Delete, Patch, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { FollowsService } from './follows.service';
-import { CreateFollowDto } from './dto/create-follow.dto';
-import { Follow } from './entities/follow.entity';
+import { CreateFollowDto, UpdateFollowDto, FollowListQueryDto, ChatEligibilityDto } from './dto';
 
-@ApiTags('follows')
+@ApiTags('Follows')
+@ApiBearerAuth()
 @Controller('follows')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
 export class FollowsController {
   constructor(private readonly followsService: FollowsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Follow a user' })
-  @ApiResponse({ status: 201, description: 'User successfully followed' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @Roles('user', 'therapist', 'admin')
-  async createFollow(
-    @Body() createFollowDto: CreateFollowDto,
-    @CurrentUser() user: any,
-  ): Promise<Follow> {
-    return this.followsService.createFollow(createFollowDto, user.id);
+  @ApiOperation({ 
+    summary: 'Follow a user (anonymous community context)',
+    description: 'Follow another user. When both users follow each other, mutual follow is established and chat access is granted.'
+  })
+  @ApiResponse({ status: 201, description: 'Successfully followed user' })
+  @ApiResponse({ status: 400, description: 'Bad request (already following, self-follow, etc.)' })
+  async follow(@Body() dto: CreateFollowDto, @Request() req) {
+    return this.followsService.follow(dto, req.user);
   }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Unfollow a user' })
-  @ApiResponse({ status: 200, description: 'User successfully unfollowed' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @Delete(':userId')
+  @ApiOperation({ 
+    summary: 'Unfollow a user',
+    description: 'Remove follow relationship. If this was a mutual follow, chat access will be revoked.'
+  })
+  @ApiResponse({ status: 200, description: 'Successfully unfollowed user' })
   @ApiResponse({ status: 404, description: 'Follow relationship not found' })
-  @Roles('user', 'therapist', 'admin')
-  async removeFollow(
-    @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: any,
-  ): Promise<{ success: boolean }> {
-    await this.followsService.removeFollow(id, user.id);
-    return { success: true };
+  async unfollow(@Param('userId') userId: string, @Request() req) {
+    return this.followsService.unfollow(userId, req.user);
   }
 
-  @Get('followers')
-  @ApiOperation({ summary: 'Get users following the current user' })
-  @ApiResponse({ status: 200, description: 'List of followers returned' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @Roles('user', 'therapist', 'admin')
-  async getFollowers(@CurrentUser() user: any): Promise<Follow[]> {
-    return this.followsService.getFollowers(user.id);
+  @Get()
+  @ApiOperation({ 
+    summary: 'List follow relationships',
+    description: 'Get list of followers, following, or mutual follows with anonymized user information.'
+  })
+  @ApiResponse({ status: 200, description: 'List of follow relationships' })
+  async listFollows(@Query() query: FollowListQueryDto, @Request() req) {
+    return this.followsService.listFollows(query, req.user);
   }
 
-  @Get('following')
-  @ApiOperation({ summary: 'Get users that the current user follows' })
-  @ApiResponse({ status: 200, description: 'List of followed users returned' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @Roles('user', 'therapist', 'admin')
-  async getFollowing(@CurrentUser() user: any): Promise<Follow[]> {
-    return this.followsService.getFollowing(user.id);
+  @Get('stats')
+  @ApiOperation({ 
+    summary: 'Get follow statistics',
+    description: 'Get counts of followers, following, mutual follows, and chat-eligible users.'
+  })
+  @ApiResponse({ status: 200, description: 'Follow statistics' })
+  async getFollowStats(@Request() req) {
+    return this.followsService.getFollowStats(req.user);
   }
 
-  @Post('block/:id')
-  @ApiOperation({ summary: 'Block a user from following' })
-  @ApiResponse({ status: 200, description: 'User successfully blocked' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @Roles('user', 'therapist', 'admin')
-  async blockFollow(
-    @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: any,
-  ): Promise<{ success: boolean }> {
-    await this.followsService.blockFollow(id, user.id);
-    return { success: true };
+  @Post('check-chat-eligibility')
+  @ApiOperation({ 
+    summary: 'Check if you can chat with a specific user',
+    description: 'Verify if mutual follow relationship exists and chat access is granted.'
+  })
+  @ApiResponse({ status: 200, description: 'Chat eligibility status' })
+  async checkChatEligibility(@Body() dto: ChatEligibilityDto, @Request() req) {
+    return this.followsService.checkChatEligibility(dto, req.user);
   }
 
-  @Get('check')
-  @ApiOperation({ summary: 'Check if a follow relationship exists' })
-  @ApiResponse({ status: 200, description: 'Follow check result returned' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiQuery({ name: 'followerId', required: true, description: 'ID of the potential follower' })
-  @ApiQuery({ name: 'followedId', required: true, description: 'ID of the potentially followed user' })
-  @ApiQuery({ name: 'checkBothDirections', required: false, type: Boolean, description: 'Whether to check both directions' })
-  @Roles('user', 'therapist', 'admin')
-  async checkFollows(
-    @Query('followerId') followerId: string,
-    @Query('followedId') followedId: string,
-    @Query('checkBothDirections') checkBothDirections: boolean,
-  ): Promise<{ follows: boolean }> {
-    return this.followsService.checkFollows(
-      followerId,
-      followedId,
-      checkBothDirections === true,
-    );
+  @Get('chat-partners')
+  @ApiOperation({ 
+    summary: 'Get all chat-eligible users',
+    description: 'List all users you have mutual follows with and can chat with. This provides the bridge to chat service.'
+  })
+  @ApiResponse({ status: 200, description: 'List of chat partners' })
+  async getChatEligibleUsers(@Request() req) {
+    return this.followsService.getChatEligibleUsers(req.user);
+  }
+
+  @Patch(':followId/settings')
+  @ApiOperation({ 
+    summary: 'Update follow privacy settings',
+    description: 'Update privacy settings for a follow relationship (notifications, chat permissions, etc.).'
+  })
+  @ApiResponse({ status: 200, description: 'Settings updated successfully' })
+  @ApiResponse({ status: 404, description: 'Follow relationship not found' })
+  async updateFollowSettings(
+    @Param('followId') followId: string,
+    @Body() dto: UpdateFollowDto,
+    @Request() req
+  ) {
+    return this.followsService.updateFollowSettings(followId, dto, req.user);
   }
 } 

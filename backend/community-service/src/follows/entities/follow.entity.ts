@@ -1,46 +1,72 @@
-import { Entity, Column, ManyToOne, JoinColumn, Index, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  Index,
+  Unique,
+} from 'typeorm';
+import { BaseEntity } from '../../common/entities/base.entity';
 import { User } from '../../users/entities/user.entity';
 
-@Entity('follows')
-@Index(['followerId', 'followedId'], { unique: true })
-export class Follow {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export enum FollowStatus {
+  ACTIVE = 'active',
+  MUTED = 'muted',
+  BLOCKED = 'blocked',
+}
 
+@Entity('follows')
+@Unique(['followerId', 'followingId']) // Prevent duplicate follows
+@Index(['followerId', 'status'])
+@Index(['followingId', 'status'])
+export class Follow extends BaseEntity {
   @Column({ type: 'uuid' })
   @Index()
   followerId: string;
-
-  @Column({ type: 'uuid' })
-  @Index()
-  followedId: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'followerId' })
   follower: User;
 
+  @Column({ type: 'uuid' })
+  @Index()
+  followingId: string;
+
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'followedId' })
-  followed: User;
+  @JoinColumn({ name: 'followingId' })
+  following: User;
+
+  @Column({
+    type: 'enum',
+    enum: FollowStatus,
+    default: FollowStatus.ACTIVE,
+  })
+  status: FollowStatus;
 
   @Column({ type: 'boolean', default: false })
-  isAccepted: boolean;
+  isMutualFollow: boolean; // Computed field for quick lookup
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  mutualFollowEstablishedAt: Date;
 
   @Column({ type: 'boolean', default: false })
-  isHidden: boolean;
+  chatAccessGranted: boolean; // Whether chat access has been granted
 
-  @Column({ type: 'boolean', default: false })
-  isBlocked: boolean;
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  chatAccessGrantedAt: Date;
 
   @Column({ type: 'jsonb', nullable: true })
-  metadata: Record<string, any>;
+  privacySettings: {
+    allowChatInvitation: boolean;
+    notifyOnFollow: boolean;
+    notifyOnMutualFollow: boolean;
+    allowRealNameInChat: boolean;
+  };
 
-  @CreateDateColumn({ type: 'timestamp with time zone' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ type: 'timestamp with time zone' })
-  updatedAt: Date;
-
-  @DeleteDateColumn({ type: 'timestamp with time zone', nullable: true })
-  deletedAt: Date;
+  @Column({ type: 'jsonb', nullable: true })
+  metadata: {
+    followSource?: string; // How they found each other (post, comment, etc.)
+    sourceContentId?: string; // ID of the content that led to follow
+    mutualInterests?: string[]; // Common interests/tags
+  };
 } 

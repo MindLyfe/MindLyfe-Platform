@@ -15,44 +15,50 @@ export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a comment (anonymous or not)' })
+  @ApiOperation({ summary: 'Create a comment (anonymous by default)' })
   async create(@Body() dto: CreateCommentDto, @Request() req) {
     return this.commentsService.create(dto, req.user);
   }
 
   @Get()
-  @ApiOperation({ summary: 'List comments' })
+  @ApiOperation({ summary: 'List comments with anonymization' })
   async list(@Query() query, @Request() req) {
     return this.commentsService.list(query, req.user);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a comment by ID' })
+  @ApiOperation({ summary: 'Get a comment by ID (anonymized)' })
   async get(@Param('id') id: string, @Request() req) {
     return this.commentsService.get(id, req.user);
   }
 
+  @Get(':id/thread')
+  @ApiOperation({ summary: 'Get comment thread (all replies)' })
+  async getThread(@Param('id') id: string, @Request() req) {
+    return this.commentsService.getThread(id, req.user);
+  }
+
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a comment' })
+  @ApiOperation({ summary: 'Update a comment (author/moderator only)' })
   async update(@Param('id') id: string, @Body() dto: UpdateCommentDto, @Request() req) {
     return this.commentsService.update(id, dto, req.user);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a comment' })
+  @ApiOperation({ summary: 'Delete a comment (author/moderator only)' })
   async delete(@Param('id') id: string, @Request() req) {
     return this.commentsService.delete(id, req.user);
   }
 
   @Post(':id/report')
-  @ApiOperation({ summary: 'Report a comment' })
+  @ApiOperation({ summary: 'Report a comment for moderation' })
   async report(@Param('id') id: string, @Body() dto: ReportCommentDto, @Request() req) {
     return this.commentsService.report(id, dto, req.user);
   }
 
   @Patch(':id/moderate')
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiOperation({ summary: 'Moderate a comment (approve/remove/warn)' })
+  @ApiOperation({ summary: 'Moderate a comment (moderators only)' })
   async moderate(@Param('id') id: string, @Body() dto: ModerateCommentDto, @Request() req) {
     return this.commentsService.moderate(id, dto, req.user);
   }
