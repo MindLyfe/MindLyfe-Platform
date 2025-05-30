@@ -1,0 +1,93 @@
+{
+  "name": "@mindlyfe/ai-training-export",
+  "version": "1.0.0",
+  "description": "AI training data export pipeline for MindLyfe data lake",
+  "main": "dist/index.js",
+  "bin": {
+    "mindlyfe-export": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "export:daily": "node dist/cli.js --mode daily",
+    "export:weekly": "node dist/cli.js --mode weekly",
+    "export:monthly": "node dist/cli.js --mode monthly",
+    "export:custom": "node dist/cli.js --mode custom"
+  },
+  "keywords": [
+    "mindlyfe",
+    "ai-training",
+    "data-export",
+    "machine-learning",
+    "jsonl",
+    "data-pipeline",
+    "s3",
+    "aws"
+  ],
+  "author": "MindLyfe Team",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.450.0",
+    "@aws-sdk/client-kms": "^3.450.0",
+    "@aws-sdk/lib-storage": "^3.450.0",
+    "@mindlyf/data-lake-logger": "file:../../shared/data-lake-logger",
+    "commander": "^11.1.0",
+    "date-fns": "^2.30.0",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4",
+    "winston": "^3.11.0",
+    "lodash": "^4.17.21",
+    "fast-csv": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "@types/uuid": "^9.0.6",
+    "@types/lodash": "^4.14.199",
+    "@types/jest": "^29.5.5",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
+    "eslint": "^8.50.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mindlyfe/backend.git",
+    "directory": "data-pipeline/ai-training-export"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/**/*.test.ts"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

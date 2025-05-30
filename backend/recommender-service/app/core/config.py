@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
-    PROJECT_NAME: str = "MindLyf Recommendation Service"
+    PROJECT_NAME: str = "MindLyfe Recommendation Service"
     
     # CORS
     CORS_ORIGINS: List[AnyHttpUrl] = []
@@ -18,11 +18,11 @@ class Settings(BaseSettings):
         raise ValueError(v)
     
     # Security
-    JWT_SECRET: str = "mindlyf-recommender-secret-key-dev"
+    JWT_SECRET: str = "mindlyfe-recommender-secret-key-dev"
     JWT_ALGORITHM: str = "HS256"
     
     # Database
-    DATABASE_URL: str = "postgresql://postgres:postgres@postgres:5432/mindlyf_recommender"
+    DATABASE_URL: str = "postgresql://postgres:postgres@postgres:5432/mindlyfe_recommender"
     
     # AI Service
     AI_SERVICE_URL: str = "http://ai-service:8000"
@@ -88,4 +88,4 @@ class Settings(BaseSettings):
         env_file = ".env"
         case_sensitive = True
 
-settings = Settings() 
+settings = Settings()

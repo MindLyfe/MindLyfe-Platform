@@ -1,6 +1,6 @@
-# MindLyf Kubernetes Configuration
+# MindLyfe Kubernetes Configuration
 
-This directory contains Kubernetes manifests for deploying the MindLyf microservices architecture.
+This directory contains Kubernetes manifests for deploying the MindLyfe microservices architecture.
 
 ## Structure
 
@@ -43,7 +43,7 @@ The production deployment pipeline retrieves secrets from AWS Secrets Manager an
 
 ## Services
 
-The MindLyf platform consists of the following microservices:
+The MindLyfe platform consists of the following microservices:
 
 1. `api-gateway`: API Gateway for routing requests to appropriate services
 2. `auth-service`: Authentication and user management using Cognito
@@ -56,4 +56,4 @@ The MindLyf platform consists of the following microservices:
 
 ## Health Checks
 
-All services include health check endpoints at `/health` that are used by Kubernetes for readiness and liveness probes. 
+All services include health check endpoints at `/health` that are used by Kubernetes for readiness and liveness probes.

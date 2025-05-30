@@ -1,8 +1,8 @@
-# MindLyf Data Models and Storage Strategy
+# MindLyfe Data Models and Storage Strategy
 
 ## Overview
 
-This document defines the data models and storage strategy for the MindLyf mental health platform. It outlines the core data structures, storage technologies, partitioning approaches, and caching mechanisms that will support the platform's requirements for security, performance, and compliance. The strategy addresses the unique challenges of healthcare data management, including privacy, retention, and regulatory compliance.
+This document defines the data models and storage strategy for the MindLyfe mental health platform. It outlines the core data structures, storage technologies, partitioning approaches, and caching mechanisms that will support the platform's requirements for security, performance, and compliance. The strategy addresses the unique challenges of healthcare data management, including privacy, retention, and regulatory compliance.
 
 ## Core Data Models
 

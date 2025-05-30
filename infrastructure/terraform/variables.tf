@@ -101,7 +101,7 @@ variable "postgres_port" {
 variable "postgres_db_name" {
   description = "PostgreSQL database name"
   type        = string
-  default     = "mindlyf"
+  default     = "mindlyfe"
 }
 
 variable "rds_instance_class" {
@@ -139,17 +139,17 @@ variable "redis_num_nodes" {
 variable "cognito_callback_urls" {
   description = "List of allowed callback URLs for the identity providers"
   type        = list(string)
-  default     = ["https://app.mindlyf.com/callback", "http://localhost:3000/callback"]
+  default     = ["https://app.mindlyfe.com/callback", "http://localhost:3000/callback"]
 }
 
 variable "cognito_logout_urls" {
   description = "List of allowed logout URLs for the identity providers"
   type        = list(string)
-  default     = ["https://app.mindlyf.com", "http://localhost:3000"]
+  default     = ["https://app.mindlyfe.com", "http://localhost:3000"]
 }
 
 variable "cognito_identity_providers" {
   description = "List of identity providers for Cognito"
   type        = list(string)
   default     = ["COGNITO"]
-} 
+}

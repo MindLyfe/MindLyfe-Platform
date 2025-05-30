@@ -73,6 +73,76 @@ export class ProxyController {
     return this.proxyToService('notification', req, res);
   }
 
+  // Payment Configuration - Public route for currency detection
+  @Public()
+  @All('payments/detect-currency')
+  async proxyPaymentCurrencyDetection(@Req() req: Request, @Res() res: Response) {
+    return this.proxyToService('payment', req, res);
+  }
+
+  // Payment Currency Conversion - Authenticated route
+  @UseGuards(JwtAuthGuard)
+  @All('payments/convert-currency')
+  async proxyPaymentCurrencyConversion(@Req() req: Request, @Res() res: Response) {
+    return this.proxyToService('payment', req, res);
+  }
+
+  // Payment Exchange Rates - Authenticated route
+  @UseGuards(JwtAuthGuard)
+  @All('payments/exchange-rates')
+  async proxyPaymentExchangeRates(@Req() req: Request, @Res() res: Response) {
+    return this.proxyToService('payment', req, res);
+  }
+
+  // Payment Methods by Country - Authenticated route
+  @UseGuards(JwtAuthGuard)
+  @All('payments/payment-methods/*')
+  async proxyPaymentMethods(@Req() req: Request, @Res() res: Response) {
+    return this.proxyToService('payment', req, res);
+  }
+
+  // Payment Configuration - Authenticated route
+  @UseGuards(JwtAuthGuard)
+  @All('payments/config')
+  async proxyPaymentConfig(@Req() req: Request, @Res() res: Response) {
+    return this.proxyToService('payment', req, res);
+  }
+
+  // Payment Currencies - Authenticated route
+  @UseGuards(JwtAuthGuard)
+  @All('payments/currencies')
+  async proxyPaymentCurrencies(@Req() req: Request, @Res() res: Response) {
+    return this.proxyToService('payment', req, res);
+  }
+
+  // Payment Gateways - Authenticated route
+  @UseGuards(JwtAuthGuard)
+  @All('payments/gateways')
+  async proxyPaymentGateways(@Req() req: Request, @Res() res: Response) {
+    return this.proxyToService('payment', req, res);
+  }
+
+  // Payment Webhooks - Public route (no auth required for external webhooks)
+  @Public()
+  @All('payments/webhook/*')
+  async proxyPaymentWebhooks(@Req() req: Request, @Res() res: Response) {
+    return this.proxyToService('payment', req, res);
+  }
+
+  // Payment Service Routes
+  @UseGuards(JwtAuthGuard)
+  @All('payments/*')
+  async proxyPayment(@Req() req: Request, @Res() res: Response) {
+    return this.proxyToService('payment', req, res);
+  }
+
+  // Resources Service Routes
+  @UseGuards(JwtAuthGuard)
+  @All('resources/*')
+  async proxyResources(@Req() req: Request, @Res() res: Response) {
+    return this.proxyToService('resources', req, res);
+  }
+
   // User Service Routes (part of auth service)
   @UseGuards(JwtAuthGuard)
   @All('users/*')

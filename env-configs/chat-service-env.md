@@ -11,13 +11,13 @@ DB_HOST=postgres
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_chat
+DB_NAME=mindlyfe_chat
 DB_SYNC=true
 DB_LOGGING=true
 DB_SSL=false
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Redis Configuration (for real-time messaging)
 REDIS_HOST=redis
@@ -48,7 +48,7 @@ MAX_FILE_SIZE=5242880 # 5MB
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
-AWS_S3_BUCKET=mindlyf-chat-files
+AWS_S3_BUCKET=mindlyfe-chat-files
 ```
 
 ## .env.example File
@@ -62,13 +62,13 @@ DB_HOST=postgres
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_chat
+DB_NAME=mindlyfe_chat
 DB_SYNC=true
 DB_LOGGING=true
 DB_SSL=false
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Redis Configuration (for real-time messaging)
 REDIS_HOST=redis
@@ -99,5 +99,5 @@ MAX_FILE_SIZE=5242880 # 5MB
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
-AWS_S3_BUCKET=mindlyf-chat-files
-``` 
+AWS_S3_BUCKET=mindlyfe-chat-files
+```

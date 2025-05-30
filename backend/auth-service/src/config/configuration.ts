@@ -9,7 +9,7 @@ export default () => ({
     port: parseInt(process.env.DB_PORT, 10) || 5432,
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
-    name: process.env.DB_NAME || 'mindlyf_auth',
+    name: process.env.DB_NAME || 'mindlyfe_auth',
     synchronize: process.env.DB_SYNCHRONIZE === 'true',
     logging: process.env.DB_LOGGING === 'true',
     ssl: process.env.DB_SSL === 'true',
@@ -17,11 +17,11 @@ export default () => ({
   
   // JWT Configuration
   jwt: {
-    secret: process.env.JWT_SECRET || 'dev-secret-key-change-in-production',
+    secret: process.env.JWT_SECRET || 'mindlyfe-auth-secret-key-dev',
     expiresIn: process.env.JWT_EXPIRES_IN || '1h',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret-change-in-production',
-    serviceSecret: process.env.JWT_SERVICE_SECRET || 'mindlyf-service-secret-key-dev',
+    serviceSecret: process.env.JWT_SERVICE_SECRET || 'mindlyfe-service-secret-key-dev',
   },
 
   // Redis Configuration
@@ -63,8 +63,8 @@ export default () => ({
   
   // Email configuration
   email: {
-    from: process.env.EMAIL_FROM || 'support@mindlyf.com',
-    replyTo: process.env.EMAIL_REPLY_TO || 'noreply@mindlyf.com',
+    from: process.env.EMAIL_FROM || 'support@mindlyfe.com',
+    replyTo: process.env.EMAIL_REPLY_TO || 'noreply@mindlyfe.com',
   },
   
   // Frontend URL for email links
@@ -82,7 +82,7 @@ export default () => ({
   
   // MFA configuration
   mfa: {
-    issuer: process.env.MFA_ISSUER || 'MindLyf',
+    issuer: process.env.MFA_ISSUER || 'MindLyfe',
     window: parseInt(process.env.MFA_WINDOW, 10) || 1, // time steps before/after for validation
   },
   

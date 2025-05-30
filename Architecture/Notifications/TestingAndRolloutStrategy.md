@@ -1,6 +1,6 @@
 # Notification & Engagement Systems: Testing and Rollout Strategy
 
-This document outlines the comprehensive testing and rollout strategy for the MindLyf Notification and Engagement Systems, which include:
+This document outlines the comprehensive testing and rollout strategy for the MindLyfe Notification and Engagement Systems, which include:
 
 1.  **Multi-Channel Notification System**
 2.  **Gamification System**
@@ -101,7 +101,7 @@ A phased rollout approach will be adopted to minimize risk, gather early feedbac
 
 ### Phase 1: Internal Release & Alpha Testing (Target: 1-2 Weeks)
 
--   **Audience**: Internal MindLyf team (Dev, QA, Product, select stakeholders).
+-   **Audience**: Internal MindLyfe team (Dev, QA, Product, select stakeholders).
 -   **Scope**: Full functionality of all systems deployed to the Staging environment.
 -   **Goals**:
     -   Identify major bugs and usability issues.
@@ -112,7 +112,7 @@ A phased rollout approach will be adopted to minimize risk, gather early feedbac
 
 ### Phase 2: Beta Program (Target: 2-4 Weeks)
 
--   **Audience**: A small group of selected, engaged MindLyf users (e.g., power users, users who opted into beta programs).
+-   **Audience**: A small group of selected, engaged MindLyfe users (e.g., power users, users who opted into beta programs).
 -   **Scope**: Production deployment with feature flags to control visibility for beta users.
 -   **Goals**:
     -   Gather real-world user feedback on functionality and usability.
@@ -123,7 +123,7 @@ A phased rollout approach will be adopted to minimize risk, gather early feedbac
 
 ### Phase 3: Phased General Availability (Target: 2-4 Weeks, per feature set if applicable)
 
--   **Audience**: Gradually increasing percentage of the MindLyf user base (e.g., 5%, 20%, 50%, 100%).
+-   **Audience**: Gradually increasing percentage of the MindLyfe user base (e.g., 5%, 20%, 50%, 100%).
 -   **Scope**: Production deployment, using feature flags or canary releases to manage rollout percentage.
 -   **Goals**:
     -   Ensure system stability and performance as load increases.
@@ -133,7 +133,7 @@ A phased rollout approach will be adopted to minimize risk, gather early feedbac
 
 ### Phase 4: Full Launch & Post-Launch Monitoring (Ongoing)
 
--   **Audience**: All MindLyf users.
+-   **Audience**: All MindLyfe users.
 -   **Scope**: All features fully available.
 -   **Goals**:
     -   Ensure ongoing stability and performance.

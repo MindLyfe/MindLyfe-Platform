@@ -11,13 +11,13 @@ DB_HOST=postgres
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_teletherapy
+DB_NAME=mindlyfe_teletherapy
 DB_SYNC=true
 DB_LOGGING=true
 DB_SSL=false
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Redis Configuration (for caching and real-time)
 REDIS_HOST=redis
@@ -64,13 +64,13 @@ DB_HOST=postgres
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_teletherapy
+DB_NAME=mindlyfe_teletherapy
 DB_SYNC=true
 DB_LOGGING=true
 DB_SSL=false
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Redis Configuration (for caching and real-time)
 REDIS_HOST=redis
@@ -104,4 +104,4 @@ CURRENCY=USD
 DEFAULT_SESSION_DURATION=60 # minutes
 BUFFER_TIME_BEFORE_SESSION=10 # minutes
 BUFFER_TIME_AFTER_SESSION=5 # minutes
-``` 
+```

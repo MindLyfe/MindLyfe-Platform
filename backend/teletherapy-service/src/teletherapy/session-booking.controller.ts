@@ -25,7 +25,7 @@ export class SessionBookingController {
     try {
       // 1. Validate user can book session via auth service
       const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://auth-service:3001';
-      const serviceToken = process.env.JWT_SERVICE_SECRET || 'mindlyf-service-secret-key-dev';
+      const serviceToken = process.env.JWT_SERVICE_SECRET || 'mindlyfe-service-secret-key-dev';
       
       const validationResponse = await axios.get(
         `${authServiceUrl}/api/subscriptions/validate-booking/${req.user.id}`,

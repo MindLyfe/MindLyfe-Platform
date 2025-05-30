@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# This script applies Terraform configurations for the MindLyf infrastructure
+# This script applies Terraform configurations for the MindLyfe infrastructure
 
 # Usage: terraform-apply.sh <environment> [plan|apply|destroy]
 
@@ -56,4 +56,4 @@ elif [ "$ACTION" == "destroy" ]; then
   fi
 fi
 
-echo "=== Terraform $ACTION operation completed ===" 
+echo "=== Terraform $ACTION operation completed ==="

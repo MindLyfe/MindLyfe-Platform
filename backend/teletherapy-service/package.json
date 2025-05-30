@@ -1,7 +1,7 @@
 {
-  "name": "mindlyf-teletherapy-service",
+  "name": "mindlyfe-teletherapy-service",
   "version": "1.0.0",
-  "description": "Teletherapy service for the Mindlyf platform",
+  "description": "Teletherapy service for the MindLyfe platform",
   "main": "dist/main.js",
   "scripts": {
     "prebuild": "rimraf dist",

@@ -1,8 +1,8 @@
 {
-  "name": "@mindlyf/notification-service",
+  "name": "@mindlyfe/notification-service",
   "version": "0.1.0",
-  "description": "Notification service for the MindLyf platform",
-  "author": "MindLyf Team",
+  "description": "Notification service for the MindLyfe platform",
+  "author": "MindLyfe Team",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -88,4 +88,4 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }
-} 
+}

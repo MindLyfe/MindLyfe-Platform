@@ -1,7 +1,7 @@
-# MindLyf Platform Architecture
+# MindLyfe Platform Architecture
 
 ## Overview
-This directory contains the architectural design documents for the MindLyf mental health platform. As the AI Software Architect, I've structured our architectural approach to ensure a secure, scalable, and modular system that supports the platform's requirements for AI-enhanced therapy, wearable integration, and compliance with healthcare regulations.
+This directory contains the architectural design documents for the MindLyfe mental health platform. As the AI Software Architect, I've structured our architectural approach to ensure a secure, scalable, and modular system that supports the platform's requirements for AI-enhanced therapy, wearable integration, and compliance with healthcare regulations.
 
 ## Directory Structure
 

@@ -50,8 +50,8 @@ async function bootstrap() {
 
   // Setup Swagger documentation
   const config = new DocumentBuilder()
-    .setTitle('Mindlyf Teletherapy API')
-    .setDescription('API documentation for the Mindlyf Teletherapy Service')
+    .setTitle('MindLyfe Teletherapy API')
+    .setDescription('API documentation for the MindLyfe Teletherapy Service')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

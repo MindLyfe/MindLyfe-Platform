@@ -1,10 +1,10 @@
-# Analytics Dashboard Technical Specification
+# MindLyfe Analytics Dashboard - Technical Specification
 
-This document provides the technical specifications for the MindLyf Analytics Dashboard, designed to track, visualize, and analyze the performance of the notification and engagement systems.
+This document provides the technical specifications for the MindLyfe Analytics Dashboard. This dashboard is designed to track, visualize, and analyze the performance of the notification and engagement systems within the MindLyfe platform.
 
 ## 1. System Overview
 
-The Analytics Dashboard provides MindLyf stakeholders (product managers, marketers, support teams) with actionable insights into how users interact with notifications and gamification features. It helps measure effectiveness, identify trends, and optimize strategies for better user engagement and platform growth.
+The Analytics Dashboard provides MindLyfe stakeholders (product managers, marketers, support teams) with actionable insights into how users interact with notifications and gamification features. It helps measure effectiveness, identify trends, and optimize strategies for better user engagement and platform growth.
 
 ### 1.1 Goals
 
@@ -193,7 +193,7 @@ CREATE TABLE dim_template (
 
 ## 6. Security and Access Control
 
-- **Authentication**: Access to the dashboard and API will be restricted to authenticated MindLyf staff.
+- **Authentication**: Access to the dashboard and API will be restricted to authenticated MindLyfe staff.
 - **Authorization**: Role-based access control (RBAC) to define what data and features users can access (e.g., admin vs. viewer roles).
 - **Data Anonymization/Pseudonymization**: PII should be excluded or pseudonymized in the analytics database where possible, especially for broader trend analysis.
 - **API Security**: Standard API security practices (HTTPS, input validation, rate limiting).

@@ -1,10 +1,10 @@
-# MindLyf AI Microservices Architecture
+# MindLyfe AI Microservices Architecture
 
-This document explains the AI microservices architecture for the MindLyf platform.
+This document explains the AI microservices architecture for the MindLyfe platform.
 
 ## Architecture Overview
 
-The MindLyf platform uses a microservices architecture for its AI capabilities, with separate services handling different AI-related functionalities:
+The MindLyfe platform uses a microservices architecture for its AI capabilities, with separate services handling different AI-related functionalities:
 
 1. **AI Service** (Port 8000)
    - Core AI functionality and model management
@@ -29,7 +29,7 @@ The MindLyf platform uses a microservices architecture for its AI capabilities, 
    - User preference modeling and feedback processing
    - A/B testing for recommendation algorithms
 
-4. **LyfBot Service** (Port 8003)
+4. **LyfeBot Service** (Port 8003)
    - Conversational AI assistant interface
    - Manages conversation context and history
    - Requests response generation from AI Service
@@ -53,24 +53,24 @@ The AI Service acts as a central intelligence provider, with other services requ
    - Recommender Service asks for content analysis
    - Recommender Service requests similarity scoring
 
-3. **AI Service ⟵ LyfBot Service**
-   - LyfBot Service requests conversation responses
-   - LyfBot Service asks for crisis detection
-   - LyfBot Service requests message analysis
+3. **AI Service ⟵ LyfeBot Service
+   - LyfeBot Service requests conversation responses
+   - LyfeBot Service asks for crisis detection
+   - LyfeBot Service requests message analysis
 
 ### Inter-service Data Sharing
 
 Services share data with each other through authenticated API calls:
 
-1. **Journal Service ⟵ LyfBot Service**
-   - LyfBot Service requests user journal insights
-   - LyfBot Service gets recent journal themes
-   - LyfBot Service accesses mood trends
+1. **Journal Service ⟵ LyfeBot Service**
+   - LyfeBot Service requests user journal insights
+   - LyfeBot Service gets recent journal themes
+   - LyfeBot Service accesses mood trends
 
-2. **Recommender Service ⟵ LyfBot Service**
-   - LyfBot Service requests personalized activity suggestions
-   - LyfBot Service gets recommended coping strategies
-   - LyfBot Service accesses wellness plan information
+2. **Recommender Service ⟵ LyfeBot Service**
+   - LyfeBot Service requests personalized activity suggestions
+   - LyfeBot Service gets recommended coping strategies
+   - LyfeBot Service accesses wellness plan information
 
 3. **Journal Service ⟵ Recommender Service**
    - Recommender Service requests journal insights
@@ -118,44 +118,44 @@ All service-to-service communication is secured:
 9. Recommender Service formats and returns recommendations to client
 10. Recommender Service logs the recommendations for feedback tracking
 
-### LyfBot Conversation Flow
+### LyfeBot Conversation Flow
 
-1. User sends message to LyfBot via client application
-2. Client sends message to LyfBot Service
-3. LyfBot Service authenticates the user via Auth Service
-4. LyfBot Service checks for crisis indicators (locally or via AI Service)
-5. LyfBot Service requests relevant journal insights from Journal Service
-6. LyfBot Service requests relevant recommendations from Recommender Service
-7. LyfBot Service sends message, context, and history to AI Service
+1. User sends message to LyfeBot via client application
+2. Client sends message to LyfeBot Service
+3. LyfeBot Service authenticates the user via Auth Service
+4. LyfeBot Service checks for crisis indicators (locally or via AI Service)
+5. LyfeBot Service requests relevant journal insights from Journal Service
+6. LyfeBot Service requests relevant recommendations from Recommender Service
+7. LyfeBot Service sends message, context, and history to AI Service
 8. AI Service generates appropriate response
-9. AI Service returns response to LyfBot Service
-10. LyfBot Service stores the conversation and returns response to client
-11. LyfBot Service initiates any follow-up actions (notifications, etc.)
+9. AI Service returns response to LyfeBot Service
+10. LyfeBot Service stores the conversation and returns response to client
+11. LyfeBot Service initiates any follow-up actions (notifications, etc.)
 
 ## Database Structure
 
 Each service has its own database to maintain service independence:
 
-- **AI Service**: `mindlyf_ai` 
+- **AI Service**: `mindlyfe_ai` 
   - Model metadata and configurations
   - Training data and evaluation metrics
   - Cached responses for performance
   - Usage statistics and monitoring data
 
-- **Journal Service**: `mindlyf_journal`
+- **Journal Service**: `mindlyfe_journal`
   - Journal entries and metadata
   - Entry analyses (sentiment, themes, etc.)
   - User insights and patterns
   - Journaling prompts and templates
 
-- **Recommender Service**: `mindlyf_recommender`
+- **Recommender Service**: `mindlyfe_recommender`
   - Activity and resource catalog
   - User preferences and feedback
   - Recommendation history
   - A/B test configurations and results
   - Wellness plans and programs
 
-- **LyfBot Service**: `mindlyf_lyfbot`
+- **LyfeBot Service**: `mindlyfe_lyfebot`
   - Conversation history and metadata
   - User session context
   - Crisis detection logs
@@ -169,7 +169,7 @@ Each service requires specific environment variables for proper operation:
 ```
 # Common variables for all AI microservices
 AUTH_SERVICE_URL=http://auth-service:3001
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # AI Service specific
 OPENAI_API_KEY=your-openai-api-key
@@ -185,7 +185,7 @@ AI_SERVICE_URL=http://ai-service:8000
 JOURNAL_SERVICE_URL=http://journal-service:8001
 NOTIFICATION_SERVICE_URL=http://notification-service:3005
 
-# LyfBot Service specific
+# LyfeBot Service specific
 AI_SERVICE_URL=http://ai-service:8000
 JOURNAL_SERVICE_URL=http://journal-service:8001
 RECOMMENDER_SERVICE_URL=http://recommender-service:8002
@@ -230,7 +230,7 @@ Each service provides Swagger documentation at:
 - AI Service: `http://localhost:8000/api/docs`
 - Journal Service: `http://localhost:8001/api/docs`
 - Recommender Service: `http://localhost:8002/api/docs`
-- LyfBot Service: `http://localhost:8003/api/docs`
+- LyfeBot Service: `http://localhost:8003/api/docs`
 
 ## Environment Variables
 
@@ -239,12 +239,12 @@ Key environment variables for each service:
 ```
 # Common
 AUTH_SERVICE_URL=http://auth-service:3001
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 OPENAI_API_KEY=your-openai-api-key
 
 # Service-specific
 AI_SERVICE_URL=http://ai-service:8000
 JOURNAL_SERVICE_URL=http://journal-service:8001
 RECOMMENDER_SERVICE_URL=http://recommender-service:8002
-LYFBOT_SERVICE_URL=http://lyfbot-service:8003
-``` 
+LYFEBOT_SERVICE_URL=http://lyfebot-service:8003
+```

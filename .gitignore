@@ -1,0 +1,247 @@
+# MindLyfe Platform .gitignore
+# Generated: June 1, 2025
+
+# ======================
+# Dependencies
+# ======================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Python dependencies
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ======================
+# Environment & Secrets
+# ======================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging
+
+# API Keys and Secrets
+*.key
+*.pem
+*.p12
+secrets/
+config/secrets/
+.secrets/
+credentials.json
+service-account-*.json
+
+# ======================
+# Development Tools
+# ======================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ======================
+# Logs
+# ======================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.eslintcache
+
+# ======================
+# Build Outputs
+# ======================
+.next/
+out/
+build/
+dist/
+coverage/
+.nyc_output/
+.cache/
+.parcel-cache/
+
+# ======================
+# Testing
+# ======================
+coverage/
+.nyc_output/
+junit.xml
+test-results/
+playwright-report/
+test-results/
+
+# ======================
+# Database
+# ======================
+*.sqlite
+*.sqlite3
+*.db
+database.db
+data/
+backups/
+dumps/
+
+# ======================
+# Docker
+# ======================
+docker-compose.override.yml
+.dockerignore
+
+# ======================
+# AWS & Cloud
+# ======================
+.aws/
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+terraform.tfvars
+terraform.tfvars.json
+
+# ======================
+# Documentation Build
+# ======================
+docs/_build/
+docs/build/
+site/
+
+# ======================
+# Temporary Files
+# ======================
+tmp/
+temp/
+.tmp/
+*.tmp
+*.temp
+
+# ======================
+# OS Generated Files
+# ======================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ======================
+# Mobile
+# ======================
+*.xcuserstate
+*.xcworkspace
+.gradle/
+local.properties
+*.iml
+.externalNativeBuild
+.cxx/
+
+# ======================
+# Certificates & Security
+# ======================
+*.crt
+*.cert
+*.ca-bundle
+*.p7b
+*.p7r
+*.spc
+*.pfx
+ssl/
+certs/
+
+# ======================
+# Monitoring & Analytics
+# ======================
+.monitoring/
+analytics/
+metrics/
+
+# ======================
+# AI Model Files
+# ======================
+*.model
+*.pkl
+*.joblib
+models/
+checkpoints/
+weights/
+
+# ======================
+# Media & Assets (Large Files)
+# ======================
+uploads/
+media/
+assets/large/
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+
+# ======================
+# Backup Files
+# ======================
+*.bak
+*.backup
+*.old
+backup-*/
+
+# ======================
+# Package Manager
+# ======================
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ======================
+# Runtime
+# ======================
+pids/
+*.pid
+*.seed
+*.pid.lock
+.grunt
+
+# ======================
+# Local Configuration
+# ======================
+.local/
+local.json
+config/local.json
+src/config/local.js 

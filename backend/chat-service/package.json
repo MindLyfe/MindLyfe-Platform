@@ -1,7 +1,7 @@
 {
-  "name": "mindlyf-chat-service",
+  "name": "mindlyfe-chat-service",
   "version": "1.0.0",
-  "description": "Chat service for the Mindlyf platform",
+  "description": "Chat service for the MindLyfe platform",
   "main": "dist/main.js",
   "scripts": {
     "prebuild": "rimraf dist",

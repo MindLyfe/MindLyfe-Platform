@@ -441,11 +441,132 @@ export class AuthController {
       user: {
         id: user.id,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
         status: user.status,
         emailVerified: user.emailVerified,
         twoFactorEnabled: user.twoFactorEnabled,
       },
+    };
+  }
+
+  @Get('users/:userId/subscription-status')
+  @UseGuards(ServiceTokenGuard)
+  @ApiOperation({ summary: 'Get user subscription status (Service-to-Service)' })
+  @ApiHeader({ name: 'X-Service-Name', description: 'Name of the requesting service' })
+  @ApiParam({ name: 'userId', description: 'User ID to get subscription status for' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'User subscription status retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            email: { type: 'string' },
+            firstName: { type: 'string' },
+            lastName: { type: 'string' },
+            role: { type: 'string' }
+          }
+        },
+        subscription: {
+          type: 'object',
+          properties: {
+            hasActiveSubscription: { type: 'boolean' },
+            subscriptions: { type: 'array' },
+            userType: { type: 'string' },
+            organizationId: { type: 'string', nullable: true },
+            canMakePayments: { type: 'boolean' }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getUserSubscriptionStatus(@Param('userId') userId: string) {
+    const user = await this.authService.findUserById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role
+      },
+      subscription: {
+        hasActiveSubscription: false, // Auth service no longer handles payments
+        subscriptions: [],
+        userType: 'individual',
+        organizationId: null,
+        canMakePayments: true // Always allow - payment service will handle validation
+      }
+    };
+  }
+
+  @Post('users/:userId/payment-notification')
+  @UseGuards(ServiceTokenGuard)
+  @ApiOperation({ summary: 'Receive payment notifications from payment service (Service-to-Service)' })
+  @ApiHeader({ name: 'X-Service-Name', description: 'Name of the requesting service (should be payment-service)' })
+  @ApiParam({ name: 'userId', description: 'User ID for the payment notification' })
+  @ApiResponse({ status: 200, description: 'Payment notification processed successfully' })
+  async handlePaymentNotification(
+    @Param('userId') userId: string,
+    @Body() notification: {
+      type: 'payment_succeeded' | 'payment_failed' | 'subscription_created' | 'subscription_canceled';
+      paymentId?: string;
+      subscriptionId?: string;
+      amount?: number;
+      currency?: string;
+      gateway?: string;
+      metadata?: Record<string, any>;
+    }
+  ) {
+    // Log the payment notification for audit purposes
+    console.log(`Payment notification received for user ${userId}:`, notification);
+    
+    // Auth service no longer processes payments, just acknowledges the notification
+    return { 
+      message: 'Payment notification received',
+      userId,
+      type: notification.type,
+      processed: true
+    };
+  }
+
+  @Post('validate-payment-access')
+  @UseGuards(ServiceTokenGuard)
+  @ApiOperation({ summary: 'Validate if user can make payments (Service-to-Service)' })
+  @ApiHeader({ name: 'X-Service-Name', description: 'Name of the requesting service (should be payment-service)' })
+  @ApiResponse({ status: 200, description: 'Payment access validation result' })
+  async validatePaymentAccess(@Body() body: { userId: string; paymentType: string; amount: number }) {
+    const user = await this.authService.findUserById(body.userId);
+    
+    if (!user) {
+      return { canMakePayment: false, reason: 'User not found' };
+    }
+
+    if (!user.emailVerified) {
+      return { canMakePayment: false, reason: 'Email not verified' };
+    }
+
+    if (user.status !== 'active') {
+      return { canMakePayment: false, reason: 'Account not active' };
+    }
+
+    // All payment validation is now handled by payment service
+    // Auth service just checks basic user status
+    return { 
+      canMakePayment: true,
+      userId: body.userId,
+      paymentType: body.paymentType,
+      amount: body.amount
     };
   }
 } 

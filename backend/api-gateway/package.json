@@ -1,7 +1,7 @@
 {
-  "name": "mindlyf-api-gateway",
+  "name": "mindlyfe-api-gateway",
   "version": "1.0.0",
-  "description": "API Gateway for MindLyf platform",
+  "description": "API Gateway for MindLyfe platform",
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",
@@ -17,6 +17,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.817.0",
+    "@nestjs/axios": "^2.0.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
@@ -26,16 +28,28 @@
     "@nestjs/swagger": "^6.2.1",
     "@nestjs/terminus": "^9.2.2",
     "@nestjs/throttler": "^4.0.0",
+    "@types/compression": "^1.8.0",
+    "@types/dompurify": "^3.0.5",
+    "@types/jsdom": "^21.1.7",
+    "@types/validator": "^13.15.1",
     "axios": "^1.3.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
-    "express-rate-limit": "^6.7.0",
-    "helmet": "^6.0.1",
+    "compression": "^1.8.0",
+    "connect-timeout": "^1.9.0",
+    "dompurify": "^3.2.6",
+    "express-rate-limit": "^6.11.2",
+    "helmet": "^6.2.0",
+    "joi": "^17.13.3",
+    "jsdom": "^26.1.0",
+    "node-fetch": "^3.3.2",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
-    "winston": "^3.8.2"
+    "validator": "^13.15.15",
+    "winston": "^3.8.2",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
@@ -78,4 +92,4 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }
-} 
+}

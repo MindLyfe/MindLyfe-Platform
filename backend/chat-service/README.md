@@ -1,6 +1,10 @@
-# MindLyf Chat Service
+# MindLyfe Chat Service
 
-The Chat Service is a crucial component of the MindLyf mental health platform that enables secure communication between users, therapists, and support groups.
+## Overview
+
+The MindLyfe Chat Service enables real-time messaging functionality for the MindLyfe mental health platform. It supports both one-on-one conversations between users and therapists, as well as group discussions and community interactions.
+
+The Chat Service is a crucial component of the MindLyfe mental health platform that enables secure communication between users, therapists, and support groups.
 
 ## Features
 
@@ -78,7 +82,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_chat
+DB_NAME=mindlyfe_chat
 DB_SYNC=false
 DB_LOGGING=false
 
@@ -128,8 +132,8 @@ The Chat Service is designed to be deployed as a Docker container:
 
 ```bash
 # Build the Docker image
-docker build -t mindlyf/chat-service .
+docker build -t mindlyfe/chat-service .
 
 # Run the container
-docker run -p 3003:3003 mindlyf/chat-service
+docker run -p 3003:3003 mindlyfe/chat-service
 ```

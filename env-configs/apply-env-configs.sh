@@ -7,7 +7,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${GREEN}==================================================${NC}"
-echo -e "${GREEN}   MindLyf Environment Configuration Helper       ${NC}"
+echo -e "${GREEN}   MindLyfe Environment Configuration Helper       ${NC}"
 echo -e "${GREEN}==================================================${NC}"
 
 # Base directory
@@ -86,4 +86,4 @@ for service in "${services[@]}"; do
 done
 
 echo -e "${GREEN}Environment configuration complete!${NC}"
-echo -e "${YELLOW}Note: Review the generated files and adjust values as needed before starting services.${NC}" 
+echo -e "${YELLOW}Note: Review the generated files and adjust values as needed before starting services.${NC}"

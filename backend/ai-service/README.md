@@ -1,6 +1,6 @@
-# MindLyf AI Service
+# MindLyfe AI Service
 
-This service provides the core AI capabilities for the MindLyf mental health platform and serves as the central intelligence provider for the AI microservices architecture.
+This service provides the core AI capabilities for the MindLyfe mental health platform and serves as the central intelligence provider for the AI microservices architecture.
 
 ## Features
 
@@ -40,7 +40,7 @@ The AI Service is part of a microservices architecture with dedicated specialize
    - User preference modeling and feedback processing
    - A/B testing for recommendation algorithms
 
-4. **LyfBot Service** (Port 8003)
+4. **LyfeBot Service** (Port 8003)
    - Conversational AI assistant interface
    - Manages conversation context and history
    - Requests response generation from AI Service
@@ -70,8 +70,8 @@ The AI Service is built with:
 
 1. Clone the repository
 ```bash
-git clone https://github.com/mindlyf/mindlyf-backend.git
-cd mindlyf-backend/ai-service
+git clone https://github.com/mindlyfe/mindlyfe-backend.git
+cd mindlyfe-backend/ai-service
 ```
 
 2. Create a `.env` file based on `.env.example`
@@ -94,7 +94,7 @@ http://localhost:8000/api/docs
 
 The service provides the following main API categories:
 
-- `/api/v1/lyfbot`: LyfBot conversation endpoints (used by LyfBot Service)
+- `/api/v1/lyfebot`: LyfeBot conversation endpoints (used by LyfeBot Service)
 - `/api/v1/journal`: Journal analysis endpoints (used by Journal Service)
 - `/api/v1/recommendations`: Recommendation generation endpoints (used by Recommender Service)
 - `/api/v1/personalization`: User preference and personalization endpoints
@@ -107,7 +107,7 @@ The service provides the following main API categories:
 
 - **Journal Service**: For text analysis, sentiment detection, and insights generation
 - **Recommender Service**: For personalized recommendation algorithms
-- **LyfBot Service**: For conversation generation and contextual responses
+- **LyfeBot Service**: For conversation generation and contextual responses
 
 ### Environment Variables
 
@@ -118,7 +118,7 @@ Key environment variables:
 AUTH_SERVICE_URL=http://auth-service:3001
 JOURNAL_SERVICE_URL=http://journal-service:8001
 RECOMMENDER_SERVICE_URL=http://recommender-service:8002
-LYFBOT_SERVICE_URL=http://lyfbot-service:8003
+LYFEBOT_SERVICE_URL=http://lyfebot-service:8003
 
 # API Keys
 OPENAI_API_KEY=your-openai-api-key
@@ -127,7 +127,7 @@ OPENAI_API_KEY=your-openai-api-key
 JWT_SECRET=your-jwt-secret
 
 # Database
-DATABASE_URL=postgresql://user:password@postgres:5432/mindlyf_ai
+DATABASE_URL=postgresql://user:password@postgres:5432/mindlyfe_ai
 ```
 
 ## Deployment
@@ -158,4 +158,4 @@ The service includes:
 
 ## License
 
-This project is proprietary and confidential. Unauthorized copying, transfer, or reproduction of the contents is strictly prohibited. 
+This project is proprietary and confidential. Unauthorized copying, transfer, or reproduction of the contents is strictly prohibited.

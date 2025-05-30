@@ -1,17 +1,17 @@
 # Multi-Channel Notification System Technical Specification
 
-This document provides detailed technical specifications for implementing the multi-channel notification system for the MindLyf platform, focusing on SMS, Email, WhatsApp, Push, and In-App notifications.
+This document provides detailed technical specifications for implementing the multi-channel notification system for the MindLyfe platform, focusing on SMS, Email, WhatsApp, Push, and In-App notifications.
 
 ## 1. System Overview
 
-The Multi-Channel Notification System enables MindLyf to communicate with users through their preferred channels, delivering personalized, timely, and relevant notifications to drive engagement and improve the user experience.
+The Multi-Channel Notification System enables MindLyfe to communicate with users through their preferred channels, delivering personalized, timely, and relevant notifications to drive engagement and improve the user experience.
 
 ### 1.1 Architecture Integration
 
 ```
 ┌─────────────────────────┐      ┌─────────────────────────┐
 │                         │      │                         │
-│   MindLyf Core Platform ├─────►│   Notification Service  │
+│   MindLyfe Core Platform ├─────►│   Notification Service  │
 │                         │      │                         │
 └───────────┬─────────────┘      └─────────┬───────────────┘
             │                              │

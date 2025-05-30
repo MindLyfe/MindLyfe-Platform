@@ -1,6 +1,6 @@
-# MindLyf Infrastructure Troubleshooting Guide
+# MindLyfe Infrastructure Troubleshooting Guide
 
-This document provides troubleshooting information for common issues that may occur with the MindLyf infrastructure.
+This document provides troubleshooting information for common issues that may occur with the MindLyfe infrastructure.
 
 ## Terraform Deployment Issues
 
@@ -48,7 +48,7 @@ Error: No valid credential sources found
    - Adjust request/limits in the deployment specs
 
 2. **PersistentVolumeClaim issues**:
-   - Check PVC status: `kubectl get pvc -n mindlyf`
+   - Check PVC status: `kubectl get pvc -n mindlyfe`
    - Ensure the storage class exists: `kubectl get sc`
 
 3. **Node affinity/taints issues**:
@@ -60,16 +60,16 @@ Error: No valid credential sources found
 **Possible Causes and Solutions**:
 
 1. **Service targeting wrong pods**:
-   - Check service selectors: `kubectl describe service <service-name> -n mindlyf`
+   - Check service selectors: `kubectl describe service <service-name> -n mindlyfe`
    - Ensure pod labels match service selectors
-   - Verify pods are running: `kubectl get pods -n mindlyf -l app=<app-label>`
+   - Verify pods are running: `kubectl get pods -n mindlyfe -l app=<app-label>`
 
 2. **Network policies blocking traffic**:
-   - Check network policies: `kubectl get networkpolicies -n mindlyf`
+   - Check network policies: `kubectl get networkpolicies -n mindlyfe`
    - Temporarily disable network policies if needed for testing
 
 3. **Ingress issues**:
-   - Check ingress status: `kubectl describe ingress -n mindlyf`
+   - Check ingress status: `kubectl describe ingress -n mindlyfe`
    - Verify Load Balancer/ALB is properly configured in AWS
 
 ### Pod `CrashLoopBackOff` errors
@@ -77,16 +77,16 @@ Error: No valid credential sources found
 **Possible Causes and Solutions**:
 
 1. **Application errors**:
-   - Check pod logs: `kubectl logs <pod-name> -n mindlyf`
-   - Check previous terminated container logs: `kubectl logs <pod-name> -n mindlyf --previous`
+   - Check pod logs: `kubectl logs <pod-name> -n mindlyfe`
+   - Check previous terminated container logs: `kubectl logs <pod-name> -n mindlyfe --previous`
 
 2. **Resource constraints**:
-   - Check if the pod is being OOM killed: `kubectl describe pod <pod-name> -n mindlyf`
+   - Check if the pod is being OOM killed: `kubectl describe pod <pod-name> -n mindlyfe`
    - Increase memory limits in deployment spec
 
 3. **Configuration issues**:
-   - Verify environment variables: `kubectl describe pod <pod-name> -n mindlyf`
-   - Check ConfigMaps and Secrets: `kubectl get cm,secrets -n mindlyf`
+   - Verify environment variables: `kubectl describe pod <pod-name> -n mindlyfe`
+   - Check ConfigMaps and Secrets: `kubectl get cm,secrets -n mindlyfe`
 
 ## Database Issues
 
@@ -97,7 +97,7 @@ Error: No valid credential sources found
    - Check the VPC Peering if using different VPCs
 
 2. **Credential issues**:
-   - Validate the database secrets in Kubernetes: `kubectl get secret database-secrets -n mindlyf -o yaml`
+   - Validate the database secrets in Kubernetes: `kubectl get secret database-secrets -n mindlyfe -o yaml`
    - Test connection using psql from a debug pod within the cluster
 
 3. **Endpoint resolution**:
@@ -148,7 +148,7 @@ Error: No valid credential sources found
 
 1. **Check resource utilization**:
    - Use Prometheus metrics to identify high CPU/memory usage
-   - View top pods: `kubectl top pods -n mindlyf`
+   - View top pods: `kubectl top pods -n mindlyfe`
 
 2. **Optimize code**:
    - Profile application performance
@@ -193,4 +193,4 @@ If you're unable to resolve an issue using this guide:
 1. Check AWS and Kubernetes documentation
 2. Review service logs and metrics
 3. Reach out to the infrastructure team
-4. For urgent production issues, follow the on-call escalation process 
+4. For urgent production issues, follow the on-call escalation process

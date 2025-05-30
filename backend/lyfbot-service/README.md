@@ -1,6 +1,6 @@
-# MindLyf LyfBot Service
+# MindLyfe LyfeBot Service
 
-LyfBot is an AI-powered conversational agent for providing mental health support on the MindLyf platform.
+LyfeBot is an AI-powered conversational agent for providing mental health support on the MindLyfe platform.
 
 ## Features
 
@@ -12,7 +12,7 @@ LyfBot is an AI-powered conversational agent for providing mental health support
 
 ## Architecture
 
-LyfBot Service is a FastAPI application that acts as an orchestration layer for AI features:
+LyfeBot Service is a FastAPI application that acts as an orchestration layer for AI features:
 
 - Communicates with AI Service for generating responses
 - Uses Auth Service for authentication
@@ -33,7 +33,7 @@ LyfBot Service is a FastAPI application that acts as an orchestration layer for 
 Create a `.env` file with the following variables:
 
 ```
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyf_lyfbot
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyfe_lyfebot
 JWT_SECRET=your-secret-key
 AI_SERVICE_URL=http://ai-service:8000
 AUTH_SERVICE_URL=http://auth-service:3001
@@ -48,7 +48,7 @@ CORS_ORIGINS=http://localhost:3000,http://localhost:8080
 #### With Docker
 
 ```bash
-docker-compose up -d lyfbot-service
+docker-compose up -d lyfebot-service
 ```
 
 #### Locally
@@ -94,4 +94,4 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8003
 ### Feedback
 
 - `POST /api/v1/feedback/conversation` - Submit conversation feedback
-- `POST /api/v1/feedback/bot` - Submit general LyfBot feedback 
+- `POST /api/v1/feedback/bot` - Submit general LyfeBot feedback

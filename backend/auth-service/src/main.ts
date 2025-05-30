@@ -58,19 +58,8 @@ async function bootstrap() {
 
   // Set up Swagger documentation
   const config = new DocumentBuilder()
-    .setTitle('MindLyf Authentication API')
-    .setDescription(`
-      <h2>API Documentation for MindLyf Authentication Service</h2>
-      <p>This service handles all authentication-related functionality for the MindLyf mental health platform, including:</p>
-      <ul>
-        <li>User registration and account verification</li>
-        <li>Secure login and token management</li>
-        <li>Password reset and recovery</li>
-        <li>Two-factor authentication (MFA)</li>
-        <li>Session management</li>
-      </ul>
-      <p>For more details about the MindLyf platform architecture, please refer to our <a href="https://docs.mindlyf.com" target="_blank">official documentation</a>.</p>
-    `)
+    .setTitle('MindLyfe Auth Service API')
+    .setDescription('Authentication and user management API for MindLyfe platform')
     .setVersion('1.0')
     .setContact('MindLyf Support', 'https://mindlyf.com/support', 'support@mindlyf.com')
     .setLicense('Proprietary', 'https://mindlyf.com/terms')

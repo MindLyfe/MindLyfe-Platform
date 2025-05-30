@@ -1,6 +1,10 @@
-# MindLyf Auth Service
+# MindLyfe Authentication Service
 
-The Auth Service is the central authentication and authorization provider for the MindLyf platform, handling user management, authentication, and access control across all services.
+## Overview
+
+The MindLyfe Authentication Service is a comprehensive, production-ready microservice built with NestJS that handles all authentication and authorization needs for the MindLyfe mental health platform.
+
+The Auth Service is the central authentication and authorization provider for the MindLyfe platform, handling user management, authentication, and access control across all services.
 
 ## Features
 
@@ -96,7 +100,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_auth
+DB_NAME=mindlyfe_auth
 DB_SYNC=false
 DB_LOGGING=false
 
@@ -114,13 +118,13 @@ REDIS_PASSWORD=
 # Email
 EMAIL_HOST=smtp.example.com
 EMAIL_PORT=587
-EMAIL_USER=noreply@mindlyf.com
+EMAIL_USER=noreply@mindlyfe.com
 EMAIL_PASSWORD=your-email-password
 ```
 
 ## Integration with Notification Service
 
-The Auth Service integrates with the MindLyf Notification Service to:
+The Auth Service integrates with the MindLyfe Notification Service to:
 
 - Send welcome emails to new users upon registration
 - Send password reset emails when requested
@@ -168,8 +172,8 @@ The Auth Service is designed to be deployed as a Docker container:
 
 ```bash
 # Build the Docker image
-docker build -t mindlyf/auth-service .
+docker build -t mindlyfe/auth-service .
 
 # Run the container
-docker run -p 3001:3001 mindlyf/auth-service
+docker run -p 3001:3001 mindlyfe/auth-service
 ``` 

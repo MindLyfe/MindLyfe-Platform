@@ -5,12 +5,12 @@ export const configuration = () => ({
     port: parseInt(process.env.DB_PORT, 10) || 5432,
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
-    name: process.env.DB_NAME || 'mindlyf_notification',
+    name: process.env.DB_NAME || 'mindlyfe_notification',
     synchronize: process.env.DB_SYNC === 'true',
     logging: process.env.DB_LOGGING === 'true',
   },
   jwt: {
-    secret: process.env.JWT_SECRET || 'notification-service-secret',
+    secret: process.env.JWT_SECRET || 'mindlyfe-auth-secret-key-dev',
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
   },
   redis: {
@@ -23,10 +23,10 @@ export const configuration = () => ({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     ses: {
-      sourceEmail: process.env.AWS_SES_SOURCE_EMAIL || 'noreply@mindlyf.com',
+      sourceEmail: process.env.AWS_SES_SOURCE_EMAIL || 'noreply@mindlyfe.com',
     },
   },
   services: {
     authServiceUrl: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
   },
-}); 
+});

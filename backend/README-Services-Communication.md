@@ -1,10 +1,10 @@
-# MindLyf Microservices Communication Guide
+# MindLyfe Microservices Communication Guide
 
-This document explains how the different microservices in the MindLyf platform communicate with each other, with a focus on Docker setup, environment variables, and inter-service API calls.
+This document explains how the different microservices in the MindLyfe platform communicate with each other, with a focus on Docker setup, environment variables, and inter-service API calls.
 
 ## Architecture Overview
 
-The MindLyf platform consists of the following services:
+The MindLyfe platform consists of the following services:
 
 1. **API Gateway** (Port 3000)
    - Entry point for client requests
@@ -47,7 +47,7 @@ The MindLyf platform consists of the following services:
    - Manages activity and resource catalog
    - Uses AI Service for recommendation algorithms
 
-10. **LyfBot Service** (Port 8003)
+10. **LyfeBot Service** (Port 8003)
     - Manages conversational AI assistant
     - Handles conversation history and context
     - Communicates with AI, Journal, and Recommender services
@@ -56,7 +56,7 @@ The MindLyf platform consists of the following services:
 
 All services are containerized using Docker and orchestrated with Docker Compose. Key aspects of the configuration:
 
-- **Shared Network**: All services are on the `mindlyf-network` Docker network
+- **Shared Network**: All services are on the `mindlyfe-network` Docker network
 - **Container Names**: Container names match service names for easy DNS resolution
 - **Database**: PostgreSQL with separate databases for each service
 - **Cache**: Redis for shared caching and session storage
@@ -162,11 +162,11 @@ For service-to-service calls, two methods are used:
 - **Endpoint**: `GET http://journal-service:8001/api/v1/insights/user/:userId/summary`
 - **Authentication**: Service token
 
-#### LyfBot Service → AI Service
+#### LyfeBot Service → AI Service
 
 - **Purpose**: Generate conversational responses
 - **Method**: HTTP POST requests
-- **Endpoint**: `POST http://ai-service:8000/api/v1/lyfbot/generate`
+- **Endpoint**: `POST http://ai-service:8000/api/v1/lyfebot/generate`
 - **Authentication**: Service token
 - **Example Payload**:
   ```json
@@ -179,14 +179,14 @@ For service-to-service calls, two methods are used:
   }
   ```
 
-#### LyfBot Service → Journal Service
+#### LyfeBot Service → Journal Service
 
 - **Purpose**: Get user journal insights for context
 - **Method**: HTTP GET requests
 - **Endpoint**: `GET http://journal-service:8001/api/v1/insights/user/:userId/summary`
 - **Authentication**: Service token
 
-#### LyfBot Service → Recommender Service
+#### LyfeBot Service → Recommender Service
 
 - **Purpose**: Get personalized recommendations to suggest
 - **Method**: HTTP POST requests
@@ -217,13 +217,13 @@ NOTIFICATION_SERVICE_URL=http://notification-service:3005
 AI_SERVICE_URL=http://ai-service:8000
 JOURNAL_SERVICE_URL=http://journal-service:8001
 RECOMMENDER_SERVICE_URL=http://recommender-service:8002
-LYFBOT_SERVICE_URL=http://lyfbot-service:8003
+LYFEBOT_SERVICE_URL=http://lyfebot-service:8003
 ```
 
 Additionally, all services share these common environment variables:
 
 ```
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 DB_HOST=postgres
 REDIS_HOST=redis
 ```
@@ -247,9 +247,9 @@ Client → API Gateway → Journal Service → Database
 Client ← API Gateway ← Journal Service
 ```
 
-### LyfBot Conversation Flow
+### LyfeBot Conversation Flow
 ```
-Client → API Gateway → LyfBot Service → Database
+Client → API Gateway → LyfeBot Service → Database
                           ↓
                         AI Service
                           ↓
@@ -257,7 +257,7 @@ Client → API Gateway → LyfBot Service → Database
                           ↓
                     Recommender Service
                           ↓
-Client ← API Gateway ← LyfBot Service
+Client ← API Gateway ← LyfeBot Service
 ```
 
 ## Starting the Services
@@ -277,7 +277,7 @@ docker-compose up auth-service notification-service
 For the AI microservices:
 
 ```bash
-docker-compose up ai-service journal-service recommender-service lyfbot-service
+docker-compose up ai-service journal-service recommender-service lyfebot-service
 ```
 
 ## Troubleshooting Communication Issues
@@ -314,4 +314,4 @@ For the AI microservices:
 - AI Service: `http://localhost:8000/api/docs`
 - Journal Service: `http://localhost:8001/api/docs`
 - Recommender Service: `http://localhost:8002/api/docs`
-- LyfBot Service: `http://localhost:8003/api/docs` 
+- LyfeBot Service: `http://localhost:8003/api/docs`

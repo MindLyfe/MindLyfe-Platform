@@ -1,10 +1,10 @@
-# MindLyf Scaling Guide
+# MindLyfe Scaling Guide
 
-This document provides guidance on how to scale the MindLyf infrastructure to handle increased load or growing user base.
+This document provides guidance on how to scale the MindLyfe infrastructure to handle increased load or growing user base.
 
 ## Scaling Principles
 
-The MindLyf platform follows these scaling principles:
+The MindLyfe platform follows these scaling principles:
 
 1. **Horizontal over vertical scaling**: Prefer adding more instances over increasing instance sizes
 2. **Auto-scaling when possible**: Implement automatic scaling mechanisms to handle fluctuating loads
@@ -16,14 +16,14 @@ The MindLyf platform follows these scaling principles:
 
 ### Horizontal Pod Autoscaler
 
-MindLyf services are configured with Horizontal Pod Autoscalers (HPA) that automatically scale based on CPU and memory utilization:
+MindLyfe services are configured with Horizontal Pod Autoscalers (HPA) that automatically scale based on CPU and memory utilization:
 
 ```bash
 # View current HPAs
-kubectl get hpa -n mindlyf
+kubectl get hpa -n mindlyfe
 
 # Modify HPA thresholds
-kubectl edit hpa <service-name>-hpa -n mindlyf
+kubectl edit hpa <service-name>-hpa -n mindlyfe
 ```
 
 Key services HPA configurations:
@@ -51,7 +51,7 @@ kubectl logs -n kube-system -l app=cluster-autoscaler
 
 ### RDS PostgreSQL
 
-The MindLyf PostgreSQL database can be scaled in several ways:
+The MindLyfe PostgreSQL database can be scaled in several ways:
 
 1. **Vertical Scaling**: Increase the instance size (CPU/Memory)
    ```bash
@@ -143,4 +143,4 @@ When scaling is needed:
 3. **Apply Changes**: Apply changes in dev/staging environments first
 4. **Verify Performance**: Conduct load testing to verify scaling effectiveness
 5. **Roll Out to Production**: Apply changes to production during maintenance window
-6. **Document Changes**: Update documentation with new scaling parameters 
+6. **Document Changes**: Update documentation with new scaling parameters

@@ -1,6 +1,6 @@
-# Notification & Engagement Architecture for MindLyf Platform
+# Notification & Engagement Architecture for MindLyfe Platform
 
-This document outlines the technical architecture for implementing a comprehensive notification and engagement system for the MindLyf platform, focusing on multi-channel notifications, user preference management, analytics tracking, and gamification elements.
+This document outlines the technical architecture for implementing a comprehensive notification and engagement system for the MindLyfe platform, focusing on multi-channel notifications, user preference management, analytics tracking, and gamification elements.
 
 ## 1. System Architecture Overview
 

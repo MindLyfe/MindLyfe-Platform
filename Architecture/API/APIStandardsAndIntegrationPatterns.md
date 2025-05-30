@@ -1,8 +1,8 @@
-# MindLyf API Standards and Integration Patterns
+# MindLyfe API Standards and Integration Patterns
 
 ## Overview
 
-This document defines the API standards and integration patterns for the MindLyf mental health platform. It establishes consistent guidelines for API design, external system integration, and event-driven communication. These standards ensure interoperability, maintainability, and security across all platform interfaces while supporting the specific requirements of healthcare data exchange.
+This document outlines the API standards and integration patterns for the MindLyfe platform. It serves as a guide for developers building and consuming APIs within the MindLyfe ecosystem, ensuring consistency, security, and interoperability.
 
 ## API Design Principles
 
@@ -55,12 +55,7 @@ This document defines the API standards and integration patterns for the MindLyf
 - **Standardized Error Responses** with error codes and messages
 - **Hypermedia Links** for resource relationships (HATEOAS)
 
-### API Versioning
-
-- **URI Path Versioning** with major version number (e.g., `/api/v1/resources`)
-- **Semantic Versioning** for API releases
-- **Deprecation Process** with sunset dates and migration paths
-- **Version Compatibility** policies for breaking vs. non-breaking changes
+All MindLyfe APIs must adhere to these versioning guidelines:
 
 ### API Documentation
 
@@ -133,28 +128,7 @@ This document defines the API standards and integration patterns for the MindLyf
 
 ## External System Integration
 
-### Integration Patterns
-
-#### API-Based Integration
-
-- **REST API Consumption** for synchronous operations
-- **Webhook Receivers** for event notifications
-- **API Gateways** for traffic management
-- **API Composition** for aggregating multiple services
-
-#### Message-Based Integration
-
-- **Message Queues** for reliable delivery
-- **Publish-Subscribe** for event distribution
-- **Dead Letter Queues** for failed message handling
-- **Message Schemas** for contract enforcement
-
-#### File-Based Integration
-
-- **Secure File Transfer** protocols (SFTP, FTPS)
-- **Batch Processing** for large data sets
-- **File Validation** for integrity checking
-- **Transformation Services** for format conversion
+MindLyfe services will communicate using a combination of synchronous (REST, gRPC) and asynchronous (event-driven) patterns.
 
 ### EHR Integration
 

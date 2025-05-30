@@ -506,7 +506,8 @@ export class NotificationService {
   private isTransactionalNotification(type: NotificationType): boolean {
     return [
       NotificationType.ACCOUNT,
-      NotificationType.THERAPY,
+      NotificationType.PAYMENT,
+      NotificationType.SUBSCRIPTION,
     ].includes(type);
   }
   
@@ -515,8 +516,9 @@ export class NotificationService {
    */
   private requiresImmediateDelivery(type: NotificationType): boolean {
     return [
-      NotificationType.THERAPY, // Therapy session reminders
-      NotificationType.ACCOUNT, // Account security/verification
+      NotificationType.ACCOUNT,
+      NotificationType.PAYMENT,
+      NotificationType.SUBSCRIPTION,
     ].includes(type);
   }
   

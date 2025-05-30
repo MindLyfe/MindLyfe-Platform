@@ -1,6 +1,6 @@
-# MindLyf Journal Service
+# MindLyfe Journal Service
 
-The Journal Service is a key component of the MindLyf mental health platform, providing AI-powered journaling capabilities for users to track their mental health journey and receive insights.
+The Journal Service is a key component of the MindLyfe mental health platform, providing AI-powered journaling capabilities for users to track their mental health journey and receive insights.
 
 ## Features
 
@@ -31,7 +31,7 @@ The Journal Service is built with:
 
 ### Services that depend on Journal Service
 
-- **LyfBot Service**: Uses journal insights to provide context-aware responses
+- **LyfeBot Service**: Uses journal insights to provide context-aware responses
 - **Recommender Service**: Uses journal data to generate personalized recommendations
 
 ## API Endpoints
@@ -75,7 +75,7 @@ The Journal Service is built with:
    - Notification Service is called to notify user of new insights
 
 3. **Data Access by Other Services**:
-   - LyfBot and Recommender Services request insights via API
+   - LyfeBot and Recommender Services request insights via API
    - Data is provided with appropriate privacy filtering
    - User consent is verified for data sharing
 
@@ -92,7 +92,7 @@ The Journal Service is built with:
 Create a `.env` file with the following variables:
 
 ```
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyf_journal
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyfe_journal
 JWT_SECRET=your-secret-key
 AI_SERVICE_URL=http://ai-service:8000
 AUTH_SERVICE_URL=http://auth-service:3001
@@ -128,4 +128,4 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 - Analysis is performed with user consent
 - Data is only shared with other services when necessary
 - Users can delete their data at any time
-- Compliance with HIPAA and GDPR requirements 
+- Compliance with HIPAA and GDPR requirements

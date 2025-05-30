@@ -1,6 +1,10 @@
-# MindLyf Community Service
+# MindLyfe Community Service
 
-The Community Service manages the social aspects of the MindLyf platform, enabling users to connect, share experiences, and support each other in a moderated environment.
+## Overview
+
+The MindLyfe Community Service manages social features for the MindLyfe mental health platform, including user posts, comments, reactions, follows, and community interactions.
+
+The Community Service manages the social aspects of the MindLyfe platform, enabling users to connect, share experiences, and support each other in a moderated environment.
 
 ## Features
 
@@ -105,7 +109,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_community
+DB_NAME=mindlyfe_community
 DB_SYNC=false
 DB_LOGGING=false
 
@@ -154,13 +158,13 @@ The Community Service is designed to be deployed as a Docker container:
 
 ```bash
 # Build the Docker image
-docker build -t mindlyf/community-service .
+docker build -t mindlyfe/community-service .
 
 # Run the container
 1. Clone the repository:
    ```bash
-   git clone https://github.com/mindlyf/mindlyf.git
-   cd mindlyf/backend/community-service
+   git clone https://github.com/mindlyfe/mindlyfe.git
+   cd mindlyfe/backend/community-service
    ```
 
 2. Install dependencies:
@@ -325,4 +329,4 @@ The Community Service implements several privacy-enhancing features:
 
 ## License
 
-This project is proprietary software of MindLyf. 
+This project is proprietary software of MindLyfe. 

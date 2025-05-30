@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
   - ../../base
 
-namespace: mindlyf
+namespace: mindlyfe
 
 patches:
   - path: patches/replicas.yaml
@@ -40,4 +40,4 @@ images:
     newTag: latest
   - name: ${ECR_REGISTRY}/teletherapy-service
     newName: ${ECR_REGISTRY}/teletherapy-service
-    newTag: latest 
+    newTag: latest

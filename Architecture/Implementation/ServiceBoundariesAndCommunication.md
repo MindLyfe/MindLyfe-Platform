@@ -1,8 +1,8 @@
-# Service Boundaries and Communication Patterns
+# MindLyfe - Service Boundaries and Communication Patterns
 
 ## 1. Overview
 
-This document defines the service boundaries, interfaces, and communication patterns for the MindLyf platform. It establishes clear contracts between services to ensure modularity, maintainability, and scalability.
+This document defines the service boundaries, interfaces, and communication patterns for the MindLyfe platform. It establishes clear contracts between services to ensure modularity, maintainability, and scalability.
 
 ## 2. Service Boundaries
 

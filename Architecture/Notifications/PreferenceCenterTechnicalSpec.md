@@ -1,10 +1,10 @@
 # Preference Center Technical Specification
 
-This document outlines the technical specifications for the MindLyf Preference Center, enabling users to manage their notification settings across various channels and categories.
+This document outlines the technical specifications for the MindLyfe Preference Center, enabling users to manage their notification settings across various channels and categories.
 
 ## 1. System Overview
 
-The Preference Center is a critical component of the MindLyf platform, empowering users to customize how, when, and for what reasons they receive notifications. It aims to enhance user satisfaction by providing control and reducing notification fatigue, thereby improving engagement with relevant communications.
+The Preference Center is a critical component of the MindLyfe platform, empowering users to customize how, when, and for what reasons they receive notifications. It aims to enhance user satisfaction by providing control and reducing notification fatigue, thereby improving engagement with relevant communications.
 
 ### 1.1 Goals
 
@@ -49,7 +49,7 @@ The Preference Center is a critical component of the MindLyf platform, empowerin
 ### 2.2 Preference Service (Backend API)
 
 - **Language/Framework**: Node.js with Express.js/NestJS (or align with existing backend stack)
-- **Authentication**: JWT-based, integrated with MindLyf's Auth Service.
+- **Authentication**: JWT-based, integrated with MindLyfe's Auth Service.
 - **API Endpoints**: RESTful API for CRUD operations on user preferences.
 
 ### 2.3 Data Model

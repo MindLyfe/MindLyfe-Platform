@@ -5,12 +5,12 @@ export const configuration = () => ({
     port: parseInt(process.env.DB_PORT, 10) || 5432,
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
-    name: process.env.DB_NAME || 'mindlyf_chat',
+    name: process.env.DB_NAME || 'mindlyfe_chat',
     synchronize: process.env.DB_SYNC === 'true',
     logging: process.env.DB_LOGGING === 'true',
   },
   jwt: {
-    secret: process.env.JWT_SECRET || 'mindlyf-chat-secret',
+    secret: process.env.JWT_SECRET || 'mindlyfe-auth-secret-key-dev',
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
   },
   redis: {

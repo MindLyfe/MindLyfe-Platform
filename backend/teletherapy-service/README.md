@@ -1,6 +1,6 @@
-# MindLyf Teletherapy Service
+# MindLyfe Teletherapy Service
 
-The Teletherapy Service manages all aspects of therapy sessions on the MindLyf platform, enabling secure video, audio, and text-based therapy sessions between therapists and clients.
+The Teletherapy Service manages all aspects of therapy sessions on the MindLyfe platform, enabling secure video, audio, and text-based therapy sessions between therapists and clients.
 
 ## Features
 
@@ -93,7 +93,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_teletherapy
+DB_NAME=mindlyfe_teletherapy
 DB_SYNC=false
 DB_LOGGING=false
 
@@ -146,8 +146,8 @@ The Teletherapy Service is designed to be deployed as a Docker container:
 
 ```bash
 # Build the Docker image
-docker build -t mindlyf/teletherapy-service .
+docker build -t mindlyfe/teletherapy-service .
 
 # Run the container
-docker run -p 3002:3002 mindlyf/teletherapy-service
+docker run -p 3002:3002 mindlyfe/teletherapy-service
 ```

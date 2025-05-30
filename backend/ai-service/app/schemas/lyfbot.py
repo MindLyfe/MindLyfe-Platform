@@ -13,7 +13,7 @@ class ChatMessage(BaseModel):
     context: Optional[Dict[str, Any]] = None
 
 class ChatResponse(BaseModel):
-    message: str = Field(..., description="The response message from LyfBot")
+    message: str = Field(..., description="The response message from LyfeBot")
     success: bool = Field(..., description="Whether the request was successful")
     metrics: Optional[Dict[str, Any]] = None
-    suggestions: Optional[List[str]] = Field(default=[], description="Suggested follow-up messages") 
+    suggestions: Optional[List[str]] = Field(default=[], description="Suggested follow-up messages")

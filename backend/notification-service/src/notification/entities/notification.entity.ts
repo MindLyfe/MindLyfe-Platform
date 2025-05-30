@@ -26,6 +26,8 @@ export enum NotificationType {
   COMMUNITY = 'community',
   CHAT = 'chat',
   MARKETING = 'marketing',
+  PAYMENT = 'payment',
+  SUBSCRIPTION = 'subscription',
 }
 
 @Entity('notifications')

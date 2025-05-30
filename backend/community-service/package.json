@@ -1,7 +1,7 @@
 {
-  "name": "mindlyf-community-service",
+  "name": "mindlyfe-community-service",
   "version": "1.0.0",
-  "description": "Community service for MindLyf platform",
+  "description": "Community service for MindLyfe platform",
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",

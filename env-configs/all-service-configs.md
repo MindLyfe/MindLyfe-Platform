@@ -1,6 +1,6 @@
-# MindLyf Services Configuration
+# MindLyfe Services Configuration
 
-This document contains configuration templates for all MindLyf microservices. These configurations ensure proper inter-service communication with the auth service as the central authentication provider.
+This document contains configuration templates for all MindLyfe microservices. These configurations ensure proper inter-service communication with the auth service as the central authentication provider.
 
 ## Auth Service
 
@@ -15,16 +15,16 @@ DB_HOST=postgres
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_auth
+DB_NAME=mindlyfe_auth
 DB_SYNCHRONIZE=true
 DB_LOGGING=true
 DB_SSL=false
 
 # JWT Configuration
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 JWT_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
-JWT_SERVICE_SECRET=mindlyf-service-secret-key-dev
+JWT_SERVICE_SECRET=mindlyfe-service-secret-key-dev
 
 # Redis Configuration (for session/cache)
 REDIS_HOST=redis
@@ -36,8 +36,8 @@ AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
 
 # Email Configuration
-EMAIL_FROM=support@mindlyf.com
-EMAIL_REPLY_TO=noreply@mindlyf.com
+EMAIL_FROM=support@mindlyfe.com
+EMAIL_REPLY_TO=noreply@mindlyfe.com
 
 # Frontend URL (for email links, CORS, etc.)
 FRONTEND_URL=http://localhost:3000
@@ -49,7 +49,7 @@ AUTH_THROTTLE_TTL=60
 AUTH_THROTTLE_LIMIT=5
 
 # MFA Configuration
-MFA_ISSUER=MindLyf
+MFA_ISSUER=MindLyfe
 MFA_WINDOW=1
 
 # CORS Configuration
@@ -71,19 +71,19 @@ DB_HOST=postgres
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_notification
+DB_NAME=mindlyfe_notification
 DB_SYNC=true
 DB_LOGGING=true
 DB_SSL=false
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # AWS Configuration for SES Email Service
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
-AWS_SES_SOURCE_EMAIL=noreply@mindlyf.com
+AWS_SES_SOURCE_EMAIL=noreply@mindlyfe.com
 
 # Service Communication
 AUTH_SERVICE_URL=http://auth-service:3001
@@ -111,13 +111,13 @@ DB_HOST=postgres
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_chat
+DB_NAME=mindlyfe_chat
 DB_SYNC=true
 DB_LOGGING=true
 DB_SSL=false
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Redis Configuration (for real-time messaging)
 REDIS_HOST=redis
@@ -148,7 +148,7 @@ MAX_FILE_SIZE=5242880 # 5MB
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
-AWS_S3_BUCKET=mindlyf-chat-files
+AWS_S3_BUCKET=mindlyfe-chat-files
 ```
 
 ## Community Service
@@ -163,13 +163,13 @@ DB_HOST=postgres
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_community
+DB_NAME=mindlyfe_community
 DB_SYNC=true
 DB_LOGGING=true
 DB_SSL=false
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Redis Configuration (for caching)
 REDIS_HOST=redis
@@ -199,7 +199,7 @@ MAX_FILE_SIZE=5242880 # 5MB
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
-AWS_S3_BUCKET=mindlyf-community-files
+AWS_S3_BUCKET=mindlyfe-community-files
 ```
 
 ## Teletherapy Service
@@ -214,13 +214,13 @@ DB_HOST=postgres
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_teletherapy
+DB_NAME=mindlyfe_teletherapy
 DB_SYNC=true
 DB_LOGGING=true
 DB_SSL=false
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Redis Configuration (for caching and real-time)
 REDIS_HOST=redis
@@ -264,7 +264,7 @@ NODE_ENV=development
 PORT=3000
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Service URLs
 AUTH_SERVICE_URL=http://auth-service:3001
@@ -290,7 +290,7 @@ API_RATE_LIMIT=100 # requests per minute
 API_RATE_LIMIT_WINDOW=60000 # 1 minute in milliseconds
 
 # API Documentation
-SWAGGER_TITLE=MindLyf API
+SWAGGER_TITLE=MindLyfe API
 SWAGGER_DESCRIPTION=Mental health platform API
 SWAGGER_VERSION=1.0
 SWAGGER_PATH=/api/docs
@@ -308,13 +308,13 @@ ENVIRONMENT=development
 PORT=8000
 
 # Database Configuration
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyf_ai
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyfe_ai
 
 # Redis Configuration (for caching and rate limiting)
 REDIS_URL=redis://redis:6379/0
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Service Communication
 AUTH_SERVICE_URL=http://auth-service:3001
@@ -341,4 +341,4 @@ CORS_ORIGINS=*
 # Logging
 LOG_LEVEL=info
 ENABLE_REQUEST_LOGGING=true
-``` 
+```

@@ -1,4 +1,4 @@
-# MindLyf Notification Service
+# MindLyfe Notification Service
 
 The Notification Service is responsible for sending notifications to users through multiple channels based on their preferences and real-time context.
 
@@ -78,7 +78,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_DATABASE=mindlyf_notification
+DB_DATABASE=mindlyfe_notification
 
 # JWT
 JWT_SECRET=your-jwt-secret
@@ -88,7 +88,7 @@ JWT_EXPIRATION=1h
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_SES_SOURCE_EMAIL=noreply@mindlyf.com
+AWS_SES_SOURCE_EMAIL=noreply@mindlyfe.com
 
 # Twilio
 TWILIO_ACCOUNT_SID=your-account-sid

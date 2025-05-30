@@ -1,10 +1,10 @@
-# MindLyf Infrastructure
+# MindLyfe Infrastructure
 
-This directory contains the infrastructure-as-code for the MindLyf mental health platform.
+This directory contains the infrastructure-as-code for the MindLyfe mental health platform.
 
 ## Architecture Overview
 
-MindLyf uses a modern cloud-native architecture deployed on AWS with the following components:
+MindLyfe uses a modern cloud-native architecture deployed on AWS with the following components:
 
 - **AWS EKS**: Kubernetes cluster for container orchestration
 - **AWS RDS**: PostgreSQL database for persistent storage
@@ -72,7 +72,7 @@ After the AWS infrastructure is provisioned, deploy the Kubernetes resources:
 
 ```bash
 # Configure kubectl
-aws eks update-kubeconfig --region <region> --name mindlyf-dev
+aws eks update-kubeconfig --region <region> --name mindlyfe-dev
 
 # Deploy base resources
 cd infrastructure/kubernetes
@@ -94,7 +94,7 @@ The project includes GitHub Actions workflows for CI/CD:
 
 ## Environment Configuration
 
-MindLyf supports multiple environments:
+MindLyfe supports multiple environments:
 
 - **Development**: For development and testing
 - **Staging**: For pre-production testing
@@ -112,7 +112,7 @@ Each environment has its own configuration in `terraform/environments/` and `kub
 
 ## Security
 
-MindLyf's infrastructure implements several security best practices:
+MindLyfe's infrastructure implements several security best practices:
 
 - Network isolation using VPC and subnets
 - Encryption at rest for all data stores
@@ -152,4 +152,4 @@ When contributing to the infrastructure code:
 2. Follow the existing naming conventions
 3. Use Kustomize for Kubernetes resource customization
 4. Document all significant changes
-5. Test changes in the development environment before applying to production 
+5. Test changes in the development environment before applying to production

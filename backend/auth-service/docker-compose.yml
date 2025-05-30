@@ -4,9 +4,9 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: mindlyf-auth-postgres
+    container_name: mindlyfe-auth-postgres
     environment:
-      POSTGRES_DB: mindlyf_auth
+      POSTGRES_DB: mindlyfe_auth
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
       POSTGRES_HOST_AUTH_METHOD: trust
@@ -16,9 +16,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./src/database/migrations:/docker-entrypoint-initdb.d
     networks:
-      - mindlyf-network
+      - mindlyfe-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d mindlyf_auth"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mindlyfe_auth"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,13 +26,13 @@ services:
   # Redis for caching and sessions
   redis:
     image: redis:7-alpine
-    container_name: mindlyf-auth-redis
+    container_name: mindlyfe-auth-redis
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
-      - mindlyf-network
+      - mindlyfe-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -44,7 +44,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: mindlyf-auth-service
+    container_name: mindlyfe-auth-service
     environment:
       NODE_ENV: development
       PORT: 3001
@@ -55,7 +55,7 @@ services:
       DATABASE_PORT: 5432
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres123
-      DATABASE_NAME: mindlyf_auth
+      DATABASE_NAME: mindlyfe_auth
       DATABASE_SYNCHRONIZE: true
       DATABASE_LOGGING: true
       DATABASE_SSL: false
@@ -105,7 +105,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - mindlyf-network
+      - mindlyfe-network
     volumes:
       - ./src:/app/src
       - ./package.json:/app/package.json
@@ -121,7 +121,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: mindlyf-auth-migration
+    container_name: mindlyfe-auth-migration
     environment:
       NODE_ENV: development
       DATABASE_TYPE: postgres
@@ -129,14 +129,14 @@ services:
       DATABASE_PORT: 5432
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres123
-      DATABASE_NAME: mindlyf_auth
+      DATABASE_NAME: mindlyfe_auth
       DATABASE_SYNCHRONIZE: false
       DATABASE_LOGGING: true
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - mindlyf-network
+      - mindlyfe-network
     command: ["sh", "-c", "sleep 10 && npm run migration:run"]
     profiles:
       - migration
@@ -146,5 +146,5 @@ volumes:
   redis_data:
 
 networks:
-  mindlyf-network:
-    driver: bridge 
+  mindlyfe-network:
+    driver: bridge

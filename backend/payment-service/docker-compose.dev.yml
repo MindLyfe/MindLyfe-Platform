@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  payment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mindlyf-payment-service-dev
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=development
+      - PORT=3006
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=mindlyf_payments
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=dev-jwt-secret-change-in-production
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - mindlyf-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: mindlyf-payment-postgres-dev
+    environment:
+      POSTGRES_DB: mindlyf_payments
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - mindlyf-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:6-alpine
+    container_name: mindlyf-payment-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mindlyf-network
+    restart: unless-stopped
+
+  adminer:
+    image: adminer
+    container_name: mindlyf-payment-adminer-dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - mindlyf-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  mindlyf-network:
+    driver: bridge 

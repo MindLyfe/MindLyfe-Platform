@@ -1,4 +1,4 @@
-# MindLyf ML Architecture for AI-Enhanced Features
+# MindLyfe ML Architecture for AI-Enhanced Features
 
 **Version:** 1.0  
 **Date:** 2024-07-01  
@@ -7,13 +7,13 @@
 
 ## 1. Introduction
 
-This document outlines the machine learning architecture for implementing the three prioritized AI-enhanced features for the MindLyf platform as specified in the AI-Enhanced Research and Product Definition (RPD) document. These features form the core of the platform's personalization strategy:
+This document outlines the machine learning architecture for implementing the three prioritized AI-enhanced features for the MindLyfe platform as specified in the AI-Enhanced Research and Product Definition (RPD) document. These features form the core of the platform's personalization strategy:
 
 1. AI-Driven Adaptive Wellness Plans
-2. LyfBot - Empathetic AI Companion
+2. LyfeBot - Empathetic AI Companion
 3. AI-Enhanced Journaling with Reflection Capabilities
 
-The architecture described here aligns with MindLyf's existing microservices approach, Domain-Driven Design principles, and security requirements while optimizing for real-time interactions and personalization.
+The architecture described here aligns with MindLyfe's existing microservices approach, Domain-Driven Design principles, and security requirements while optimizing for real-time interactions and personalization.
 
 ## 2. High-Level ML Architecture Overview
 
@@ -119,7 +119,7 @@ The architecture described here aligns with MindLyf's existing microservices app
    - Develop multi-modal recommendation system incorporating text, audio, and visual content
    - Implement causal inference models to identify effective interventions
 
-### 3.2 LyfBot - Empathetic AI Companion
+### 3.2 LyfeBot - Empathetic AI Companion
 
 #### 3.2.1 ML Models and Components
 

@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
-    PROJECT_NAME: str = "MindLyf AI Service"
+    PROJECT_NAME: str = "MindLyfe AI Service"
     
     # CORS
     CORS_ORIGINS: List[AnyHttpUrl] = []
@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     
     # Encryption
-    ENCRYPTION_SALT: str = "mindlyf-ai-service-salt"
+    ENCRYPTION_SALT: str = "mindlyfe-ai-service-salt"
     
     # Database
     DATABASE_URL: str
@@ -79,7 +79,7 @@ class Settings(BaseSettings):
     # Service Communication - AI Microservices
     JOURNAL_SERVICE_URL: str = "http://journal-service:8001"
     RECOMMENDER_SERVICE_URL: str = "http://recommender-service:8002"
-    LYFBOT_SERVICE_URL: str = "http://lyfbot-service:8003"
+    LYFBOT_SERVICE_URL: str = "http://lyfebot-service:8003"
     
     # Service Communication - Other
     API_GATEWAY_URL: Optional[str] = "http://api-gateway:3000"
@@ -115,11 +115,11 @@ class Settings(BaseSettings):
     MAX_MEMORY_ITEMS: int = 100
     
     # Personalization
-    DEFAULT_LYFBOT_NAME: str = "LyfBot"
+    DEFAULT_LYFBOT_NAME: str = "LyfeBot"
     DEFAULT_LYFBOT_TONE: str = "supportive"
     
     class Config:
         env_file = ".env"
         case_sensitive = True
 
-settings = Settings() 
+settings = Settings()

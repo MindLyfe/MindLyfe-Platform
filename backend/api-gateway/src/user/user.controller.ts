@@ -15,7 +15,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'Return all users' })
   findAll(@Req() req: any, @Query() query: any) {
     const token = req.headers.authorization?.split(' ')[1];
-    return this.userService.findAll(token, query);
+    return this.userService.findAll(token);
   }
 
   @Get(':id')

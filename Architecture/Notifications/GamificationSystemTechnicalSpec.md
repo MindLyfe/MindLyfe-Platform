@@ -1,6 +1,6 @@
-# Gamification System Technical Specification
+# MindLyfe Gamification System - Technical Specification
 
-This document provides detailed technical specifications for implementing the gamification elements of the MindLyf platform's notification and engagement strategy.
+This document provides detailed technical specifications for implementing the gamification elements of the MindLyfe platform's notification and engagement strategy.
 
 ## 1. System Overview
 
@@ -11,7 +11,7 @@ The Gamification System is designed to increase user engagement, motivation, and
 ```
 ┌─────────────────────────┐      ┌─────────────────────────┐
 │                         │      │                         │
-│   MindLyf Core Platform ├─────►│   Gamification Service  │
+│   MindLyfe Core Platform ├─────►│   Gamification Service  │
 │                         │      │                         │
 └───────────┬─────────────┘      └─────────┬───────────────┘
             │                              │

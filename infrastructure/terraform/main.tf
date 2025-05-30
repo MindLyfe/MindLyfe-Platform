@@ -28,7 +28,7 @@ provider "aws" {
   default_tags {
     tags = {
       Environment = var.environment
-      Project     = "MindLyf"
+      Project     = "MindLyfe"
       ManagedBy   = "Terraform"
     }
   }
@@ -71,12 +71,12 @@ module "eks" {
   source = "./modules/eks"
 
   environment                 = var.environment
-  cluster_name                = "mindlyf-${var.environment}"
+  cluster_name                = "mindlyfe-${var.environment}"
   cluster_version             = var.eks_cluster_version
   vpc_id                      = module.networking.vpc_id
   subnet_ids                  = module.networking.private_subnet_ids
   eks_managed_node_groups     = var.eks_managed_node_groups
-  cluster_security_group_name = "mindlyf-${var.environment}-cluster-sg"
+  cluster_security_group_name = "mindlyfe-${var.environment}-cluster-sg"
 }
 
 # RDS PostgreSQL
@@ -113,8 +113,8 @@ module "cognito" {
   source = "./modules/cognito"
 
   environment       = var.environment
-  user_pool_name    = "mindlyf-${var.environment}"
-  client_name       = "mindlyf-client-${var.environment}"
+  user_pool_name    = "mindlyfe-${var.environment}"
+  client_name       = "mindlyfe-client-${var.environment}"
   callback_urls     = var.cognito_callback_urls
   logout_urls       = var.cognito_logout_urls
   identity_providers = var.cognito_identity_providers
@@ -125,9 +125,9 @@ module "s3" {
   source = "./modules/s3"
 
   environment = var.environment
-  media_bucket_name = "mindlyf-media-${var.environment}"
-  logs_bucket_name  = "mindlyf-logs-${var.environment}"
-  archives_bucket_name = "mindlyf-archives-${var.environment}"
+  media_bucket_name = "mindlyfe-media-${var.environment}"
+  logs_bucket_name  = "mindlyfe-logs-${var.environment}"
+  archives_bucket_name = "mindlyfe-archives-${var.environment}"
 }
 
 # Output important values
@@ -161,4 +161,4 @@ output "media_bucket_name" {
 
 output "kubeconfig_command" {
   value = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name}"
-} 
+}

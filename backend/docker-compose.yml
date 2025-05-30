@@ -21,6 +21,8 @@ services:
       - CHAT_SERVICE_URL=http://chat-service:3003
       - COMMUNITY_SERVICE_URL=http://community-service:3004
       - NOTIFICATION_SERVICE_URL=http://notification-service:3005
+      - PAYMENT_SERVICE_URL=http://payment-service:3006
+      - RESOURCES_SERVICE_URL=http://resources-service:3007
       - AI_SERVICE_URL=http://ai-service:8000
       - JOURNAL_SERVICE_URL=http://journal-service:8001
       - RECOMMENDER_SERVICE_URL=http://recommender-service:8002
@@ -33,6 +35,8 @@ services:
       - chat-service
       - community-service
       - notification-service
+      - payment-service
+      - resources-service
       - ai-service
       - journal-service
       - recommender-service
@@ -205,6 +209,102 @@ services:
     networks:
       - mindlyf-network
 
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    ports:
+      - "3006:3006"
+    volumes:
+      - ./payment-service:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3006
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=mindlyf_payment
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=mindlyf-payment-service-secret
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - AUTH_SERVICE_TOKEN=mindlyf-auth-service-token
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3005
+      - NOTIFICATION_SERVICE_TOKEN=mindlyf-notification-service-token
+      # DPO Pay Configuration (Primary Gateway)
+      - DEFAULT_PAYMENT_GATEWAY=dpo
+      - DPO_COMPANY_TOKEN=${DPO_COMPANY_TOKEN:-}
+      - DPO_API_URL=https://secure.3gdirectpay.com/API/v6/
+      - DPO_TEST_MODE=true
+      - DPO_WEBHOOK_URL=http://localhost:3006/api/payments/webhook/dpo
+      - DPO_REDIRECT_URL=http://localhost:3000/payment/success
+      - DPO_BACK_URL=http://localhost:3000/payment/cancel
+      # Stripe Configuration (Secondary Gateway)
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET:-}
+      - STRIPE_API_VERSION=2023-10-16
+      # PayPal Configuration
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID:-}
+      - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET:-}
+      - PAYPAL_MODE=sandbox
+      - PAYPAL_WEBHOOK_ID=${PAYPAL_WEBHOOK_ID:-}
+      # Localization Settings
+      - DEFAULT_CURRENCY=UGX
+      - DEFAULT_COUNTRY=UG
+      - SUPPORTED_CURRENCIES=UGX,KES,TZS,RWF,GHS,ZMW,XOF,NAD,BWP,ZAR,MWK,NGN,AED,ETB,MZN,AOA,XAF,CDF,USD,EUR,GBP
+      - GEO_IP_SERVICE_URL=${GEO_IP_SERVICE_URL:-}
+      # Currency Converter Settings
+      - EXCHANGE_RATE_API_KEY=${EXCHANGE_RATE_API_KEY:-}
+      - FIXER_API_KEY=${FIXER_API_KEY:-}
+      - CURRENCY_API_KEY=${CURRENCY_API_KEY:-}
+      - CURRENCY_CACHE_EXPIRY=15
+      - FALLBACK_RATES_ENABLED=true
+    depends_on:
+      - postgres
+      - redis
+      - auth-service
+      - notification-service
+    networks:
+      - mindlyf-network
+
+  resources-service:
+    build:
+      context: ./resources-service
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3007:3007"
+    volumes:
+      - ./resources-service:/app
+      - /app/node_modules
+      - ./resources-service/uploads:/app/uploads
+    environment:
+      - NODE_ENV=development
+      - PORT=3007
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=mindlyf_resources
+      - DB_SYNC=true
+      - DB_LOGGING=true
+      - JWT_SECRET=mindlyf-auth-secret-key-dev
+      - JWT_SERVICE_SECRET=mindlyf-service-secret-key-dev
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3005
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - UPLOAD_DESTINATION=./uploads
+      - MAX_FILE_SIZE=10485760
+    depends_on:
+      - postgres
+      - redis
+      - auth-service
+    networks:
+      - mindlyf-network
+
   ai-service:
     build:
       context: ./ai-service
@@ -314,7 +414,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=mindlyf
-      - POSTGRES_MULTIPLE_DATABASES=mindlyf_auth,mindlyf_notification,mindlyf_teletherapy,mindlyf_chat,mindlyf_community,mindlyf_ai,mindlyf_journal,mindlyf_recommender,mindlyf_lyfbot
+      - POSTGRES_MULTIPLE_DATABASES=mindlyf_auth,mindlyf_notification,mindlyf_teletherapy,mindlyf_chat,mindlyf_community,mindlyf_payment,mindlyf_resources,mindlyf_ai,mindlyf_journal,mindlyf_recommender,mindlyf_lyfbot
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./database/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh

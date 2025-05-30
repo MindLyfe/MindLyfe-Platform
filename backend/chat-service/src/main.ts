@@ -50,8 +50,8 @@ async function bootstrap() {
 
   // Setup Swagger documentation
   const config = new DocumentBuilder()
-    .setTitle('Mindlyf Chat API')
-    .setDescription('API documentation for the Mindlyf Chat Service')
+    .setTitle('MindLyfe Chat Service API')
+    .setDescription('Real-time messaging API for the MindLyfe platform')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

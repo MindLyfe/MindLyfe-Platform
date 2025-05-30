@@ -12,16 +12,16 @@ DB_HOST=postgres
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_auth
+DB_NAME=mindlyfe_auth
 DB_SYNCHRONIZE=true
 DB_LOGGING=true
 DB_SSL=false
 
 # JWT Configuration
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 JWT_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
-JWT_SERVICE_SECRET=mindlyf-service-secret-key-dev
+JWT_SERVICE_SECRET=mindlyfe-service-secret-key-dev
 
 # Redis Configuration (for session/cache)
 REDIS_HOST=redis
@@ -33,8 +33,8 @@ AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
 
 # Email Configuration
-EMAIL_FROM=support@mindlyf.com
-EMAIL_REPLY_TO=noreply@mindlyf.com
+EMAIL_FROM=support@mindlyfe.com
+EMAIL_REPLY_TO=noreply@mindlyfe.com
 
 # Frontend URL (for email links, CORS, etc.)
 FRONTEND_URL=http://localhost:3000
@@ -46,7 +46,7 @@ AUTH_THROTTLE_TTL=60
 AUTH_THROTTLE_LIMIT=5
 
 # MFA Configuration
-MFA_ISSUER=MindLyf
+MFA_ISSUER=MindLyfe
 MFA_WINDOW=1
 
 # CORS Configuration
@@ -68,16 +68,16 @@ DB_HOST=postgres
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_NAME=mindlyf_auth
+DB_NAME=mindlyfe_auth
 DB_SYNCHRONIZE=true
 DB_LOGGING=true
 DB_SSL=false
 
 # JWT Configuration
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 JWT_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
-JWT_SERVICE_SECRET=mindlyf-service-secret-key-dev
+JWT_SERVICE_SECRET=mindlyfe-service-secret-key-dev
 
 # Redis Configuration (for session/cache)
 REDIS_HOST=redis
@@ -89,8 +89,8 @@ AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
 
 # Email Configuration
-EMAIL_FROM=support@mindlyf.com
-EMAIL_REPLY_TO=noreply@mindlyf.com
+EMAIL_FROM=support@mindlyfe.com
+EMAIL_REPLY_TO=noreply@mindlyfe.com
 
 # Frontend URL (for email links, CORS, etc.)
 FRONTEND_URL=http://localhost:3000
@@ -102,7 +102,7 @@ AUTH_THROTTLE_TTL=60
 AUTH_THROTTLE_LIMIT=5
 
 # MFA Configuration
-MFA_ISSUER=MindLyf
+MFA_ISSUER=MindLyfe
 MFA_WINDOW=1
 
 # CORS Configuration
@@ -110,4 +110,4 @@ CORS_ORIGIN=*
 
 # Service URLs
 NOTIFICATION_SERVICE_URL=http://notification-service:3005
-``` 
+```

@@ -7,13 +7,13 @@ ENVIRONMENT=development
 PORT=8000
 
 # Database Configuration
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyf_ai
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyfe_ai
 
 # Redis Configuration (for caching and rate limiting)
 REDIS_URL=redis://redis:6379/0
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Service Communication
 AUTH_SERVICE_URL=http://auth-service:3001
@@ -49,13 +49,13 @@ ENVIRONMENT=development
 PORT=8000
 
 # Database Configuration
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyf_ai
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyfe_ai
 
 # Redis Configuration (for caching and rate limiting)
 REDIS_URL=redis://redis:6379/0
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Service Communication
 AUTH_SERVICE_URL=http://auth-service:3001
@@ -82,4 +82,4 @@ CORS_ORIGINS=*
 # Logging
 LOG_LEVEL=info
 ENABLE_REQUEST_LOGGING=true
-``` 
+```

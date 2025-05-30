@@ -7,7 +7,7 @@ NODE_ENV=development
 PORT=3000
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Service URLs
 AUTH_SERVICE_URL=http://auth-service:3001
@@ -33,7 +33,7 @@ API_RATE_LIMIT=100 # requests per minute
 API_RATE_LIMIT_WINDOW=60000 # 1 minute in milliseconds
 
 # API Documentation
-SWAGGER_TITLE=MindLyf API
+SWAGGER_TITLE=MindLyfe API
 SWAGGER_DESCRIPTION=Mental health platform API
 SWAGGER_VERSION=1.0
 SWAGGER_PATH=/api/docs
@@ -50,7 +50,7 @@ NODE_ENV=development
 PORT=3000
 
 # JWT Configuration (must match auth service)
-JWT_SECRET=mindlyf-auth-secret-key-dev
+JWT_SECRET=mindlyfe-auth-secret-key-dev
 
 # Service URLs
 AUTH_SERVICE_URL=http://auth-service:3001
@@ -76,7 +76,7 @@ API_RATE_LIMIT=100 # requests per minute
 API_RATE_LIMIT_WINDOW=60000 # 1 minute in milliseconds
 
 # API Documentation
-SWAGGER_TITLE=MindLyf API
+SWAGGER_TITLE=MindLyfe API
 SWAGGER_DESCRIPTION=Mental health platform API
 SWAGGER_VERSION=1.0
 SWAGGER_PATH=/api/docs
@@ -84,4 +84,4 @@ SWAGGER_PATH=/api/docs
 # Security
 HELMET_ENABLED=true
 TRUST_PROXY=true
-``` 
+```

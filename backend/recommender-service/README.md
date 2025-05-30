@@ -1,6 +1,6 @@
-# MindLyf Recommender Service
+# MindLyfe Recommender Service
 
-The Recommender Service provides personalized recommendations for activities, resources, and coping strategies to MindLyf users based on their mental health needs, preferences, and history.
+The Recommender Service provides personalized recommendations for activities, resources, and coping strategies to MindLyfe users based on their mental health needs, preferences, and history.
 
 ## Features
 
@@ -32,7 +32,7 @@ The Recommender Service is built with:
 
 ### Services that depend on Recommender Service
 
-- **LyfBot Service**: Uses recommendations to suggest activities to users during conversations
+- **LyfeBot Service**: Uses recommendations to suggest activities to users during conversations
 - **Notification Service**: Sends notification about new recommendations to users
 
 ## API Endpoints
@@ -63,7 +63,7 @@ The Recommender Service is built with:
 ## Data Flow
 
 1. **Recommendation Generation**:
-   - User requests recommendations (directly or via LyfBot)
+   - User requests recommendations (directly or via LyfeBot)
    - Service retrieves user profile and preferences
    - Service gets journal insights from Journal Service
    - AI Service's algorithms generate personalized recommendations
@@ -95,7 +95,7 @@ The Recommender Service is built with:
 Create a `.env` file with the following variables:
 
 ```
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyf_recommender
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mindlyfe_recommender
 JWT_SECRET=your-secret-key
 AI_SERVICE_URL=http://ai-service:8000
 AUTH_SERVICE_URL=http://auth-service:3001
@@ -150,4 +150,4 @@ The service supports A/B testing of recommendation algorithms:
 - Sensitive user data is handled securely
 - Activity tracking is privacy-focused
 - Users can opt out of personalized recommendations
-- Compliance with HIPAA and GDPR requirements 
+- Compliance with HIPAA and GDPR requirements

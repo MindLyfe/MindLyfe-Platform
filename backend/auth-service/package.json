@@ -1,8 +1,8 @@
 {
-  "name": "auth-service",
+  "name": "mindlyfe-auth-service",
   "version": "1.0.0",
-  "description": "Authentication service for MindLyf platform",
-  "author": "MindLyf Team",
+  "description": "Authentication service for MindLyfe platform",
+  "author": "MindLyfe Team",
   "license": "UNLICENSED",
   "scripts": {
     "prebuild": "rimraf dist",

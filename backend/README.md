@@ -1,6 +1,6 @@
-# MindLyf Backend Services
+# MindLyfe Backend Services
 
-This directory contains the backend services for the MindLyf Mental Health Platform.
+This directory contains the backend services for the MindLyfe Mental Health Platform.
 
 ## Architecture
 
@@ -10,7 +10,7 @@ The backend follows a microservices architecture with the following services:
 | ---------------------------------- | ---------------------------- | ---------------------------- |
 | **API Gateway**                   | NestJS                       | Central entry point for all client requests |
 | **Auth Service**                   | NestJS + Cognito             | Authentication, user management with MFA, RBAC |
-| **AI Personalization Service**     | FastAPI + OpenAI API         | LyfBot, AI Journeys, personalization |
+| **AI Personalization Service**     | FastAPI + OpenAI API         | LyfeBot, AI Journeys, personalization |
 | **Journal Analysis Service**       | Python Lambda / ECS          | NLP + summaries of journal entries |
 | **Resource Recommendation Engine** | Node.js / Python             | Recommender logic, content tagging |
 | **Chat/WebSocket Gateway**         | NestJS + Redis               | Real-time communication |
@@ -87,4 +87,4 @@ Follow the established architecture patterns when contributing to the backend:
 - SOLID code principles
 - Thorough test coverage
 - Proper error handling
-- Security best practices 
+- Security best practices

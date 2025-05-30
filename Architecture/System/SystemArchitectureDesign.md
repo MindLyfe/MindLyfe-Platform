@@ -1,8 +1,8 @@
-# MindLyf System Architecture Design
+# MindLyfe System Architecture Design
 
 ## Overview
 
-This document outlines the system architecture for the MindLyf mental health platform. The architecture is designed to be scalable, resilient, and modular to support the platform's requirements for AI-enhanced therapy, wearable integration, and real-time communication. The system follows a microservices approach with domain-driven design principles to enable independent scaling, deployment, and evolution of components.
+This document outlines the system architecture for the MindLyfe mental health platform. The architecture is designed to be scalable, resilient, and modular to support the platform's requirements for AI-enhanced therapy, wearable integration, and real-time communication. The system follows a microservices approach with domain-driven design principles to enable independent scaling, deployment, and evolution of components.
 
 ## Architectural Patterns
 

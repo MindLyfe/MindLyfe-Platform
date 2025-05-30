@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom, catchError } from 'rxjs';
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 
 @Injectable()
 export class UserService {
@@ -18,7 +18,7 @@ export class UserService {
 
   async findById(id: string, token: string) {
     try {
-      const response = await firstValueFrom(
+      const response: AxiosResponse = await firstValueFrom(
         this.httpService
           .get(`${this.userServiceUrl}/users/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -37,12 +37,11 @@ export class UserService {
     }
   }
 
-  async findAll(token: string, query: any = {}) {
+  async findAll(token: string) {
     try {
-      const response = await firstValueFrom(
+      const response: AxiosResponse = await firstValueFrom(
         this.httpService
           .get(`${this.userServiceUrl}/users`, {
-            params: query,
             headers: { Authorization: `Bearer ${token}` },
           })
           .pipe(
@@ -61,7 +60,7 @@ export class UserService {
 
   async update(id: string, updateDto: any, token: string) {
     try {
-      const response = await firstValueFrom(
+      const response: AxiosResponse = await firstValueFrom(
         this.httpService
           .patch(`${this.userServiceUrl}/users/${id}`, updateDto, {
             headers: { Authorization: `Bearer ${token}` },
@@ -82,7 +81,7 @@ export class UserService {
 
   async delete(id: string, token: string) {
     try {
-      const response = await firstValueFrom(
+      const response: AxiosResponse = await firstValueFrom(
         this.httpService
           .delete(`${this.userServiceUrl}/users/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -103,7 +102,7 @@ export class UserService {
 
   async updatePassword(id: string, passwordDto: any, token: string) {
     try {
-      const response = await firstValueFrom(
+      const response: AxiosResponse = await firstValueFrom(
         this.httpService
           .patch(`${this.userServiceUrl}/users/${id}/password`, passwordDto, {
             headers: { Authorization: `Bearer ${token}` },

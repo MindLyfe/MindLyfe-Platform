@@ -1,6 +1,6 @@
-# MindLyf Microservices Environment Configuration
+# MindLyfe Microservices Environment Configuration
 
-This document provides an overview of the environment configurations for the MindLyf microservices architecture. Each service has its own `.env` and `.env.example` files to ensure proper operation and communication between services.
+This document provides an overview of the environment configurations for the MindLyfe microservices architecture. Each service has its own `.env` and `.env.example` files to ensure proper operation and communication between services.
 
 ## Key Principles
 
@@ -78,4 +78,4 @@ For production deployments:
 4. Configure proper CORS settings
 5. Set appropriate rate limits
 6. Use real AWS credentials for SES, S3, etc.
-7. Enable HTTPS for all service-to-service communication 
+7. Enable HTTPS for all service-to-service communication

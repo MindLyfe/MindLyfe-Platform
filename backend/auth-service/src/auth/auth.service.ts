@@ -11,7 +11,7 @@ import { SessionService } from './session/session.service';
 import { EventService, EventType } from '../shared/events/event.service';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { UserService } from '../user/user.service';
+import { UserService, SafeUser } from '../user/user.service';
 import { RedisService } from '../shared/services/redis.service';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
@@ -432,12 +432,17 @@ export class AuthService {
   }
 
   // Validate user for JWT strategy
-  async validateUserById(userId: string): Promise<any> {
-    const user = await this.userService.findById(userId);
-    if (!user || user.status !== UserStatus.ACTIVE) {
+  async validateUserById(userId: string): Promise<SafeUser | null> {
+    try {
+      const user = await this.userService.findById(userId);
+      if (!user || user.status !== UserStatus.ACTIVE) {
+        return null;
+      }
+      return user;
+    } catch (error) {
+      // If user not found, return null
       return null;
     }
-    return user;
   }
   
   // Helper to parse time strings like '7d' to milliseconds
@@ -593,5 +598,116 @@ export class AuthService {
       secret: this.configService.get<string>('JWT_SERVICE_SECRET'),
       expiresIn: '5m',
     });
+  }
+
+  async getUserSubscriptionStatus(userId: string): Promise<any> {
+    // This would integrate with the subscription service
+    // For now, return a basic structure
+    const user = await this.userService.findById(userId);
+
+    if (!user) {
+      return null;
+    }
+
+    // Get active subscriptions
+    const activeSubscriptions = user.subscriptions?.filter(sub => 
+      sub.status === 'active' && 
+      (!sub.endDate || new Date(sub.endDate) > new Date())
+    ) || [];
+
+    return {
+      hasActiveSubscription: activeSubscriptions.length > 0,
+      subscriptions: activeSubscriptions,
+      userType: user.userType,
+      organizationId: user.organizationId,
+      canMakePayments: user.status === UserStatus.ACTIVE && user.emailVerified,
+    };
+  }
+
+  async handlePaymentNotification(userId: string, notification: any): Promise<any> {
+    const user = await this.validateUserById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Log the payment notification
+    this.logger.log(`Payment notification for user ${userId}: ${notification.type}`);
+
+    // Handle different notification types
+    switch (notification.type) {
+      case 'payment_succeeded':
+        // Update user's payment status or subscription
+        await this.handlePaymentSuccess(userId, notification);
+        break;
+      case 'payment_failed':
+        // Handle payment failure
+        await this.handlePaymentFailure(userId, notification);
+        break;
+      case 'subscription_created':
+        // Handle new subscription
+        await this.handleSubscriptionCreated(userId, notification);
+        break;
+      case 'subscription_canceled':
+        // Handle subscription cancellation
+        await this.handleSubscriptionCanceled(userId, notification);
+        break;
+    }
+
+    return { success: true, message: 'Payment notification processed' };
+  }
+
+  async validatePaymentAccess(userId: string, paymentType: string, amount: number): Promise<boolean> {
+    const user = await this.userService.findById(userId);
+
+    if (!user) {
+      return false;
+    }
+
+    // Check if user is active and email verified
+    if (user.status !== UserStatus.ACTIVE || !user.emailVerified) {
+      return false;
+    }
+
+    // Check if user is a minor and needs guardian approval for payments
+    if (user.isMinor && amount > 50000) { // 50,000 UGX threshold for minors
+      return false;
+    }
+
+    // Organization members might have different payment rules
+    if (user.organizationId && paymentType === 'subscription') {
+      // Organization members might not be able to create individual subscriptions
+      return false;
+    }
+
+    return true;
+  }
+
+  private async handlePaymentSuccess(userId: string, notification: any): Promise<void> {
+    // Implementation for handling successful payments
+    this.logger.log(`Payment succeeded for user ${userId}: ${notification.paymentId}`);
+    
+    // Could update user credits, subscription status, etc.
+    // This would integrate with the subscription service
+  }
+
+  private async handlePaymentFailure(userId: string, notification: any): Promise<void> {
+    // Implementation for handling failed payments
+    this.logger.log(`Payment failed for user ${userId}: ${notification.paymentId}`);
+    
+    // Could send notification to user, update payment status, etc.
+  }
+
+  private async handleSubscriptionCreated(userId: string, notification: any): Promise<void> {
+    // Implementation for handling new subscriptions
+    this.logger.log(`Subscription created for user ${userId}: ${notification.subscriptionId}`);
+    
+    // Could activate premium features, update user status, etc.
+  }
+
+  private async handleSubscriptionCanceled(userId: string, notification: any): Promise<void> {
+    // Implementation for handling subscription cancellations
+    this.logger.log(`Subscription canceled for user ${userId}: ${notification.subscriptionId}`);
+    
+    // Could deactivate premium features, update user status, etc.
   }
 }

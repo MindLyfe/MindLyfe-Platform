@@ -33,7 +33,7 @@ spec:
             memory: 1Gi
         env:
         - name: cluster.name
-          value: mindlyf-logging
+          value: mindlyfe-logging
         - name: node.name
           valueFrom:
             fieldRef:
@@ -68,4 +68,4 @@ spec:
   - port: 9300
     name: transport
     targetPort: 9300
-  type: ClusterIP 
+  type: ClusterIP
