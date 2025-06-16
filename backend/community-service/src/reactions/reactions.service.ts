@@ -32,13 +32,13 @@ export class ReactionsService {
    */
   async add(dto: AddReactionDto, user: any): Promise<any> {
     try {
-      // Validation: Must react to either a post or comment, not both or neither
-      if (!dto.postId && !dto.commentId) {
-        throw new BadRequestException('Must provide either postId or commentId');
-      }
-      if (dto.postId && dto.commentId) {
-        throw new BadRequestException('Cannot react to both post and comment simultaneously');
-      }
+    // Validation: Must react to either a post or comment, not both or neither
+    if (!dto.postId && !dto.commentId) {
+      throw new BadRequestException('Must provide either postId or commentId');
+    }
+    if (dto.postId && dto.commentId) {
+      throw new BadRequestException('Cannot react to both post and comment simultaneously');
+    }
 
       // Validate user exists
       const userEntity = await this.userRepo.findOne({ 
@@ -72,19 +72,19 @@ export class ReactionsService {
         }
       }
 
-      // Check if user already reacted with this type to the same content
-      const existingReaction = await this.reactionRepo.findOne({
-        where: {
+    // Check if user already reacted with this type to the same content
+    const existingReaction = await this.reactionRepo.findOne({
+      where: {
           userId: userEntity.id,
-          postId: dto.postId || null,
-          commentId: dto.commentId || null,
-          type: dto.type
-        }
-      });
-
-      if (existingReaction) {
-        throw new BadRequestException('You have already reacted with this reaction type');
+        postId: dto.postId || null,
+        commentId: dto.commentId || null,
+        type: dto.type
       }
+    });
+
+    if (existingReaction) {
+      throw new BadRequestException('You have already reacted with this reaction type');
+    }
 
       // Generate anonymous identity for this user
       const anonymousIdentity = this.anonymityService.generateAnonymousIdentity(user.id, 'reaction');
@@ -92,9 +92,9 @@ export class ReactionsService {
       // Enforce anonymity - all community reactions are anonymous
       const reactionData = {
         userId: userEntity.id,
-        postId: dto.postId || null,
-        commentId: dto.commentId || null,
-        type: dto.type,
+      postId: dto.postId || null,
+      commentId: dto.commentId || null,
+      type: dto.type,
         isAnonymous: true, // Force anonymity in community
         pseudonym: anonymousIdentity.displayName
       };
@@ -115,8 +115,8 @@ export class ReactionsService {
         anonymousIdentity
       );
 
-      // Emit real-time event
-      this.gateway.emitEvent('reactionAdded', {
+    // Emit real-time event
+    this.gateway.emitEvent('reactionAdded', {
         id: savedReaction.id,
         postId: savedReaction.postId,
         commentId: savedReaction.commentId,
@@ -140,10 +140,10 @@ export class ReactionsService {
   async remove(dto: RemoveReactionDto, user: any): Promise<void> {
     try {
       // Validation: Must specify either a post or comment, not both or neither
-      if (!dto.postId && !dto.commentId) {
-        throw new BadRequestException('Must provide either postId or commentId');
-      }
-      if (dto.postId && dto.commentId) {
+    if (!dto.postId && !dto.commentId) {
+      throw new BadRequestException('Must provide either postId or commentId');
+    }
+    if (dto.postId && dto.commentId) {
         throw new BadRequestException('Cannot specify both post and comment');
       }
 
@@ -158,22 +158,22 @@ export class ReactionsService {
 
       // Find existing reaction
       const existingReaction = await this.reactionRepo.findOne({
-        where: {
+      where: {
           userId: userEntity.id,
-          postId: dto.postId || null,
-          commentId: dto.commentId || null,
-          type: dto.type
-        }
-      });
+        postId: dto.postId || null,
+        commentId: dto.commentId || null,
+        type: dto.type
+      }
+    });
 
       if (!existingReaction) {
-        throw new NotFoundException('Reaction not found');
-      }
+      throw new NotFoundException('Reaction not found');
+    }
 
-      // Remove the reaction
+    // Remove the reaction
       await this.reactionRepo.remove(existingReaction);
 
-      // Emit real-time event
+    // Emit real-time event
       this.gateway.emitEvent('reactionRemoved', {
         postId: existingReaction.postId,
         commentId: existingReaction.commentId,
@@ -194,21 +194,21 @@ export class ReactionsService {
    */
   async list(query: any, user: any): Promise<any> {
     try {
-      const where: any = {};
-      
-      // Filter by post or comment
-      if (query.postId) {
-        where.postId = query.postId;
-      }
-      if (query.commentId) {
-        where.commentId = query.commentId;
-      }
-      
-      // Optional type filter
-      if (query.type && Object.values(ReactionType).includes(query.type)) {
-        where.type = query.type;
-      }
-      
+    const where: any = {};
+    
+    // Filter by post or comment
+    if (query.postId) {
+      where.postId = query.postId;
+    }
+    if (query.commentId) {
+      where.commentId = query.commentId;
+    }
+    
+    // Optional type filter
+    if (query.type && Object.values(ReactionType).includes(query.type)) {
+      where.type = query.type;
+    }
+    
       // Get aggregated counts by type (most common use case)
       if (query.aggregate === 'true' || query.aggregate === true) {
         const reactions = await this.reactionRepo.find({ 
@@ -217,11 +217,11 @@ export class ReactionsService {
         });
         
         // Group and count reactions by type (anonymous)
-        const counts = reactions.reduce((acc, reaction) => {
-          acc[reaction.type] = (acc[reaction.type] || 0) + 1;
-          return acc;
-        }, {});
-        
+      const counts = reactions.reduce((acc, reaction) => {
+        acc[reaction.type] = (acc[reaction.type] || 0) + 1;
+        return acc;
+      }, {});
+      
         // Check if current user has reacted (for UI highlighting)
         let userReactions = {};
         if (user) {
@@ -229,9 +229,9 @@ export class ReactionsService {
           if (userEntity) {
             userReactions = reactions
               .filter(r => r.userId === userEntity.id)
-              .reduce((acc, r) => {
-                acc[r.type] = true;
-                return acc;
+        .reduce((acc, r) => {
+          acc[r.type] = true;
+          return acc;
               }, {});
           }
         }
@@ -349,11 +349,11 @@ export class ReactionsService {
       }
 
       const [reactions, total] = await this.reactionRepo.findAndCount({
-        where,
+      where,
         relations: ['post', 'comment'],
         take: limit,
-        skip,
-        order: { createdAt: 'DESC' }
+      skip,
+      order: { createdAt: 'DESC' }
       });
 
       // Return user's own reactions (they can see their own history)
@@ -391,16 +391,16 @@ export class ReactionsService {
 
         return result;
       });
-
-      return {
+    
+    return {
         items: anonymizedReactions,
         pagination: {
           page,
           limit,
-          total,
+      total,
           pages: Math.ceil(total / limit)
         }
-      };
+    };
 
     } catch (error) {
       this.logger.error(`Failed to get user reactions: ${error.message}`, error.stack);

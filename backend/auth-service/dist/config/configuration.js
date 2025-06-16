@@ -9,17 +9,17 @@ exports.default = () => ({
         port: parseInt(process.env.DB_PORT, 10) || 5432,
         username: process.env.DB_USERNAME || 'postgres',
         password: process.env.DB_PASSWORD || 'postgres',
-        name: process.env.DB_NAME || 'mindlyf_auth',
+        name: process.env.DB_NAME || 'mindlyfe_auth',
         synchronize: process.env.DB_SYNCHRONIZE === 'true',
         logging: process.env.DB_LOGGING === 'true',
         ssl: process.env.DB_SSL === 'true',
     },
     jwt: {
-        secret: process.env.JWT_SECRET || 'dev-secret-key-change-in-production',
+        secret: process.env.JWT_SECRET || 'mindlyfe-auth-secret-key-dev',
         expiresIn: process.env.JWT_EXPIRES_IN || '1h',
         refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
         refreshSecret: process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret-change-in-production',
-        serviceSecret: process.env.JWT_SERVICE_SECRET || 'mindlyf-service-secret-key-dev',
+        serviceSecret: process.env.JWT_SERVICE_SECRET || 'mindlyfe-service-secret-key-dev',
     },
     redis: {
         host: process.env.REDIS_HOST || 'localhost',
@@ -49,8 +49,8 @@ exports.default = () => ({
         secretKey: process.env.AWS_SECRET_ACCESS_KEY,
     },
     email: {
-        from: process.env.EMAIL_FROM || 'support@mindlyf.com',
-        replyTo: process.env.EMAIL_REPLY_TO || 'noreply@mindlyf.com',
+        from: process.env.EMAIL_FROM || 'support@mindlyfe.com',
+        replyTo: process.env.EMAIL_REPLY_TO || 'noreply@mindlyfe.com',
     },
     frontend: {
         url: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -62,7 +62,7 @@ exports.default = () => ({
         authLimit: parseInt(process.env.AUTH_THROTTLE_LIMIT, 10) || 5,
     },
     mfa: {
-        issuer: process.env.MFA_ISSUER || 'MindLyf',
+        issuer: process.env.MFA_ISSUER || 'MindLyfe',
         window: parseInt(process.env.MFA_WINDOW, 10) || 1,
     },
     cors: {

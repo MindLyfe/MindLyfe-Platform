@@ -1,112 +1,145 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, LessThanOrEqual, MoreThanOrEqual, In } from 'typeorm';
 import { TherapySession, SessionStatus, SessionType, SessionCategory } from './entities/therapy-session.entity';
+import { SessionNote } from './entities/session-note.entity';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { JwtUser } from '../auth/interfaces/user.interface';
 import { addDays, addWeeks, addMonths, isBefore, isAfter, startOfDay, endOfDay, differenceInMinutes } from 'date-fns';
 import { AddParticipantsDto, RemoveParticipantsDto, UpdateParticipantRoleDto, ManageBreakoutRoomsDto, ParticipantRole } from './dto/manage-participants.dto';
-import { User } from '../auth/entities/user.entity';
-import { AuthClientService } from '@mindlyf/shared/auth-client';
+import { User, UserRole } from '../auth/entities/user.entity';
+import { AuthClientService } from './services/auth-client.service';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
+import { TeletherapyNotificationService } from './services/notification.service';
+import { v4 as uuidv4 } from 'uuid'; // Added uuid import
+
+interface ChatServiceResponse {
+  data?: {
+    id: string;
+    // Add other expected properties from chat service response if known
+  };
+  // Add other top-level properties from chat service response if known
+}
 
 @Injectable()
 export class TeletherapyService {
+  private readonly logger = new Logger(TeletherapyService.name);
   private readonly chatServiceUrl: string;
+  private readonly authServiceUrl: string;
 
   constructor(
     @InjectRepository(TherapySession)
     private readonly sessionRepository: Repository<TherapySession>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    // User repository replaced with HTTP client calls to auth service
+    @InjectRepository(SessionNote)
+    private readonly sessionNoteRepository: Repository<SessionNote>,
     private readonly authClient: AuthClientService,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly notificationService: TeletherapyNotificationService,
   ) {
     this.chatServiceUrl = this.configService.get<string>('services.chatServiceUrl', 'http://chat-service:3003');
+    this.authServiceUrl = this.configService.get<string>('AUTH_SERVICE_URL', 'http://auth-service:3001');
   }
 
   async createSession(createSessionDto: CreateSessionDto, user: JwtUser): Promise<TherapySession> {
-    // Validate user via auth service
-    await this.authClient.validateUser(user.id);
-    
-    // Validate therapist via auth service
-    const therapistInfo = await this.authClient.validateUser(createSessionDto.therapistId);
-    const isTherapist = therapistInfo.roles?.some(role => 
-      ['therapist', 'admin'].includes(role.toLowerCase())
-    );
-    
-    if (!isTherapist) {
-      throw new BadRequestException('The specified therapist ID does not belong to a valid therapist');
-    }
-    
-    // Validate user permissions
-    if (user.id !== createSessionDto.therapistId && user.role !== 'admin') {
-      throw new ForbiddenException('Only the assigned therapist or admin can create sessions');
-    }
+    try {
+      // Validate therapist exists and is available
+      const therapist = await this.authClient.validateUser(createSessionDto.therapistId);
 
-    // Validate session times
-    if (isBefore(createSessionDto.endTime, createSessionDto.startTime)) {
-      throw new BadRequestException('End time must be after start time');
-    }
-
-    if (isBefore(createSessionDto.startTime, new Date())) {
-      throw new BadRequestException('Cannot create sessions in the past');
-    }
-
-    // Validate session type and category
-    this.validateSessionTypeAndCategory(createSessionDto.type, createSessionDto.category);
-
-    // Validate participant limits
-    if (createSessionDto.category !== SessionCategory.INDIVIDUAL) {
-      if (!createSessionDto.maxParticipants) {
-        throw new BadRequestException('Maximum participants must be specified for group sessions');
+      if (!therapist) {
+        throw new NotFoundException('Therapist not found or not available');
       }
-      if (createSessionDto.participantIds?.length > createSessionDto.maxParticipants) {
-        throw new BadRequestException('Number of participants exceeds maximum limit');
+
+      // Check for scheduling conflicts
+      const conflictingSession = await this.sessionRepository.findOne({
+        where: {
+          therapistId: createSessionDto.therapistId,
+          startTime: new Date(createSessionDto.startTime),
+          status: SessionStatus.SCHEDULED
+        }
+      });
+
+      if (conflictingSession) {
+        await this.notificationService.notifySessionBookingFailed(
+          user.id,
+          'Time slot not available',
+          new Date(createSessionDto.startTime),
+          therapist.name
+        );
+        throw new BadRequestException('Time slot is not available');
       }
+
+      // Create session entity
+      const sessionEntity = {
+        clientId: user.id,
+        therapistId: createSessionDto.therapistId,
+        startTime: new Date(createSessionDto.startTime),
+        endTime: new Date(createSessionDto.endTime),
+        type: createSessionDto.type,
+        status: SessionStatus.SCHEDULED,
+        duration: (new Date(createSessionDto.endTime).getTime() - new Date(createSessionDto.startTime).getTime()) / 60000, // Calculate duration in minutes
+        notes: {
+          clientNotes: createSessionDto.metadata?.notes as string, // Access from metadata
+        },
+        metadata: {
+          bookingSource: 'api',
+          meetingLink: this.generateMeetingLink(),
+          isEmergency: createSessionDto.metadata?.isEmergency as boolean || false,
+          // Spread DTO metadata if it exists to allow overriding meetingLink etc.
+          ...(createSessionDto.metadata || {}),
+        }
+      };
+
+      // Create and save the session
+      const session = this.sessionRepository.create(sessionEntity);
+      const saveResult = await this.sessionRepository.save(session);
+      
+      // Ensure we have a single TherapySession entity
+      // Use type assertion to tell TypeScript this is a TherapySession
+      const savedSession = Array.isArray(saveResult) 
+        ? saveResult[0] as TherapySession 
+        : saveResult as TherapySession;
+
+      if (!savedSession) {
+        // Handle case where session saving failed unexpectedly and didn't return an entity
+        this.logger.error('Session saving failed and did not return a valid entity.');
+        throw new InternalServerErrorException('Failed to save session.');
+      }
+
+      // NOTIFICATION: Send booking confirmation
+      try {
+        await this.notificationService.notifySessionBookingConfirmed(
+          user.id,
+          createSessionDto.therapistId,
+          savedSession.id,
+          savedSession.startTime,
+          therapist.name || 'Therapist',
+          createSessionDto.type,
+          savedSession.duration
+        );
+
+        // Schedule session reminders
+        await this.notificationService.scheduleSessionReminders(
+          savedSession.id,
+          user.id,
+          createSessionDto.therapistId,
+          savedSession.startTime,
+          therapist.name || 'Therapist',
+          createSessionDto.type
+        );
+      } catch (error) {
+        // Log notification error but don't fail the session creation
+        this.logger.error(`Failed to send session notifications: ${error.message}`, error.stack);
+      }
+
+      return savedSession;
+    } catch (error) {
+      this.logger.error(`Error creating session: ${error.message}`, error.stack);
+      throw error;
     }
-
-    // Check for scheduling conflicts
-    const conflicts = await this.findSchedulingConflicts(
-      createSessionDto.therapistId,
-      createSessionDto.startTime,
-      createSessionDto.endTime,
-    );
-
-    if (conflicts.length > 0) {
-      throw new BadRequestException('Scheduling conflict detected');
-    }
-
-    // Validate all participants via auth service if any are specified
-    if (createSessionDto.participantIds?.length) {
-      await Promise.all(
-        createSessionDto.participantIds.map(async (participantId) => {
-          try {
-            await this.authClient.validateUser(participantId);
-          } catch (error) {
-            throw new BadRequestException(`Invalid participant ID: ${participantId}`);
-          }
-        })
-      );
-    }
-
-    // Create the session
-    const session = this.sessionRepository.create({
-      ...createSessionDto,
-      status: SessionStatus.SCHEDULED,
-      currentParticipants: createSessionDto.participantIds?.length || 0,
-    });
-
-    // Handle recurring sessions
-    if (createSessionDto.isRecurring && createSessionDto.recurringSchedule) {
-      const sessions = await this.createRecurringSessions(session, createSessionDto.recurringSchedule);
-      return sessions[0]; // Return the first session
-    }
-
-    return this.sessionRepository.save(session);
   }
 
   private validateSessionTypeAndCategory(type: SessionType, category: SessionCategory): void {
@@ -144,8 +177,7 @@ export class TeletherapyService {
 
     // Add existing users
     if (addParticipantsDto.userIds?.length) {
-      const users = await this.userRepository.findBy({ id: In(addParticipantsDto.userIds) });
-      session.participants = [...(session.participants || []), ...users];
+      const users = await this.authClient.getUsersByIds(addParticipantsDto.userIds);
       session.participantIds = [...(session.participantIds || []), ...addParticipantsDto.userIds];
     }
 
@@ -172,7 +204,7 @@ export class TeletherapyService {
     }
 
     // Remove participants
-    session.participants = session.participants?.filter(p => !removeParticipantsDto.userIds.includes(p.id));
+    session.participantIds = session.participantIds?.filter(id => !removeParticipantsDto.userIds.includes(id)) || [];
     session.participantIds = session.participantIds?.filter(id => !removeParticipantsDto.userIds.includes(id));
     session.currentParticipants = session.participantIds.length;
 
@@ -222,10 +254,11 @@ export class TeletherapyService {
     }
 
     // Update breakout rooms configuration
+    const duration = parseInt(breakoutRoomsDto.duration, 10);
     session.metadata = {
       ...session.metadata,
-      breakoutRooms: breakoutRoomsDto.rooms,
-      breakoutRoomDuration: breakoutRoomsDto.duration,
+      breakoutRooms: breakoutRoomsDto.rooms.map(room => ({ ...room, id: uuidv4() })),
+      breakoutRoomDuration: !isNaN(duration) ? duration : 0,
     };
 
     return this.sessionRepository.save(session);
@@ -250,7 +283,7 @@ export class TeletherapyService {
     }
 
     // Add user to participants
-    session.participants = [...(session.participants || []), user];
+    session.participantIds = [...(session.participantIds || []), user.id];
     session.participantIds = [...(session.participantIds || []), user.id];
     session.currentParticipants = session.participantIds.length;
 
@@ -267,7 +300,7 @@ export class TeletherapyService {
     const session = await this.getSessionById(sessionId, user);
 
     // Remove user from participants
-    session.participants = session.participants?.filter(p => p.id !== user.id);
+    session.participantIds = session.participantIds?.filter(id => id !== user.id) || [];
     session.participantIds = session.participantIds?.filter(id => id !== user.id);
     session.currentParticipants = session.participantIds.length;
 
@@ -512,7 +545,7 @@ export class TeletherapyService {
             }
           }
         )
-      );
+      ) as ChatServiceResponse; // Added type assertion here
       
       // Add the chat room ID to the session metadata
       session.metadata = {
@@ -541,9 +574,7 @@ export class TeletherapyService {
       const clientInfo = await this.authClient.validateUser(clientId);
       
       // Ensure the therapist is actually a therapist
-      const isTherapist = therapistInfo.roles?.some(role => 
-        ['therapist', 'admin'].includes(role.toLowerCase())
-      );
+      const isTherapist = therapistInfo.role === UserRole.THERAPIST;
       
       if (!isTherapist) {
         return false; // The specified therapist ID is not a therapist
@@ -578,7 +609,7 @@ export class TeletherapyService {
         { therapistId: userId },
         { participantIds: userId }
       ],
-      order: { sessionDate: 'DESC' },
+      order: { startTime: 'DESC' }, // Changed sessionDate to startTime
       take: 50
     });
   }
@@ -587,15 +618,15 @@ export class TeletherapyService {
     try {
       // Get therapists from auth service
       const response = await this.authClient.getUsers({ role: 'therapist' });
-      return response.filter(user => user.status === 'active');
+      return response.filter(user => user.isActive === true);
     } catch (error) {
       console.error('Error fetching therapists:', error);
       return [];
     }
   }
 
-  async getAvailableSlots(therapistId: string, date?: string): Promise<any[]> {
-    const targetDate = date ? new Date(date) : new Date();
+  async getAvailableSlots(therapistId: string, startDate: string, endDate: string, durationMinutes: number, serviceType?: SessionType, timezone?: string): Promise<any[]> {
+    const targetDate = startDate ? new Date(startDate) : new Date(); // Changed date to startDate
     const startOfTargetDay = startOfDay(targetDate);
     const endOfTargetDay = endOfDay(targetDate);
 
@@ -603,7 +634,7 @@ export class TeletherapyService {
     const existingSessions = await this.sessionRepository.find({
       where: {
         therapistId,
-        sessionDate: Between(startOfTargetDay, endOfTargetDay),
+        startTime: Between(startOfTargetDay, endOfTargetDay), // Changed sessionDate to startTime
         status: In([SessionStatus.SCHEDULED, SessionStatus.IN_PROGRESS])
       }
     });
@@ -616,7 +647,7 @@ export class TeletherapyService {
 
       // Check if this slot conflicts with existing sessions
       const hasConflict = existingSessions.some(session => {
-        const sessionStart = new Date(session.sessionDate);
+        const sessionStart = new Date(session.startTime); // Changed session.sessionDate to session.startTime
         const sessionEnd = new Date(sessionStart.getTime() + (session.duration || 60) * 60000);
         const slotEnd = new Date(slotTime.getTime() + 60 * 60000);
 
@@ -648,4 +679,12 @@ export class TeletherapyService {
 
     return await this.sessionRepository.save(session);
   }
-} 
+
+  /**
+   * Generate meeting link for session
+   */
+  private generateMeetingLink(): string {
+    const sessionId = Math.random().toString(36).substring(2, 15);
+    return `${this.configService.get('VIDEO_SERVICE_URL', 'https://meet.mindlyf.com')}/session/${sessionId}`;
+  }
+}

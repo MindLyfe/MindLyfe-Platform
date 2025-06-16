@@ -15,14 +15,19 @@ const terminus_1 = require("@nestjs/terminus");
 const configuration_1 = require("./config/configuration");
 const health_controller_1 = require("./health/health.controller");
 const proxy_controller_1 = require("./controllers/proxy.controller");
+const admin_controller_1 = require("./controllers/admin.controller");
 const proxy_service_1 = require("./services/proxy.service");
 const auth_module_1 = require("./auth/auth.module");
 const jwt_auth_guard_1 = require("./auth/guards/jwt-auth.guard");
 const user_module_1 = require("./user/user.module");
 const ai_module_1 = require("./modules/ai.module");
 const community_module_1 = require("./modules/community.module");
+const payment_module_1 = require("./modules/payment.module");
+const resources_module_1 = require("./modules/resources.module");
 const notification_module_1 = require("./modules/notification.module");
 const lyfbot_module_1 = require("./modules/lyfbot.module");
+const therapy_module_1 = require("./modules/therapy.module");
+const docs_module_1 = require("./docs/docs.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -47,12 +52,17 @@ AppModule = __decorate([
             user_module_1.UserModule,
             ai_module_1.AiModule,
             community_module_1.CommunityModule,
+            payment_module_1.PaymentModule,
+            resources_module_1.ResourcesModule,
             notification_module_1.NotificationModule,
             lyfbot_module_1.LyfbotModule,
+            therapy_module_1.TherapyModule,
+            docs_module_1.DocsModule,
         ],
         controllers: [
             health_controller_1.HealthController,
             proxy_controller_1.ProxyController,
+            admin_controller_1.AdminController,
         ],
         providers: [
             proxy_service_1.ProxyService,

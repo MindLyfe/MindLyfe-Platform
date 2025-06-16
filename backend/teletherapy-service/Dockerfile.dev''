@@ -1,5 +1,18 @@
 FROM node:18-alpine
 
+# Install Python, make, g++ and other build dependencies for MediaSoup
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    make \
+    g++ \
+    cmake \
+    linux-headers \
+    libc6-compat
+
+# Create symbolic link for python (MediaSoup expects 'python' command)
+RUN ln -sf python3 /usr/bin/python
+
 WORKDIR /app
 
 COPY package*.json ./

@@ -4,10 +4,8 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToMany,
-  JoinTable,
 } from 'typeorm';
-import { User } from '../../auth/entities/user.entity';
+// User entity is managed by auth-service
 
 export enum MediaSessionType {
   TELETHERAPY = 'teletherapy',
@@ -32,9 +30,8 @@ export class MediaSession {
   @Column()
   contextId: string;
 
-  @ManyToMany(() => User)
-  @JoinTable({ name: 'media_session_participants' })
-  participants: User[];
+  @Column({ type: 'simple-array', default: [] })
+  participants: string[]; // User IDs from auth service
 
   @Column({ type: 'enum', enum: MediaSessionStatus, default: MediaSessionStatus.PENDING })
   status: MediaSessionStatus;

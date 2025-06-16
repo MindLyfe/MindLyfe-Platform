@@ -27,7 +27,7 @@ export class PrivacyService {
     try {
       const iv = crypto.randomBytes(this.ivLength);
       const salt = crypto.randomBytes(this.saltLength);
-      const cipher = crypto.createCipheriv(this.algorithm, this.key, iv);
+      const cipher = crypto.createCipheriv(this.algorithm, this.key, iv) as crypto.CipherGCM;
       
       const encrypted = Buffer.concat([
         cipher.update(data, 'utf8'),
@@ -61,7 +61,7 @@ export class PrivacyService {
       );
       const encrypted = buffer.subarray(this.ivLength + this.saltLength + 16);
 
-      const decipher = crypto.createDecipheriv(this.algorithm, this.key, iv);
+      const decipher = crypto.createDecipheriv(this.algorithm, this.key, iv) as crypto.DecipherGCM;
       decipher.setAuthTag(authTag);
 
       const decrypted = Buffer.concat([

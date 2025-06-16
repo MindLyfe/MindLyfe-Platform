@@ -18,22 +18,6 @@ export declare enum NotificationType {
     RESOURCE_SHARED = "resource_shared",
     CUSTOM = "custom"
 }
-export declare class NotificationTemplateDto {
-    name: string;
-    type: NotificationType;
-    subject: string;
-    body: string;
-    channels: NotificationChannel[];
-    variables: string[];
-    isActive?: boolean;
-    metadata?: Record<string, any>;
-}
-export declare class NotificationSettingsDto {
-    reminders: ReminderSettingsDto;
-    channelPreferences: ChannelPreferenceDto[];
-    customRules?: CustomRuleDto[];
-    quietHours?: QuietHoursDto;
-}
 export declare class ReminderSettingsDto {
     enabled: boolean;
     reminderMinutes: number;
@@ -58,6 +42,22 @@ export declare class QuietHoursDto {
     endTime: string;
     daysOfWeek: number[];
     enabled: boolean;
+}
+export declare class NotificationTemplateDto {
+    name: string;
+    type: NotificationType;
+    subject: string;
+    body: string;
+    channels: NotificationChannel[];
+    variables: string[];
+    isActive?: boolean;
+    metadata?: Record<string, any>;
+}
+export declare class NotificationSettingsDto {
+    reminders: ReminderSettingsDto;
+    channelPreferences: ChannelPreferenceDto[];
+    customRules?: CustomRuleDto[];
+    quietHours?: QuietHoursDto;
 }
 export declare class SendNotificationDto {
     recipientEmail: string;

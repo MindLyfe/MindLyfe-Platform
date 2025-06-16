@@ -24,5 +24,10 @@ export declare const configuration: () => {
     services: {
         chatServiceUrl: string;
         authServiceUrl: string;
+        notificationServiceUrl: string;
+    };
+    auth: {
+        serviceToken: string;
+        serviceName: string;
     };
 };

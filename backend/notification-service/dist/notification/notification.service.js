@@ -338,13 +338,15 @@ let NotificationService = NotificationService_1 = class NotificationService {
     isTransactionalNotification(type) {
         return [
             notification_entity_1.NotificationType.ACCOUNT,
-            notification_entity_1.NotificationType.THERAPY,
+            notification_entity_1.NotificationType.PAYMENT,
+            notification_entity_1.NotificationType.SUBSCRIPTION,
         ].includes(type);
     }
     requiresImmediateDelivery(type) {
         return [
-            notification_entity_1.NotificationType.THERAPY,
             notification_entity_1.NotificationType.ACCOUNT,
+            notification_entity_1.NotificationType.PAYMENT,
+            notification_entity_1.NotificationType.SUBSCRIPTION,
         ].includes(type);
     }
     isGamificationNotification(type, notification) {

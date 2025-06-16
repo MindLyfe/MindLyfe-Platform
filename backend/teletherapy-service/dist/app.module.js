@@ -12,12 +12,13 @@ const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
+const axios_1 = require("@nestjs/axios");
 const core_1 = require("@nestjs/core");
 const jwt_auth_guard_1 = require("./auth/guards/jwt-auth.guard");
+const jwt_strategy_1 = require("./auth/strategies/jwt.strategy");
+const auth_client_service_1 = require("./teletherapy/services/auth-client.service");
 const configuration_1 = require("./config/configuration");
 const env_validator_1 = require("./config/env.validator");
-const auth_client_1 = require("@mindlyf/shared/auth-client");
-const service_tokens_config_1 = require("@mindlyf/shared/config/service-tokens.config");
 const teletherapy_module_1 = require("./teletherapy/teletherapy.module");
 let AppModule = class AppModule {
 };
@@ -28,11 +29,6 @@ AppModule = __decorate([
                 isGlobal: true,
                 load: [configuration_1.configuration],
                 validate: env_validator_1.validate,
-            }),
-            config_1.ConfigModule.forRoot({
-                isGlobal: true,
-                load: [service_tokens_config_1.serviceTokensConfig],
-                validationSchema: service_tokens_config_1.serviceTokensValidationSchema,
             }),
             typeorm_1.TypeOrmModule.forRootAsync({
                 imports: [config_1.ConfigModule],
@@ -60,11 +56,13 @@ AppModule = __decorate([
                     },
                 }),
             }),
-            auth_client_1.AuthClientModule,
+            axios_1.HttpModule,
             teletherapy_module_1.TeletherapyModule,
         ],
         controllers: [],
         providers: [
+            jwt_strategy_1.JwtStrategy,
+            auth_client_service_1.AuthClientService,
             {
                 provide: core_1.APP_GUARD,
                 useClass: jwt_auth_guard_1.JwtAuthGuard,

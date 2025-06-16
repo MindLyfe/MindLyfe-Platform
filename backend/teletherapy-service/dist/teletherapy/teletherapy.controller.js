@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TeletherapyController = void 0;
 const common_1 = require("@nestjs/common");
@@ -21,16 +20,26 @@ const create_session_dto_1 = require("./dto/create-session.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
+const public_decorator_1 = require("../auth/decorators/public.decorator");
 const therapy_session_entity_1 = require("./entities/therapy-session.entity");
 const update_session_notes_dto_1 = require("./dto/update-session-notes.dto");
 const update_session_status_dto_1 = require("./dto/update-session-status.dto");
 const cancel_session_dto_1 = require("./dto/cancel-session.dto");
 const manage_participants_dto_1 = require("./dto/manage-participants.dto");
 const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
-const user_interface_1 = require("../auth/interfaces/user.interface");
 let TeletherapyController = class TeletherapyController {
     constructor(teletherapyService) {
         this.teletherapyService = teletherapyService;
+    }
+    async healthCheck() {
+        return {
+            status: 'ok',
+            service: 'teletherapy-service',
+            timestamp: new Date().toISOString(),
+            version: '1.0.0',
+            database: 'connected',
+            mediasoup: 'initialized'
+        };
     }
     async createSession(createSessionDto, req) {
         return this.teletherapyService.createSession(createSessionDto, req.user);
@@ -42,7 +51,7 @@ let TeletherapyController = class TeletherapyController {
         return this.teletherapyService.getUpcomingSessions(req.user);
     }
     async getSessionsByDateRange(startDate, endDate, req) {
-        return this.teletherapyService.getSessionsByDateRange(startDate, endDate, req.user);
+        return this.teletherapyService.getSessionsByDateRange(new Date(startDate), new Date(endDate), req.user);
     }
     async updateSessionStatus(id, updateStatusDto, req) {
         return this.teletherapyService.updateSessionStatus(id, updateStatusDto.status, req.user);
@@ -71,10 +80,10 @@ let TeletherapyController = class TeletherapyController {
     async leaveSession(id, req) {
         return this.teletherapyService.leaveSession(id, req.user);
     }
-    async getGroupSessions(category, focus, req) {
+    async getGroupSessions(req, category, focus) {
         return this.teletherapyService.getUpcomingSessions(req.user);
     }
-    async getIndividualSessions(category, req) {
+    async getIndividualSessions(req, category) {
         return this.teletherapyService.getUpcomingSessions(req.user);
     }
     async createChatRoomForSession(id, user) {
@@ -107,6 +116,15 @@ let TeletherapyController = class TeletherapyController {
         };
     }
 };
+__decorate([
+    (0, common_1.Get)('health'),
+    (0, public_decorator_1.Public)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Health check endpoint' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Service is healthy' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], TeletherapyController.prototype, "healthCheck", null);
 __decorate([
     (0, common_1.Post)('sessions'),
     (0, roles_decorator_1.Roles)('therapist', 'admin'),
@@ -166,12 +184,11 @@ __decorate([
         description: 'List of sessions within the specified date range.',
         type: [therapy_session_entity_1.TherapySession],
     }),
-    __param(0, (0, common_1.Query)('startDate', common_1.ParseDatePipe)),
-    __param(1, (0, common_1.Query)('endDate', common_1.ParseDatePipe)),
+    __param(0, (0, common_1.Query)('startDate')),
+    __param(1, (0, common_1.Query)('endDate')),
     __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Date,
-        Date, Object]),
+    __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], TeletherapyController.prototype, "getSessionsByDateRange", null);
 __decorate([
@@ -350,11 +367,11 @@ __decorate([
         description: 'List of group therapy sessions.',
         type: [therapy_session_entity_1.TherapySession],
     }),
-    __param(0, (0, common_1.Query)('category')),
-    __param(1, (0, common_1.Query)('focus')),
-    __param(2, (0, common_1.Request)()),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('category')),
+    __param(2, (0, common_1.Query)('focus')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Array, Object]),
+    __metadata("design:paramtypes", [Object, String, Array]),
     __metadata("design:returntype", Promise)
 ], TeletherapyController.prototype, "getGroupSessions", null);
 __decorate([
@@ -367,10 +384,10 @@ __decorate([
         description: 'List of individual therapy sessions.',
         type: [therapy_session_entity_1.TherapySession],
     }),
-    __param(0, (0, common_1.Query)('category')),
-    __param(1, (0, common_1.Request)()),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('category')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], TeletherapyController.prototype, "getIndividualSessions", null);
 __decorate([
@@ -384,7 +401,7 @@ __decorate([
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_a = typeof user_interface_1.JwtUser !== "undefined" && user_interface_1.JwtUser) === "function" ? _a : Object]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], TeletherapyController.prototype, "createChatRoomForSession", null);
 __decorate([
@@ -399,7 +416,7 @@ __decorate([
     __param(1, (0, common_1.Query)('clientId')),
     __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, typeof (_b = typeof user_interface_1.JwtUser !== "undefined" && user_interface_1.JwtUser) === "function" ? _b : Object]),
+    __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], TeletherapyController.prototype, "checkTherapistClientRelationship", null);
 TeletherapyController = __decorate([

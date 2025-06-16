@@ -487,7 +487,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   async getUserSubscriptionStatus(@Param('userId') userId: string) {
-    const user = await this.authService.findUserById(userId);
+    const user = await this.authService.validateUserById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -546,7 +546,7 @@ export class AuthController {
   @ApiHeader({ name: 'X-Service-Name', description: 'Name of the requesting service (should be payment-service)' })
   @ApiResponse({ status: 200, description: 'Payment access validation result' })
   async validatePaymentAccess(@Body() body: { userId: string; paymentType: string; amount: number }) {
-    const user = await this.authService.findUserById(body.userId);
+    const user = await this.authService.validateUserById(body.userId);
     
     if (!user) {
       return { canMakePayment: false, reason: 'User not found' };

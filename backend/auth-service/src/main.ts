@@ -58,16 +58,55 @@ async function bootstrap() {
 
   // Set up Swagger documentation
   const config = new DocumentBuilder()
-    .setTitle('MindLyfe Auth Service API')
-    .setDescription('Authentication and user management API for MindLyfe platform')
-    .setVersion('1.0')
-    .setContact('MindLyf Support', 'https://mindlyf.com/support', 'support@mindlyf.com')
-    .setLicense('Proprietary', 'https://mindlyf.com/terms')
-    .addTag('auth', 'Authentication endpoints for login, registration, password reset, etc.')
-    .addTag('sessions', 'Manage user sessions and refresh tokens')
-    .addTag('mfa', 'Multi-factor authentication endpoints')
-    .addTag('users', 'User profile and account management endpoints')
-    .addTag('health', 'Health check and monitoring endpoints')
+    .setTitle('🔐 MindLyf Auth Service API')
+    .setDescription(`
+## 🔐 MindLyf Authentication Service
+
+**Production-ready authentication and user management API** for the MindLyf mental health platform.
+
+### 🚀 **Key Features**
+- **Secure Authentication** - JWT-based with RS256 signing
+- **Multi-Factor Authentication** - TOTP and SMS support
+- **Role-Based Access Control** - User, therapist, admin roles
+- **Session Management** - Multiple device sessions
+- **Password Security** - bcrypt hashing with strength validation
+- **Rate Limiting** - Protection against brute force attacks
+
+### 🔒 **Security & Compliance**
+- **HIPAA Compliant** - Healthcare data protection
+- **GDPR Compliant** - European privacy regulations
+- **Audit Logging** - Comprehensive security event tracking
+- **Data Encryption** - At-rest and in-transit encryption
+
+### 🔗 **Service Integration**
+This service integrates with:
+- **Teletherapy Service** - Therapist-client relationship validation
+- **Chat Service** - User identity and permission management
+- **Notification Service** - Account alerts and security notifications
+- **Payment Service** - Subscription and billing integration
+
+### 📊 **API Usage**
+- **Base URL**: \`http://localhost:3001/api\`
+- **Authentication**: Bearer JWT tokens
+- **Rate Limits**: Varies by endpoint (see individual endpoint docs)
+- **Response Format**: JSON
+
+### 🧪 **Testing**
+Use the "Try it out" feature below to test endpoints. For protected endpoints, first:
+1. Register a new user with \`POST /auth/register\`
+2. Login with \`POST /auth/login\` to get a JWT token
+3. Use the "Authorize" button to set your Bearer token
+    `)
+    .setVersion('1.0.0')
+    .setContact('MindLyf Support', 'https://mindlyf.app/support', 'support@mindlyf.app')
+    .setLicense('MIT', 'https://opensource.org/licenses/MIT')
+    .addTag('🔐 auth', 'Core authentication endpoints - registration, login, logout, password management')
+    .addTag('🔄 sessions', 'Session management - refresh tokens, device tracking, session cleanup')
+    .addTag('🛡️ mfa', 'Multi-factor authentication - TOTP setup, verification, backup codes')
+    .addTag('👤 users', 'User profile management - account details, preferences, privacy settings')
+    .addTag('🏢 organizations', 'Organization management - multi-tenant features, admin controls')
+    .addTag('💳 subscriptions', 'Subscription and billing - payment integration, plan management')
+    .addTag('❤️ health', 'Health checks and monitoring - service status, database connectivity')
     .addBearerAuth(
       { 
         type: 'http', 
@@ -130,6 +169,12 @@ async function bootstrap() {
       .swagger-ui .opblock-tag { font-size: 18px; border-bottom: 1px solid #eee }
       .swagger-ui .opblock .opblock-summary-operation-id, .swagger-ui .opblock .opblock-summary-path, .swagger-ui .opblock .opblock-summary-method { font-size: 14px }
     `
+  });
+
+  // Add JSON endpoint for API Gateway aggregation
+  app.use('/api-docs-json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(document);
   });
 
   // Start the server with explicit host binding

@@ -9,10 +9,18 @@ import { JwtUser } from '../auth/interfaces/user.interface';
 export declare class TeletherapyController {
     private readonly teletherapyService;
     constructor(teletherapyService: TeletherapyService);
+    healthCheck(): Promise<{
+        status: string;
+        service: string;
+        timestamp: string;
+        version: string;
+        database: string;
+        mediasoup: string;
+    }>;
     createSession(createSessionDto: CreateSessionDto, req: any): Promise<TherapySession>;
     getSession(id: string, req: any): Promise<TherapySession>;
     getUpcomingSessions(req: any): Promise<TherapySession[]>;
-    getSessionsByDateRange(startDate: Date, endDate: Date, req: any): Promise<TherapySession[]>;
+    getSessionsByDateRange(startDate: string, endDate: string, req: any): Promise<TherapySession[]>;
     updateSessionStatus(id: string, updateStatusDto: UpdateSessionStatusDto, req: any): Promise<TherapySession>;
     updateSessionNotes(id: string, updateNotesDto: UpdateSessionNotesDto, req: any): Promise<TherapySession>;
     cancelSession(id: string, cancelSessionDto: CancelSessionDto, req: any): Promise<TherapySession>;
@@ -22,8 +30,8 @@ export declare class TeletherapyController {
     manageBreakoutRooms(id: string, breakoutRoomsDto: ManageBreakoutRoomsDto, req: any): Promise<TherapySession>;
     joinSession(id: string, req: any): Promise<TherapySession>;
     leaveSession(id: string, req: any): Promise<TherapySession>;
-    getGroupSessions(category?: string, focus?: string[], req: any): Promise<TherapySession[]>;
-    getIndividualSessions(category?: string, req: any): Promise<TherapySession[]>;
+    getGroupSessions(req: any, category?: string, focus?: string[]): Promise<TherapySession[]>;
+    getIndividualSessions(req: any, category?: string): Promise<TherapySession[]>;
     createChatRoomForSession(id: string, user: JwtUser): Promise<{
         success: boolean;
         message: string;

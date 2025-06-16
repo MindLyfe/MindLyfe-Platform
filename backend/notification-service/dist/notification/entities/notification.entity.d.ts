@@ -13,7 +13,9 @@ export declare enum NotificationType {
     THERAPY = "therapy",
     COMMUNITY = "community",
     CHAT = "chat",
-    MARKETING = "marketing"
+    MARKETING = "marketing",
+    PAYMENT = "payment",
+    SUBSCRIPTION = "subscription"
 }
 export declare class NotificationEntity {
     id: string;

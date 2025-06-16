@@ -8,12 +8,12 @@ const configuration = () => ({
         port: parseInt(process.env.DB_PORT, 10) || 5432,
         username: process.env.DB_USERNAME || 'postgres',
         password: process.env.DB_PASSWORD || 'postgres',
-        name: process.env.DB_NAME || 'mindlyf_teletherapy',
+        name: process.env.DB_NAME || 'mindlyfe_teletherapy',
         synchronize: process.env.DB_SYNC === 'true',
         logging: process.env.DB_LOGGING === 'true',
     },
     jwt: {
-        secret: process.env.JWT_SECRET || 'mindlyf-teletherapy-secret',
+        secret: process.env.JWT_SECRET || 'mindlyfe-teletherapy-secret',
         expiresIn: process.env.JWT_EXPIRES_IN || '15m',
     },
     redis: {
@@ -30,6 +30,11 @@ const configuration = () => ({
     services: {
         chatServiceUrl: process.env.CHAT_SERVICE_URL || 'http://chat-service:3003',
         authServiceUrl: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
+        notificationServiceUrl: process.env.NOTIFICATION_SERVICE_URL || 'http://notification-service:3005',
+    },
+    auth: {
+        serviceToken: process.env.SERVICE_TOKEN || 'teletherapy-service-token',
+        serviceName: 'teletherapy-service',
     },
 });
 exports.configuration = configuration;

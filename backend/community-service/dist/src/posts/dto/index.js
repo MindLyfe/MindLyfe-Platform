@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ModeratePostDto = exports.ReportPostDto = exports.UpdatePostDto = exports.CreatePostDto = void 0;
+exports.ModeratePostDto = exports.ModerationAction = exports.ReportPostDto = exports.UpdatePostDto = exports.CreatePostDto = void 0;
 const class_validator_1 = require("class-validator");
 const post_entity_1 = require("../entities/post.entity");
 class CreatePostDto {
@@ -78,13 +78,24 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], ReportPostDto.prototype, "reason", void 0);
+var ModerationAction;
+(function (ModerationAction) {
+    ModerationAction["APPROVE"] = "approve";
+    ModerationAction["REJECT"] = "reject";
+    ModerationAction["REMOVE"] = "remove";
+    ModerationAction["WARN"] = "warn";
+    ModerationAction["SUSPEND"] = "suspend";
+    ModerationAction["BAN"] = "ban";
+    ModerationAction["HIDE"] = "hide";
+    ModerationAction["FLAG"] = "flag";
+})(ModerationAction || (exports.ModerationAction = ModerationAction = {}));
 class ModeratePostDto {
 }
 exports.ModeratePostDto = ModeratePostDto;
 __decorate([
-    (0, class_validator_1.IsEnum)(post_entity_1.PostStatus),
+    (0, class_validator_1.IsEnum)(ModerationAction),
     __metadata("design:type", String)
-], ModeratePostDto.prototype, "status", void 0);
+], ModeratePostDto.prototype, "action", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),

@@ -66,6 +66,9 @@ export class Post extends BaseEntity {
   @Column({ type: 'text', array: true, default: [] })
   tags: string[];
 
+  @Column({ type: 'varchar', length: 100, default: 'general' })
+  category: string;
+
   @Column({ type: 'integer', default: 0 })
   viewCount: number;
 

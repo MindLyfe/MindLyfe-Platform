@@ -1,6 +1,10 @@
 import { VideoService } from '../services/video.service';
 import { MediaSessionType } from '../entities/media-session.entity';
 import { MediaSessionRepository } from '../repositories/media-session.repository';
+declare class CodecOptionsDto {
+    video?: string;
+    audio?: string;
+}
 declare class MediaSessionOptionsDto {
     recording?: boolean;
     chat?: boolean;
@@ -9,10 +13,6 @@ declare class MediaSessionOptionsDto {
     waitingRoom?: boolean;
     breakoutRooms?: boolean;
     codec?: CodecOptionsDto;
-}
-declare class CodecOptionsDto {
-    video?: string;
-    audio?: string;
 }
 declare class CreateMediaSessionDto {
     type: MediaSessionType;
@@ -35,7 +35,7 @@ export declare class MediaController {
     constructor(videoService: VideoService, mediaSessionRepository: MediaSessionRepository);
     createSession(req: any, createSessionDto: CreateMediaSessionDto): Promise<{
         status: string;
-        data: any;
+        data: import("../entities/media-session.entity").MediaSession;
     }>;
     joinSession(req: any, sessionId: string, joinSessionDto: JoinMediaSessionDto): Promise<{
         status: string;
@@ -71,7 +71,7 @@ export declare class MediaController {
     }>;
     getSessionParticipants(sessionId: string): Promise<{
         status: string;
-        data: User[];
+        data: string[];
     }>;
     sendChatMessage(req: any, sessionId: string, message: {
         content: string;
@@ -107,7 +107,7 @@ export declare class MediaController {
     }>;
     getWaitingRoomParticipants(req: any, sessionId: string): Promise<{
         status: string;
-        data: any;
+        data: string[];
     }>;
     admitFromWaitingRoom(req: any, sessionId: string, admitDto: AdmitFromWaitingRoomDto): Promise<{
         status: string;

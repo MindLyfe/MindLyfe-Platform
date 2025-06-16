@@ -1,5 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
-import { User } from '../../auth/entities/user.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+// User entity is managed by auth-service
 
 export enum SessionStatus {
   SCHEDULED = 'scheduled',
@@ -77,6 +77,9 @@ export class TherapySession {
   @Column({ type: 'timestamp with time zone' })
   endTime: Date;
 
+  @Column({ type: 'int', nullable: true, comment: 'Duration of the session in minutes' })
+  duration: number;
+
   @Column({
     type: 'enum',
     enum: SessionStatus,
@@ -137,11 +140,30 @@ export class TherapySession {
     waitingRoomEnabled?: boolean;
     chatEnabled?: boolean;
     recordingEnabled?: boolean;
+    chatRoomId?: string; // Added chatRoomId
+    chatRoomCreatedAt?: Date; // Added chatRoomCreatedAt
+    cancellationReason?: string; // Added cancellationReason
+    calendar?: {
+      eventId?: string;
+      provider?: string;
+      syncStatus?: string;
+      lastSyncedAt?: Date;
+    };
+    video?: {
+      token?: string;
+      routerRtpCapabilities?: any;
+      sessionCreated?: boolean;
+      routerId?: string;
+      options?: any;
+      status?: string;
+    };
     breakoutRooms?: {
       id: string;
       name: string;
       participants: string[];
     }[];
+    breakoutRoomDuration?: number; // Added breakoutRoomDuration
+    participantRoles?: Record<string, string>; // Added participantRoles
     resources?: {
       title: string;
       type: 'document' | 'link' | 'video';
@@ -184,6 +206,25 @@ export class TherapySession {
     earlyBirdPrice?: number;
     earlyBirdEndDate?: Date;
   };
+
+  @Column({ type: 'uuid', nullable: true })
+  paymentId: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  subscriptionId: string;
+
+  @Column({ type: 'boolean', default: false })
+  paidFromSubscription: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  paidFromCredit: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: PaymentStatus,
+    default: PaymentStatus.PENDING
+  })
+  paymentStatus: PaymentStatus;
 
   @Column({ type: 'jsonb', nullable: true })
   requirements: {
@@ -414,19 +455,6 @@ export class TherapySession {
   @UpdateDateColumn({ type: 'timestamp with time zone' })
   updatedAt: Date;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'therapistId' })
-  therapist: User;
-
-  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
-  @JoinColumn({ name: 'clientId' })
-  client: User;
-
-  @ManyToMany(() => User)
-  @JoinTable({
-    name: 'session_participants',
-    joinColumn: { name: 'sessionId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'userId', referencedColumnName: 'id' }
-  })
-  participants: User[];
-} 
+  // User relations replaced with IDs from auth service
+  // therapistId, clientId and participantIds are already defined as columns above
+}

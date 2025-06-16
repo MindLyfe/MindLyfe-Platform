@@ -1,20 +1,24 @@
 import { Repository } from 'typeorm';
-import { TherapySession, SessionStatus } from './entities/therapy-session.entity';
+import { TherapySession, SessionStatus, SessionType } from './entities/therapy-session.entity';
+import { SessionNote } from './entities/session-note.entity';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { JwtUser } from '../auth/interfaces/user.interface';
 import { AddParticipantsDto, RemoveParticipantsDto, UpdateParticipantRoleDto, ManageBreakoutRoomsDto } from './dto/manage-participants.dto';
-import { User } from '../auth/entities/user.entity';
-import { AuthClientService } from '@mindlyf/shared/auth-client';
+import { AuthClientService } from './services/auth-client.service';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
+import { TeletherapyNotificationService } from './services/notification.service';
 export declare class TeletherapyService {
     private readonly sessionRepository;
-    private readonly userRepository;
+    private readonly sessionNoteRepository;
     private readonly authClient;
     private readonly httpService;
     private readonly configService;
+    private readonly notificationService;
+    private readonly logger;
     private readonly chatServiceUrl;
-    constructor(sessionRepository: Repository<TherapySession>, userRepository: Repository<User>, authClient: AuthClientService, httpService: HttpService, configService: ConfigService);
+    private readonly authServiceUrl;
+    constructor(sessionRepository: Repository<TherapySession>, sessionNoteRepository: Repository<SessionNote>, authClient: AuthClientService, httpService: HttpService, configService: ConfigService, notificationService: TeletherapyNotificationService);
     createSession(createSessionDto: CreateSessionDto, user: JwtUser): Promise<TherapySession>;
     private validateSessionTypeAndCategory;
     addParticipants(sessionId: string, addParticipantsDto: AddParticipantsDto, user: JwtUser): Promise<TherapySession>;
@@ -41,6 +45,7 @@ export declare class TeletherapyService {
     checkTherapistClientRelationship(therapistId: string, clientId: string): Promise<boolean>;
     getSessionsByUser(userId: string): Promise<TherapySession[]>;
     getAvailableTherapists(): Promise<any[]>;
-    getAvailableSlots(therapistId: string, date?: string): Promise<any[]>;
+    getAvailableSlots(therapistId: string, startDate: string, endDate: string, durationMinutes: number, serviceType?: SessionType, timezone?: string): Promise<any[]>;
     updateSessionPayment(sessionId: string, paymentInfo: any): Promise<TherapySession>;
+    private generateMeetingLink;
 }

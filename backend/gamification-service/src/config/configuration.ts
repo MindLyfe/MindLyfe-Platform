@@ -43,10 +43,7 @@ export default () => ({
       url: process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
       timeout: parseInt(process.env.AUTH_SERVICE_TIMEOUT, 10) || 10000,
     },
-    notification: {
-      url: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3005',
-      timeout: parseInt(process.env.NOTIFICATION_SERVICE_TIMEOUT, 10) || 15000,
-    },
+    notificationServiceUrl: process.env.NOTIFICATION_SERVICE_URL || 'http://notification-service:3005',
     analytics: {
       url: process.env.ANALYTICS_SERVICE_URL || 'http://localhost:3009',
       timeout: parseInt(process.env.ANALYTICS_SERVICE_TIMEOUT, 10) || 10000,

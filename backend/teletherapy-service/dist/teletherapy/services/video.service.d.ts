@@ -1,9 +1,8 @@
 import { OnModuleInit } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { TherapySession } from '../entities/therapy-session.entity';
-import { User } from '../../auth/entities/user.entity';
 import { StorageService } from './storage.service';
-import { NotificationService } from './notification.service';
+import { TeletherapyNotificationService } from './notification.service';
 import { Server } from 'socket.io';
 import { RedisService } from '../services/redis.service';
 import { MediaSoupService } from './mediasoup.service';
@@ -11,7 +10,9 @@ import { SignalingService } from './signaling.service';
 import { RecordingService } from './recording.service';
 import * as mediasoup from 'mediasoup';
 import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
 import { MediaSessionRepository } from '../repositories/media-session.repository';
+import { MediaSession, MediaSessionType } from '../entities/media-session.entity';
 export interface VideoSessionOptions {
     enableRecording?: boolean;
     enableChat?: boolean;
@@ -57,7 +58,6 @@ export interface ChatMessage {
 }
 export declare class VideoService implements OnModuleInit {
     private readonly sessionRepository;
-    private readonly userRepository;
     private readonly redisService;
     private readonly mediasoupService;
     private readonly signalingService;
@@ -65,6 +65,7 @@ export declare class VideoService implements OnModuleInit {
     private readonly storageService;
     private readonly notificationService;
     private readonly configService;
+    private readonly httpService;
     private readonly mediaSessionRepository;
     private readonly logger;
     server: Server;
@@ -73,10 +74,21 @@ export declare class VideoService implements OnModuleInit {
     private breakoutRooms;
     private waitingRoom;
     private chatMessages;
-    constructor(sessionRepository: Repository<TherapySession>, userRepository: Repository<User>, redisService: RedisService, mediasoupService: MediaSoupService, signalingService: SignalingService, recordingService: RecordingService, storageService: StorageService, notificationService: NotificationService, configService: ConfigService, mediaSessionRepository: MediaSessionRepository);
+    constructor(sessionRepository: Repository<TherapySession>, redisService: RedisService, mediasoupService: MediaSoupService, signalingService: SignalingService, recordingService: RecordingService, storageService: StorageService, notificationService: TeletherapyNotificationService, configService: ConfigService, httpService: HttpService, mediaSessionRepository: MediaSessionRepository);
+    private validateUser;
     onModuleInit(): Promise<void>;
     private initializeMediasoup;
     private initializeWebSocketHandlers;
+    createSession(options: {
+        type: MediaSessionType;
+        contextId: string;
+        startedBy: string;
+        options?: VideoSessionOptions;
+    }): Promise<MediaSession>;
+    getWaitingRoomParticipants(sessionId: string): Promise<string[]>;
+    rejectFromWaitingRoom(sessionId: string, participantId: string): Promise<void>;
+    updateSessionSettings(sessionId: string, settings: Partial<VideoSessionOptions>): Promise<void>;
+    getSessionStats(sessionId: string): Promise<any>;
     initializeSession(sessionId: string, options?: VideoSessionOptions): Promise<{
         token: string;
         routerRtpCapabilities: any;

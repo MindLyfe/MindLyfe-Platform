@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import { Resource, ResourceStatus, ResourceType, ResourceCategory } from '../entities/resource.entity';
 import { CreateResourceDto } from '../dto/create-resource.dto';
 import { UpdateResourceDto } from '../dto/update-resource.dto';
+import { ResourceNotificationService } from '../common/services/notification.service';
 
 @Injectable()
 export class ResourcesService {
@@ -19,6 +20,7 @@ export class ResourcesService {
     private readonly resourceRepository: Repository<Resource>,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly notificationService: ResourceNotificationService,
   ) {}
 
   async createResource(userId: string, createResourceDto: CreateResourceDto, file?: Express.Multer.File): Promise<Resource> {
@@ -47,11 +49,14 @@ export class ResourcesService {
       const savedResource = await this.resourceRepository.save(resource);
 
       // Send notification
-      await this.sendNotification(userId, 'resource_created', {
-        resourceId: savedResource.id,
-        title: savedResource.title,
-        type: savedResource.type,
-      });
+      await this.notificationService.notifyResourceCreated(
+        userId,
+        savedResource.id,
+        savedResource.title,
+        savedResource.type,
+        savedResource.category,
+        ['admin-user-id'] // In real implementation, get admin IDs from a service
+      );
 
       return savedResource;
     } catch (error) {
@@ -99,11 +104,14 @@ export class ResourcesService {
       const updatedResource = await this.resourceRepository.save(resource);
 
       // Send notification
-      await this.sendNotification(userId, 'resource_updated', {
-        resourceId: updatedResource.id,
-        title: updatedResource.title,
-        status: updatedResource.status,
-      });
+      const changes = Object.keys(updateResourceDto);
+      await this.notificationService.notifyResourceUpdated(
+        userId,
+        updatedResource.id,
+        updatedResource.title,
+        changes,
+        [] // In real implementation, get subscriber IDs
+      );
 
       return updatedResource;
     } catch (error) {
@@ -231,10 +239,11 @@ export class ResourcesService {
       await this.resourceRepository.remove(resource);
 
       // Send notification
-      await this.sendNotification(userId, 'resource_deleted', {
-        resourceId: resource.id,
-        title: resource.title,
-      });
+      await this.notificationService.notifyResourceDeleted(
+        userId,
+        resource.id,
+        resource.title,
+      );
     } catch (error) {
       this.logger.error(`Failed to delete resource: ${error.message}`);
       throw new BadRequestException('Failed to delete resource');
@@ -251,6 +260,15 @@ export class ResourcesService {
     // Increment download count
     resource.downloadCount += 1;
     await this.resourceRepository.save(resource);
+
+    // Send notification about download
+    await this.notificationService.notifyResourceDownloaded(
+      userId || 'anonymous',
+      resource.creatorId,
+      resource.id,
+      resource.title,
+      resource.downloadCount
+    );
 
     return {
       filePath: resource.filePath,
@@ -377,32 +395,5 @@ export class ResourcesService {
   private isAdminOrSupport(user: any): boolean {
     const allowedRoles = ['admin', 'support'];
     return user.role && allowedRoles.includes(user.role.toLowerCase());
-  }
-
-  private async sendNotification(userId: string, type: string, data: any): Promise<void> {
-    try {
-      const notificationServiceUrl = this.configService.get<string>('services.notification.url');
-      const serviceToken = this.configService.get<string>('services.auth.serviceToken');
-
-      await firstValueFrom(
-        this.httpService.post(
-          `${notificationServiceUrl}/api/notification`,
-          {
-            userId,
-            type,
-            data,
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${serviceToken}`,
-              'X-Service-Name': 'resources-service',
-            },
-          }
-        )
-      );
-    } catch (error) {
-      this.logger.error(`Failed to send notification: ${error.message}`);
-      // Don't throw error as notification failure shouldn't break the main flow
-    }
   }
 } 

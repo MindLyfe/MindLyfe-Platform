@@ -13,8 +13,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const core_1 = require("@nestjs/core");
 const jwt_auth_guard_1 = require("./auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("./auth/guards/roles.guard");
-const auth_client_1 = require("@mindlyf/shared/auth-client");
-const service_tokens_config_1 = require("@mindlyf/shared/config/service-tokens.config");
+const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
 const posts_module_1 = require("./posts/posts.module");
 const comments_module_1 = require("./comments/comments.module");
@@ -31,9 +30,8 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
-                load: [configuration_1.configuration, service_tokens_config_1.serviceTokensConfig],
+                load: [configuration_1.configuration],
                 validate: env_validator_1.validate,
-                validationSchema: service_tokens_config_1.serviceTokensValidationSchema,
             }),
             typeorm_1.TypeOrmModule.forRootAsync({
                 imports: [config_1.ConfigModule],
@@ -51,7 +49,7 @@ exports.AppModule = AppModule = __decorate([
                     ssl: configService.get('database.ssl'),
                 }),
             }),
-            auth_client_1.AuthClientModule,
+            auth_module_1.AuthModule,
             users_module_1.UsersModule,
             posts_module_1.PostsModule,
             comments_module_1.CommentsModule,

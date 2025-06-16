@@ -4,6 +4,8 @@ export declare class MediaSessionRepository {
     private readonly repository;
     constructor(repository: Repository<MediaSession>);
     create(data: Partial<MediaSession>): Promise<MediaSession>;
+    save(entity: MediaSession): Promise<MediaSession>;
+    findOne(options: any): Promise<MediaSession | null>;
     findById(id: string): Promise<MediaSession>;
     findByContext(type: MediaSessionType, contextId: string): Promise<MediaSession[]>;
     findActiveByContext(type: MediaSessionType, contextId: string): Promise<MediaSession>;

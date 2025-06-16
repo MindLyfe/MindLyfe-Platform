@@ -34,6 +34,9 @@ let CommentsController = class CommentsController {
     async get(id, req) {
         return this.commentsService.get(id, req.user);
     }
+    async getThread(id, req) {
+        return this.commentsService.getThread(id, req.user);
+    }
     async update(id, dto, req) {
         return this.commentsService.update(id, dto, req.user);
     }
@@ -50,7 +53,7 @@ let CommentsController = class CommentsController {
 exports.CommentsController = CommentsController;
 __decorate([
     (0, common_1.Post)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Create a comment (anonymous or not)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Create a comment (anonymous by default)' }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
@@ -59,7 +62,7 @@ __decorate([
 ], CommentsController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: 'List comments' }),
+    (0, swagger_1.ApiOperation)({ summary: 'List comments with anonymization' }),
     __param(0, (0, common_1.Query)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
@@ -68,7 +71,7 @@ __decorate([
 ], CommentsController.prototype, "list", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get a comment by ID' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get a comment by ID (anonymized)' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
@@ -76,8 +79,17 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CommentsController.prototype, "get", null);
 __decorate([
+    (0, common_1.Get)(':id/thread'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get comment thread (all replies)' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], CommentsController.prototype, "getThread", null);
+__decorate([
     (0, common_1.Patch)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Update a comment' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Update a comment (author/moderator only)' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),
@@ -87,7 +99,7 @@ __decorate([
 ], CommentsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Delete a comment' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete a comment (author/moderator only)' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
@@ -96,7 +108,7 @@ __decorate([
 ], CommentsController.prototype, "delete", null);
 __decorate([
     (0, common_1.Post)(':id/report'),
-    (0, swagger_1.ApiOperation)({ summary: 'Report a comment' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Report a comment for moderation' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),
@@ -107,7 +119,7 @@ __decorate([
 __decorate([
     (0, common_1.Patch)(':id/moderate'),
     (0, roles_decorator_1.Roles)(user_entity_1.UserRole.MODERATOR, user_entity_1.UserRole.ADMIN),
-    (0, swagger_1.ApiOperation)({ summary: 'Moderate a comment (approve/remove/warn)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Moderate a comment (moderators only)' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),

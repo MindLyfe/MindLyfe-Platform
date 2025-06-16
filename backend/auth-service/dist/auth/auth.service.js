@@ -244,11 +244,16 @@ let AuthService = AuthService_1 = class AuthService {
         };
     }
     async validateUserById(userId) {
-        const user = await this.userService.findById(userId);
-        if (!user || user.status !== user_entity_1.UserStatus.ACTIVE) {
+        try {
+            const user = await this.userService.findById(userId);
+            if (!user || user.status !== user_entity_1.UserStatus.ACTIVE) {
+                return null;
+            }
+            return user;
+        }
+        catch (error) {
             return null;
         }
-        return user;
     }
     parseTimeToMs(timeString) {
         const unit = timeString.charAt(timeString.length - 1);
@@ -351,6 +356,72 @@ let AuthService = AuthService_1 = class AuthService {
             secret: this.configService.get('JWT_SERVICE_SECRET'),
             expiresIn: '5m',
         });
+    }
+    async getUserSubscriptionStatus(userId) {
+        var _a;
+        const user = await this.userService.findById(userId);
+        if (!user) {
+            return null;
+        }
+        const activeSubscriptions = ((_a = user.subscriptions) === null || _a === void 0 ? void 0 : _a.filter(sub => sub.status === 'active' &&
+            (!sub.endDate || new Date(sub.endDate) > new Date()))) || [];
+        return {
+            hasActiveSubscription: activeSubscriptions.length > 0,
+            subscriptions: activeSubscriptions,
+            userType: user.userType,
+            organizationId: user.organizationId,
+            canMakePayments: user.status === user_entity_1.UserStatus.ACTIVE && user.emailVerified,
+        };
+    }
+    async handlePaymentNotification(userId, notification) {
+        const user = await this.validateUserById(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        this.logger.log(`Payment notification for user ${userId}: ${notification.type}`);
+        switch (notification.type) {
+            case 'payment_succeeded':
+                await this.handlePaymentSuccess(userId, notification);
+                break;
+            case 'payment_failed':
+                await this.handlePaymentFailure(userId, notification);
+                break;
+            case 'subscription_created':
+                await this.handleSubscriptionCreated(userId, notification);
+                break;
+            case 'subscription_canceled':
+                await this.handleSubscriptionCanceled(userId, notification);
+                break;
+        }
+        return { success: true, message: 'Payment notification processed' };
+    }
+    async validatePaymentAccess(userId, paymentType, amount) {
+        const user = await this.userService.findById(userId);
+        if (!user) {
+            return false;
+        }
+        if (user.status !== user_entity_1.UserStatus.ACTIVE || !user.emailVerified) {
+            return false;
+        }
+        if (user.isMinor && amount > 50000) {
+            return false;
+        }
+        if (user.organizationId && paymentType === 'subscription') {
+            return false;
+        }
+        return true;
+    }
+    async handlePaymentSuccess(userId, notification) {
+        this.logger.log(`Payment succeeded for user ${userId}: ${notification.paymentId}`);
+    }
+    async handlePaymentFailure(userId, notification) {
+        this.logger.log(`Payment failed for user ${userId}: ${notification.paymentId}`);
+    }
+    async handleSubscriptionCreated(userId, notification) {
+        this.logger.log(`Subscription created for user ${userId}: ${notification.subscriptionId}`);
+    }
+    async handleSubscriptionCanceled(userId, notification) {
+        this.logger.log(`Subscription canceled for user ${userId}: ${notification.subscriptionId}`);
     }
 };
 exports.AuthService = AuthService;

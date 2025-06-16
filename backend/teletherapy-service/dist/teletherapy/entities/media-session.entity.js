@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MediaSession = exports.MediaSessionStatus = exports.MediaSessionType = void 0;
 const typeorm_1 = require("typeorm");
-const user_entity_1 = require("../../auth/entities/user.entity");
 var MediaSessionType;
 (function (MediaSessionType) {
     MediaSessionType["TELETHERAPY"] = "teletherapy";
@@ -38,8 +37,7 @@ __decorate([
     __metadata("design:type", String)
 ], MediaSession.prototype, "contextId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToMany)(() => user_entity_1.User),
-    (0, typeorm_1.JoinTable)({ name: 'media_session_participants' }),
+    (0, typeorm_1.Column)({ type: 'simple-array', default: [] }),
     __metadata("design:type", Array)
 ], MediaSession.prototype, "participants", void 0);
 __decorate([

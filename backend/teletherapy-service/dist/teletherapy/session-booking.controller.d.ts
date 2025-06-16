@@ -12,6 +12,7 @@ export declare class SessionBookingController {
         participantIds: string[];
         startTime: Date;
         endTime: Date;
+        duration: number;
         status: import("./entities/therapy-session.entity").SessionStatus;
         type: import("./entities/therapy-session.entity").SessionType;
         category: import("./entities/therapy-session.entity").SessionCategory;
@@ -36,11 +37,30 @@ export declare class SessionBookingController {
             waitingRoomEnabled?: boolean;
             chatEnabled?: boolean;
             recordingEnabled?: boolean;
+            chatRoomId?: string;
+            chatRoomCreatedAt?: Date;
+            cancellationReason?: string;
+            calendar?: {
+                eventId?: string;
+                provider?: string;
+                syncStatus?: string;
+                lastSyncedAt?: Date;
+            };
+            video?: {
+                token?: string;
+                routerRtpCapabilities?: any;
+                sessionCreated?: boolean;
+                routerId?: string;
+                options?: any;
+                status?: string;
+            };
             breakoutRooms?: {
                 id: string;
                 name: string;
                 participants: string[];
             }[];
+            breakoutRoomDuration?: number;
+            participantRoles?: Record<string, string>;
             resources?: {
                 title: string;
                 type: "link" | "document" | "video";
@@ -73,6 +93,11 @@ export declare class SessionBookingController {
             earlyBirdPrice?: number;
             earlyBirdEndDate?: Date;
         };
+        paymentId: string;
+        subscriptionId: string;
+        paidFromSubscription: boolean;
+        paidFromCredit: boolean;
+        paymentStatus: import("./entities/therapy-session.entity").PaymentStatus;
         requirements: {
             minAge?: number;
             maxAge?: number;
@@ -211,7 +236,7 @@ export declare class SessionBookingController {
                 recipient: string;
                 sentAt: Date;
                 status: "failed" | "sent" | "delivered";
-                channel: "push" | "email" | "sms";
+                channel: "email" | "sms" | "push";
                 content: string;
                 metadata?: Record<string, any>;
             }[];
@@ -280,9 +305,6 @@ export declare class SessionBookingController {
         };
         createdAt: Date;
         updatedAt: Date;
-        therapist: User;
-        client: User;
-        participants: User[];
     }>;
     getMySessions(req: any): Promise<import("./entities/therapy-session.entity").TherapySession[]>;
     getAvailableTherapists(): Promise<any[]>;

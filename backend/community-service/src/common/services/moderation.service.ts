@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { Post } from '../../posts/entities/post.entity';
-import { Comment } from '../../comments/entities/comment.entity';
+import { User, UserStatus } from '../../users/entities/user.entity';
+import { Post, PostStatus } from '../../posts/entities/post.entity';
+import { Comment, CommentStatus } from '../../comments/entities/comment.entity';
 import { Reaction } from '../../reactions/entities/reaction.entity';
 import { PrivacyService } from './privacy.service';
 
@@ -56,7 +56,7 @@ export class ModerationService {
       'moderation.maxReportsBeforeReview',
     );
     if (post.reportCount >= maxReports) {
-      post.status = 'under_review';
+      post.status = PostStatus.UNDER_REVIEW;
       this.logger.warn(
         `Post ${postId} has been flagged for review due to ${post.reportCount} reports`,
       );
@@ -101,7 +101,7 @@ export class ModerationService {
       'moderation.maxReportsBeforeReview',
     );
     if (comment.reportCount >= maxReports) {
-      comment.status = 'under_review';
+      comment.status = CommentStatus.UNDER_REVIEW;
       this.logger.warn(
         `Comment ${commentId} has been flagged for review due to ${comment.reportCount} reports`,
       );
@@ -123,54 +123,83 @@ export class ModerationService {
     action: 'approve' | 'remove' | 'warn',
     notes: string,
   ): Promise<void> {
-    const repository =
-      contentType === 'post' ? this.postRepository : this.commentRepository;
-    const content = await repository.findOne({ where: { id: contentId } });
-    if (!content) {
-      throw new Error(`${contentType} not found`);
-    }
+    if (contentType === 'post') {
+      const post = await this.postRepository.findOne({ where: { id: contentId } });
+      if (!post) {
+        throw new Error('Post not found');
+      }
 
-    // Update moderation notes
-    if (!content.moderationNotes) {
-      content.moderationNotes = {
-        reportedBy: [],
-        reviewNotes: [],
-        actionTaken: null,
-        actionTakenBy: null,
-        actionTakenAt: null,
-      };
-    }
-
-    content.moderationNotes.reviewNotes.push(notes);
-    content.moderationNotes.actionTaken = action;
-    content.moderationNotes.actionTakenBy = moderatorId;
-    content.moderationNotes.actionTakenAt = new Date();
-
-    // Take action based on moderator's decision
-    switch (action) {
-      case 'approve':
-        content.status = contentType === 'post' ? 'published' : 'active';
-        content.reportCount = 0;
-        break;
-      case 'remove':
-        content.status = 'removed';
-        break;
-      case 'warn':
-        // Keep the content but mark it as warned
-        content.status = contentType === 'post' ? 'published' : 'active';
-        content.metadata = {
-          ...content.metadata,
-          warned: true,
-          warningDate: new Date(),
-          warningNotes: notes,
+      // Update moderation notes
+      if (!post.moderationNotes) {
+        post.moderationNotes = {
+          reportedBy: [],
+          reviewNotes: [],
+          actionTaken: null,
+          actionTakenBy: null,
+          actionTakenAt: null,
         };
-        break;
+      }
+
+      post.moderationNotes.reviewNotes.push(notes);
+      post.moderationNotes.actionTaken = action;
+      post.moderationNotes.actionTakenBy = moderatorId;
+      post.moderationNotes.actionTakenAt = new Date();
+
+      // Take action based on moderator's decision
+      switch (action) {
+        case 'approve':
+          post.status = PostStatus.PUBLISHED;
+          post.reportCount = 0;
+          break;
+        case 'remove':
+          post.status = PostStatus.REMOVED;
+          break;
+        case 'warn':
+          post.status = PostStatus.PUBLISHED;
+          break;
+      }
+
+      await this.postRepository.save(post);
+      await this.notifyContentAuthor(post, action, notes);
+    } else {
+      const comment = await this.commentRepository.findOne({ where: { id: contentId } });
+      if (!comment) {
+        throw new Error('Comment not found');
+      }
+
+      // Update moderation notes
+      if (!comment.moderationNotes) {
+        comment.moderationNotes = {
+          reportedBy: [],
+          reviewNotes: [],
+          actionTaken: null,
+          actionTakenBy: null,
+          actionTakenAt: null,
+        };
+      }
+
+      comment.moderationNotes.reviewNotes.push(notes);
+      comment.moderationNotes.actionTaken = action;
+      comment.moderationNotes.actionTakenBy = moderatorId;
+      comment.moderationNotes.actionTakenAt = new Date();
+
+      // Take action based on moderator's decision
+      switch (action) {
+        case 'approve':
+          comment.status = CommentStatus.ACTIVE;
+          comment.reportCount = 0;
+          break;
+        case 'remove':
+          comment.status = CommentStatus.REMOVED;
+          break;
+        case 'warn':
+          comment.status = CommentStatus.ACTIVE;
+          break;
+      }
+
+      await this.commentRepository.save(comment);
+      await this.notifyContentAuthor(comment, action, notes);
     }
-
-    await repository.save(content);
-
-    // Notify content author if needed
-    await this.notifyContentAuthor(content, action, notes);
   }
 
   /**
@@ -184,7 +213,7 @@ export class ModerationService {
 
     // Check report count
     if (user.reportCount >= this.configService.get<number>('moderation.maxReportsBeforeReview')) {
-      user.status = 'suspended';
+      user.status = UserStatus.SUSPENDED;
       this.logger.warn(`User ${userId} has been suspended due to high report count`);
       await this.userRepository.save(user);
     }

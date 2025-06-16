@@ -27,6 +27,9 @@ export declare const configuration: () => {
         maxReportsBeforeReview: number;
         maxPostsPerDay: number;
         maxCommentsPerDay: number;
+        autoModerate: boolean;
+        toxicityThreshold: number;
+        enableContentFiltering: boolean;
     };
     privacy: {
         defaultPostRetentionDays: number;
@@ -47,5 +50,34 @@ export declare const configuration: () => {
             windowMs: number;
             max: number;
         };
+    };
+    jwt: {
+        secret: string;
+        expiresIn: string;
+    };
+    anonymity: {
+        enabled: boolean;
+        requireAnonymousPosts: boolean;
+        allowRealNamesInChat: boolean;
+    };
+    community: {
+        allowAnonymousPosts: boolean;
+        requireModeration: boolean;
+        enableRealtimeEvents: boolean;
+        maxPostLength: number;
+        maxCommentLength: number;
+    };
+    fileUpload: {
+        maxFileSize: string;
+        allowedFileTypes: string[];
+        uploadDir: string;
+    };
+    rateLimit: {
+        windowMs: number;
+        maxRequests: number;
+    };
+    services: {
+        authServiceUrl: string;
+        notificationServiceUrl: string;
     };
 };

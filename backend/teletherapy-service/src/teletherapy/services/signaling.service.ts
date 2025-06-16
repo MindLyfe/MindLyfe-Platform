@@ -1,4 +1,5 @@
-import { Injectable, Logger, WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { MediaSessionRepository } from '../repositories/media-session.repository';

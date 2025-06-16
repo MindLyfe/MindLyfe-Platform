@@ -7,7 +7,7 @@ export declare class UserService {
     private readonly userServiceUrl;
     constructor(httpService: HttpService, configService: ConfigService);
     findById(id: string, token: string): Promise<any>;
-    findAll(token: string, query?: any): Promise<any>;
+    findAll(token: string): Promise<any>;
     update(id: string, updateDto: any, token: string): Promise<any>;
     delete(id: string, token: string): Promise<any>;
     updatePassword(id: string, passwordDto: any, token: string): Promise<any>;

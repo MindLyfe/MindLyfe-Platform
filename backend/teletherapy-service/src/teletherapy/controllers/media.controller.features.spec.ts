@@ -290,9 +290,12 @@ describe('MediaController Features (e2e)', () => {
       });
 
       it('should prevent non-participants from viewing stats', async () => {
-        jest.spyOn(mediaSessionRepository, 'findById').mockResolvedValueOnce({
+        jest.spyOn(mediaSessionRepository, 'findOne').mockResolvedValueOnce({
           ...mockSession,
-          participants: [mockHost],
+          participants: [mockHost.id],
+          startedAt: new Date(),
+          endedAt: null,
+          updatedAt: new Date(),
         });
 
         return request(app.getHttpServer())

@@ -26,7 +26,7 @@ let SessionBookingController = class SessionBookingController {
     async bookSession(req, bookSessionDto) {
         try {
             const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://auth-service:3001';
-            const serviceToken = process.env.JWT_SERVICE_SECRET || 'mindlyf-service-secret-key-dev';
+            const serviceToken = process.env.JWT_SERVICE_SECRET || 'mindlyfe-service-secret-key-dev';
             const validationResponse = await axios_1.default.get(`${authServiceUrl}/api/subscriptions/validate-booking/${req.user.id}`, {
                 headers: {
                     'Authorization': `Bearer ${serviceToken}`,
@@ -40,11 +40,16 @@ let SessionBookingController = class SessionBookingController {
             const createSessionData = {
                 clientId: req.user.id,
                 therapistId: bookSessionDto.therapistId,
-                sessionDate: bookSessionDto.sessionDate,
-                sessionType: bookSessionDto.sessionType,
-                duration: bookSessionDto.duration || 60,
-                notes: bookSessionDto.notes,
-                isEmergency: bookSessionDto.isEmergency || false
+                startTime: bookSessionDto.sessionDate,
+                endTime: new Date(new Date(bookSessionDto.sessionDate).getTime() + (bookSessionDto.duration || 60) * 60000),
+                type: bookSessionDto.sessionType,
+                category: 'individual',
+                focus: [],
+                title: `Therapy Session with ${bookSessionDto.therapistId}`,
+                metadata: {
+                    notes: bookSessionDto.notes,
+                    isEmergency: bookSessionDto.isEmergency || false
+                }
             };
             const session = await this.teletherapyService.createSession(createSessionData, req.user);
             try {
@@ -84,7 +89,9 @@ let SessionBookingController = class SessionBookingController {
         return await this.teletherapyService.getAvailableTherapists();
     }
     async getAvailableSlots(therapistId, req) {
-        return await this.teletherapyService.getAvailableSlots(therapistId, req.query.date);
+        const date = req.query.date;
+        const endDate = new Date(new Date(date).getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        return await this.teletherapyService.getAvailableSlots(therapistId, date, endDate, 60);
     }
     async getSubscriptionStatus(req) {
         try {

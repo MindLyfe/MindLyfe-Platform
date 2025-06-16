@@ -38,14 +38,17 @@ let ProxyController = ProxyController_1 = class ProxyController {
     async proxyLyfbot(req, res) {
         return this.proxyToService('lyfbot', req, res);
     }
+    async proxyChatHealth(req, res) {
+        return this.proxyToService('chat', req, res);
+    }
     async proxyChat(req, res) {
         return this.proxyToService('chat', req, res);
     }
-    async proxyTeletherapy(req, res) {
+    async proxyTeletherapyHealth(req, res) {
         return this.proxyToService('teletherapy', req, res);
     }
-    async proxyCommunity(req, res) {
-        return this.proxyToService('community', req, res);
+    async proxyTeletherapy(req, res) {
+        return this.proxyToService('teletherapy', req, res);
     }
     async proxyNotification(req, res) {
         return this.proxyToService('notification', req, res);
@@ -130,6 +133,15 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ProxyController.prototype, "proxyLyfbot", null);
 __decorate([
+    (0, public_decorator_1.Public)(),
+    (0, common_1.All)('chat/health'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], ProxyController.prototype, "proxyChatHealth", null);
+__decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.All)('chat/*'),
     __param(0, (0, common_1.Req)()),
@@ -139,6 +151,15 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ProxyController.prototype, "proxyChat", null);
 __decorate([
+    (0, public_decorator_1.Public)(),
+    (0, common_1.All)('teletherapy/health'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], ProxyController.prototype, "proxyTeletherapyHealth", null);
+__decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.All)('teletherapy/*'),
     __param(0, (0, common_1.Req)()),
@@ -147,15 +168,6 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], ProxyController.prototype, "proxyTeletherapy", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.All)('community/*'),
-    __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Res)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", Promise)
-], ProxyController.prototype, "proxyCommunity", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.All)('notifications/*'),

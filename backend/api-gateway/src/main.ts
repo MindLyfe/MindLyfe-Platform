@@ -4,8 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import compression from 'compression';
-import timeout from 'connect-timeout';
+import * as compression from 'compression';
+import * as timeout from 'connect-timeout';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -203,40 +203,40 @@ async function bootstrap() {
       },
     }),
   );
-
+  
   // Swagger documentation with security
   if (configService.get('environment') !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('MindLyf API Gateway')
-      .setDescription('The MindLyf Mental Health Platform API Gateway')
-      .setVersion('1.0')
-      .addBearerAuth(
-        {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-          name: 'JWT',
-          description: 'Enter JWT token',
-          in: 'header',
-        },
-        'JWT-auth',
-      )
-      .addTag('auth', 'Authentication endpoints')
-      .addTag('users', 'User management endpoints')
-      .addTag('ai', 'AI and ML endpoints')
-      .addTag('journal', 'Journal management endpoints')
-      .addTag('lyfbot', 'LyfBot chat endpoints')
-      .addTag('recommender', 'Recommendation endpoints')
-      .addTag('chat', 'Chat and messaging endpoints')
-      .addTag('teletherapy', 'Teletherapy session endpoints')
-      .addTag('community', 'Community and social endpoints')
-      .addTag('notifications', 'Notification endpoints')
+  const config = new DocumentBuilder()
+    .setTitle('MindLyf API Gateway')
+    .setDescription('The MindLyf Mental Health Platform API Gateway')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .addTag('auth', 'Authentication endpoints')
+    .addTag('users', 'User management endpoints')
+    .addTag('ai', 'AI and ML endpoints')
+    .addTag('journal', 'Journal management endpoints')
+    .addTag('lyfbot', 'LyfBot chat endpoints')
+    .addTag('recommender', 'Recommendation endpoints')
+    .addTag('chat', 'Chat and messaging endpoints')
+    .addTag('teletherapy', 'Teletherapy session endpoints')
+    .addTag('community', 'Community and social endpoints')
+    .addTag('notifications', 'Notification endpoints')
       .addTag('payments', 'Payment and subscription endpoints')
       .addTag('resources', 'Resource management endpoints')
       .addTag('health', 'Health check endpoints')
       .addTag('admin', 'Admin management endpoints')
-      .build();
-    const document = SwaggerModule.createDocument(app, config);
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document, {
       swaggerOptions: {
         persistAuthorization: true,
@@ -272,7 +272,7 @@ async function bootstrap() {
     logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
     process.exit(1);
   });
-
+  
   // Start the server
   const port = configService.get('port');
   const environment = configService.get('environment');
@@ -280,7 +280,7 @@ async function bootstrap() {
   logger.log(`🚀 MindLyf API Gateway is running on port ${port}`);
   
   if (environment !== 'production') {
-    logger.log(`📚 API Documentation available at http://localhost:${port}/api/docs`);
+  logger.log(`📚 API Documentation available at http://localhost:${port}/api/docs`);
   }
   
   logger.log(`🌍 Environment: ${environment}`);

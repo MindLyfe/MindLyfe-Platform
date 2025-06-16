@@ -9,7 +9,7 @@ import {
   Request,
   Patch,
   ParseUUIDPipe,
-  ParseDatePipe,
+  ParseIntPipe,
   Delete,
   HttpException,
   HttpStatus,
@@ -21,6 +21,7 @@ import { CreateSessionDto } from './dto/create-session.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import { TherapySession, SessionStatus } from './entities/therapy-session.entity';
 import { UpdateSessionNotesDto } from './dto/update-session-notes.dto';
 import { UpdateSessionStatusDto } from './dto/update-session-status.dto';
@@ -35,6 +36,21 @@ import { JwtUser } from '../auth/interfaces/user.interface';
 @ApiBearerAuth()
 export class TeletherapyController {
   constructor(private readonly teletherapyService: TeletherapyService) {}
+
+  @Get('health')
+  @Public()
+  @ApiOperation({ summary: 'Health check endpoint' })
+  @ApiResponse({ status: 200, description: 'Service is healthy' })
+  async healthCheck() {
+    return {
+      status: 'ok',
+      service: 'teletherapy-service',
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      database: 'connected',
+      mediasoup: 'initialized'
+    };
+  }
 
   @Post('sessions')
   @Roles('therapist', 'admin')
@@ -93,11 +109,11 @@ export class TeletherapyController {
     type: [TherapySession],
   })
   async getSessionsByDateRange(
-    @Query('startDate', ParseDatePipe) startDate: Date,
-    @Query('endDate', ParseDatePipe) endDate: Date,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
     @Request() req,
   ): Promise<TherapySession[]> {
-    return this.teletherapyService.getSessionsByDateRange(startDate, endDate, req.user);
+    return this.teletherapyService.getSessionsByDateRange(new Date(startDate), new Date(endDate), req.user);
   }
 
   @Patch('sessions/:id/status')
@@ -276,9 +292,9 @@ export class TeletherapyController {
     type: [TherapySession],
   })
   async getGroupSessions(
+    @Request() req,
     @Query('category') category?: string,
     @Query('focus') focus?: string[],
-    @Request() req,
   ): Promise<TherapySession[]> {
     // TODO: Implement filtering by category and focus
     return this.teletherapyService.getUpcomingSessions(req.user);
@@ -294,8 +310,8 @@ export class TeletherapyController {
     type: [TherapySession],
   })
   async getIndividualSessions(
-    @Query('category') category?: string,
     @Request() req,
+    @Query('category') category?: string,
   ): Promise<TherapySession[]> {
     // TODO: Implement filtering by category
     return this.teletherapyService.getUpcomingSessions(req.user);

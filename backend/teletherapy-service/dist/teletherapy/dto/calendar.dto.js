@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CalendarSyncStatusDto = exports.CalendarConflictDto = exports.CalendarReminderDto = exports.CalendarEventDto = exports.CalendarSyncDto = exports.CalendarExceptionDto = exports.CalendarAvailabilityDto = exports.CalendarEventStatus = exports.CalendarProvider = void 0;
+exports.CalendarSyncStatusDto = exports.CalendarConflictDto = exports.CalendarEventDto = exports.CalendarSyncDto = exports.CalendarExceptionDto = exports.CalendarReminderDto = exports.CalendarAvailabilityDto = exports.CalendarEventStatus = exports.CalendarProvider = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
@@ -80,6 +80,24 @@ __decorate([
     __metadata("design:type", Number)
 ], CalendarAvailabilityDto.prototype, "maxAdvanceDays", void 0);
 exports.CalendarAvailabilityDto = CalendarAvailabilityDto;
+class CalendarReminderDto {
+}
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Reminder type', enum: ['email', 'popup', 'sms'] }),
+    (0, class_validator_1.IsEnum)(['email', 'popup', 'sms']),
+    __metadata("design:type", String)
+], CalendarReminderDto.prototype, "type", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Minutes before event' }),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CalendarReminderDto.prototype, "minutes", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Whether reminder is enabled' }),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], CalendarReminderDto.prototype, "enabled", void 0);
+exports.CalendarReminderDto = CalendarReminderDto;
 class CalendarExceptionDto {
 }
 __decorate([
@@ -218,24 +236,6 @@ __decorate([
     __metadata("design:type", Object)
 ], CalendarEventDto.prototype, "metadata", void 0);
 exports.CalendarEventDto = CalendarEventDto;
-class CalendarReminderDto {
-}
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Reminder type', enum: ['email', 'popup', 'sms'] }),
-    (0, class_validator_1.IsEnum)(['email', 'popup', 'sms']),
-    __metadata("design:type", String)
-], CalendarReminderDto.prototype, "type", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Minutes before event' }),
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], CalendarReminderDto.prototype, "minutes", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Whether reminder is enabled' }),
-    (0, class_validator_1.IsBoolean)(),
-    __metadata("design:type", Boolean)
-], CalendarReminderDto.prototype, "enabled", void 0);
-exports.CalendarReminderDto = CalendarReminderDto;
 class CalendarConflictDto {
 }
 __decorate([

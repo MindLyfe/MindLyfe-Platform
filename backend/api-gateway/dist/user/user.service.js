@@ -39,11 +39,10 @@ let UserService = UserService_1 = class UserService {
             throw error;
         }
     }
-    async findAll(token, query = {}) {
+    async findAll(token) {
         try {
             const response = await (0, rxjs_1.firstValueFrom)(this.httpService
                 .get(`${this.userServiceUrl}/users`, {
-                params: query,
                 headers: { Authorization: `Bearer ${token}` },
             })
                 .pipe((0, rxjs_1.catchError)((error) => {

@@ -1,14 +1,17 @@
 import { Repository } from 'typeorm';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 import { TherapySession } from '../entities/therapy-session.entity';
-import { User } from '../../auth/entities/user.entity';
 import { CalendarAvailabilityDto, CalendarExceptionDto, CalendarSyncDto, CalendarEventDto, CalendarConflictDto, CalendarSyncStatusDto } from '../dto/calendar.dto';
 export declare class CalendarService {
     private readonly sessionRepository;
-    private readonly userRepository;
+    private readonly httpService;
+    private readonly configService;
     private readonly logger;
     private readonly googleCalendar;
-    private readonly outlookCalendar;
-    constructor(sessionRepository: Repository<TherapySession>, userRepository: Repository<User>);
+    constructor(sessionRepository: Repository<TherapySession>, httpService: HttpService, configService: ConfigService);
+    private getUserFromAuthService;
+    private updateUserInAuthService;
     setAvailability(userId: string, availability: CalendarAvailabilityDto): Promise<void>;
     addException(userId: string, exception: CalendarExceptionDto): Promise<void>;
     syncCalendar(userId: string, syncSettings: CalendarSyncDto): Promise<CalendarSyncStatusDto>;

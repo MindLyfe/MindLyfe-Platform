@@ -17,117 +17,133 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
-const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
 const follows_service_1 = require("./follows.service");
-const create_follow_dto_1 = require("./dto/create-follow.dto");
+const dto_1 = require("./dto");
 let FollowsController = class FollowsController {
     constructor(followsService) {
         this.followsService = followsService;
     }
-    async createFollow(createFollowDto, user) {
-        return this.followsService.createFollow(createFollowDto, user.id);
+    async follow(dto, req) {
+        return this.followsService.follow(dto, req.user);
     }
-    async removeFollow(id, user) {
-        await this.followsService.removeFollow(id, user.id);
-        return { success: true };
+    async unfollow(userId, req) {
+        return this.followsService.unfollow(userId, req.user);
     }
-    async getFollowers(user) {
-        return this.followsService.getFollowers(user.id);
+    async listFollows(query, req) {
+        return this.followsService.listFollows(query, req.user);
     }
-    async getFollowing(user) {
-        return this.followsService.getFollowing(user.id);
+    async getFollowStats(req) {
+        return this.followsService.getFollowStats(req.user);
     }
-    async blockFollow(id, user) {
-        await this.followsService.blockFollow(id, user.id);
-        return { success: true };
+    async checkChatEligibility(dto, req) {
+        return this.followsService.checkChatEligibility(dto, req.user);
     }
-    async checkFollows(followerId, followedId, checkBothDirections) {
-        return this.followsService.checkFollows(followerId, followedId, checkBothDirections === true);
+    async getChatEligibleUsers(req) {
+        return this.followsService.getChatEligibleUsers(req.user);
+    }
+    async updateFollowSettings(followId, dto, req) {
+        return this.followsService.updateFollowSettings(followId, dto, req.user);
     }
 };
 exports.FollowsController = FollowsController;
 __decorate([
     (0, common_1.Post)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Follow a user' }),
-    (0, swagger_1.ApiResponse)({ status: 201, description: 'User successfully followed' }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
-    (0, roles_decorator_1.Roles)('user', 'therapist', 'admin'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Follow a user (anonymous community context)',
+        description: 'Follow another user. When both users follow each other, mutual follow is established and chat access is granted.'
+    }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Successfully followed user' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request (already following, self-follow, etc.)' }),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_follow_dto_1.CreateFollowDto, Object]),
+    __metadata("design:paramtypes", [dto_1.CreateFollowDto, Object]),
     __metadata("design:returntype", Promise)
-], FollowsController.prototype, "createFollow", null);
+], FollowsController.prototype, "follow", null);
 __decorate([
-    (0, common_1.Delete)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Unfollow a user' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'User successfully unfollowed' }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, common_1.Delete)(':userId'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Unfollow a user',
+        description: 'Remove follow relationship. If this was a mutual follow, chat access will be revoked.'
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Successfully unfollowed user' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Follow relationship not found' }),
-    (0, roles_decorator_1.Roles)('user', 'therapist', 'admin'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __param(0, (0, common_1.Param)('userId')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
-], FollowsController.prototype, "removeFollow", null);
+], FollowsController.prototype, "unfollow", null);
 __decorate([
-    (0, common_1.Get)('followers'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get users following the current user' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'List of followers returned' }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
-    (0, roles_decorator_1.Roles)('user', 'therapist', 'admin'),
-    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    (0, common_1.Get)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'List follow relationships',
+        description: 'Get list of followers, following, or mutual follows with anonymized user information.'
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'List of follow relationships' }),
+    __param(0, (0, common_1.Query)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [dto_1.FollowListQueryDto, Object]),
+    __metadata("design:returntype", Promise)
+], FollowsController.prototype, "listFollows", null);
+__decorate([
+    (0, common_1.Get)('stats'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get follow statistics',
+        description: 'Get counts of followers, following, mutual follows, and chat-eligible users.'
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Follow statistics' }),
+    __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], FollowsController.prototype, "getFollowers", null);
+], FollowsController.prototype, "getFollowStats", null);
 __decorate([
-    (0, common_1.Get)('following'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get users that the current user follows' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'List of followed users returned' }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
-    (0, roles_decorator_1.Roles)('user', 'therapist', 'admin'),
-    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    (0, common_1.Post)('check-chat-eligibility'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Check if you can chat with a specific user',
+        description: 'Verify if mutual follow relationship exists and chat access is granted.'
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Chat eligibility status' }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [dto_1.ChatEligibilityDto, Object]),
+    __metadata("design:returntype", Promise)
+], FollowsController.prototype, "checkChatEligibility", null);
+__decorate([
+    (0, common_1.Get)('chat-partners'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get all chat-eligible users',
+        description: 'List all users you have mutual follows with and can chat with. This provides the bridge to chat service.'
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'List of chat partners' }),
+    __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], FollowsController.prototype, "getFollowing", null);
+], FollowsController.prototype, "getChatEligibleUsers", null);
 __decorate([
-    (0, common_1.Post)('block/:id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Block a user from following' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'User successfully blocked' }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
-    (0, roles_decorator_1.Roles)('user', 'therapist', 'admin'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    (0, common_1.Patch)(':followId/settings'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Update follow privacy settings',
+        description: 'Update privacy settings for a follow relationship (notifications, chat permissions, etc.).'
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Settings updated successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Follow relationship not found' }),
+    __param(0, (0, common_1.Param)('followId')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, dto_1.UpdateFollowDto, Object]),
     __metadata("design:returntype", Promise)
-], FollowsController.prototype, "blockFollow", null);
-__decorate([
-    (0, common_1.Get)('check'),
-    (0, swagger_1.ApiOperation)({ summary: 'Check if a follow relationship exists' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Follow check result returned' }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
-    (0, swagger_1.ApiQuery)({ name: 'followerId', required: true, description: 'ID of the potential follower' }),
-    (0, swagger_1.ApiQuery)({ name: 'followedId', required: true, description: 'ID of the potentially followed user' }),
-    (0, swagger_1.ApiQuery)({ name: 'checkBothDirections', required: false, type: Boolean, description: 'Whether to check both directions' }),
-    (0, roles_decorator_1.Roles)('user', 'therapist', 'admin'),
-    __param(0, (0, common_1.Query)('followerId')),
-    __param(1, (0, common_1.Query)('followedId')),
-    __param(2, (0, common_1.Query)('checkBothDirections')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, Boolean]),
-    __metadata("design:returntype", Promise)
-], FollowsController.prototype, "checkFollows", null);
+], FollowsController.prototype, "updateFollowSettings", null);
 exports.FollowsController = FollowsController = __decorate([
-    (0, swagger_1.ApiTags)('follows'),
+    (0, swagger_1.ApiTags)('Follows'),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('follows'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, swagger_1.ApiBearerAuth)(),
     __metadata("design:paramtypes", [follows_service_1.FollowsService])
 ], FollowsController);
 //# sourceMappingURL=follows.controller.js.map

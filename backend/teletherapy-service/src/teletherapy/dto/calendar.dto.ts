@@ -59,6 +59,20 @@ export class CalendarAvailabilityDto {
   maxAdvanceDays?: number;
 }
 
+export class CalendarReminderDto {
+  @ApiProperty({ description: 'Reminder type', enum: ['email', 'popup', 'sms'] })
+  @IsEnum(['email', 'popup', 'sms'])
+  type: 'email' | 'popup' | 'sms';
+
+  @ApiProperty({ description: 'Minutes before event' })
+  @IsNumber()
+  minutes: number;
+
+  @ApiProperty({ description: 'Whether reminder is enabled' })
+  @IsBoolean()
+  enabled: boolean;
+}
+
 export class CalendarExceptionDto {
   @ApiProperty({ description: 'Exception date' })
   @IsDate()
@@ -169,20 +183,6 @@ export class CalendarEventDto {
   @IsOptional()
   @IsObject()
   metadata?: Record<string, any>;
-}
-
-export class CalendarReminderDto {
-  @ApiProperty({ description: 'Reminder type', enum: ['email', 'popup', 'sms'] })
-  @IsEnum(['email', 'popup', 'sms'])
-  type: 'email' | 'popup' | 'sms';
-
-  @ApiProperty({ description: 'Minutes before event' })
-  @IsNumber()
-  minutes: number;
-
-  @ApiProperty({ description: 'Whether reminder is enabled' })
-  @IsBoolean()
-  enabled: boolean;
 }
 
 export class CalendarConflictDto {

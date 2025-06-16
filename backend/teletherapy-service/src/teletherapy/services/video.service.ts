@@ -2,10 +2,10 @@ import { Injectable, Logger, NotFoundException, BadRequestException, OnModuleIni
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TherapySession } from '../entities/therapy-session.entity';
-import { User } from '../../auth/entities/user.entity';
+// User entity is managed by auth-service
 import { SessionStatus, SessionType } from '../entities/therapy-session.entity';
 import { StorageService } from './storage.service';
-import { NotificationService } from './notification.service';
+import { TeletherapyNotificationService } from './notification.service';
 import * as moment from 'moment-timezone';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
@@ -16,6 +16,7 @@ import { RecordingService } from './recording.service';
 import * as mediasoup from 'mediasoup';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
 import { MediaSessionRepository } from '../repositories/media-session.repository';
 import { MediaSession, MediaSessionType, MediaSessionStatus } from '../entities/media-session.entity';
 
@@ -90,6 +91,8 @@ export class VideoService implements OnModuleInit {
       startTime: Date;
       endTime?: Date;
     }[];
+    startTime: Date;
+    metadata: any;
   }> = new Map();
 
   private breakoutRooms: Map<string, BreakoutRoom[]> = new Map();
@@ -99,35 +102,50 @@ export class VideoService implements OnModuleInit {
   constructor(
     @InjectRepository(TherapySession)
     private readonly sessionRepository: Repository<TherapySession>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    // User repository replaced with HTTP calls to auth service
     private readonly redisService: RedisService,
     private readonly mediasoupService: MediaSoupService,
     private readonly signalingService: SignalingService,
     private readonly recordingService: RecordingService,
     private readonly storageService: StorageService,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: TeletherapyNotificationService,
     private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
     private readonly mediaSessionRepository: MediaSessionRepository,
   ) {
-    this.initializeMediasoup();
-    this.initializeWebSocketHandlers();
+    // Don't initialize here - moved to onModuleInit
+  }
+
+  private async validateUser(userId: string): Promise<boolean> {
+    try {
+      const authServiceUrl = this.configService.get<string>('services.authServiceUrl');
+      const response = await this.httpService.get(`${authServiceUrl}/api/auth/users/${userId}`).toPromise();
+      return response.status === 200;
+    } catch (error) {
+      this.logger.error(`Failed to validate user ${userId}: ${error.message}`);
+      return false;
+    }
   }
 
   async onModuleInit() {
     // Initialize MediaSoup worker and router
     await this.mediasoupService.initializeWorker();
+    // Initialize MediaSoup worker for this service
+    await this.initializeMediasoup();
+    // Initialize WebSocket handlers after server is ready
+    this.initializeWebSocketHandlers();
   }
 
   private async initializeMediasoup() {
-    // Create Mediasoup worker
-    this.worker = await mediasoup.createWorker({
-      logLevel: 'warn',
-      rtcMinPort: 10000,
-      rtcMaxPort: 10100,
-    });
+    // Use the worker from MediaSoupService instead of creating a new one
+    // The MediaSoupService already created and configured the worker
+    this.worker = this.mediasoupService.getWorker();
+    
+    if (!this.worker) {
+      throw new Error('MediaSoup worker not initialized');
+    }
 
-    this.logger.log('Mediasoup worker created');
+    this.logger.log('Mediasoup worker initialized from MediaSoupService');
   }
 
   private initializeWebSocketHandlers() {
@@ -183,6 +201,104 @@ export class VideoService implements OnModuleInit {
     });
   }
 
+  async createSession(options: {
+    type: MediaSessionType;
+    contextId: string;
+    startedBy: string;
+    options?: VideoSessionOptions;
+  }): Promise<MediaSession> {
+    try {
+      const mediaSession = new MediaSession();
+      mediaSession.type = options.type;
+      mediaSession.contextId = options.contextId;
+      mediaSession.startedBy = options.startedBy;
+      mediaSession.status = MediaSessionStatus.PENDING;
+      mediaSession.metadata = options.options || {};
+      mediaSession.participants = [];
+
+      const savedSession = await this.mediaSessionRepository.save(mediaSession);
+      
+      // Initialize MediaSoup router for this session
+      await this.initializeSession(savedSession.id, options.options);
+      
+      return savedSession;
+    } catch (error) {
+      this.logger.error(`Error creating session: ${error.message}`);
+      throw new BadRequestException('Failed to create session');
+    }
+  }
+
+  async getWaitingRoomParticipants(sessionId: string): Promise<string[]> {
+    try {
+      const waitingRoomKey = `waiting_room:${sessionId}`;
+      const participants = await this.redisService.smembers(waitingRoomKey);
+      return participants || [];
+    } catch (error) {
+      this.logger.error(`Error getting waiting room participants: ${error.message}`);
+      return [];
+    }
+  }
+
+  async rejectFromWaitingRoom(sessionId: string, participantId: string): Promise<void> {
+    try {
+      const waitingRoomKey = `waiting_room:${sessionId}`;
+      await this.redisService.srem(waitingRoomKey, participantId);
+      
+      // Notify the participant they were rejected
+      this.server.to(`user:${participantId}`).emit('waiting-room-rejected', { sessionId });
+      
+      this.logger.log(`Participant ${participantId} rejected from waiting room for session ${sessionId}`);
+    } catch (error) {
+      this.logger.error(`Error rejecting participant from waiting room: ${error.message}`);
+      throw new BadRequestException('Failed to reject participant');
+    }
+  }
+
+  async updateSessionSettings(sessionId: string, settings: Partial<VideoSessionOptions>): Promise<void> {
+    try {
+      const session = await this.mediaSessionRepository.findOne({ where: { id: sessionId } });
+      if (!session) {
+        throw new NotFoundException('Session not found');
+      }
+
+      session.metadata = { ...session.metadata, ...settings };
+      await this.mediaSessionRepository.save(session);
+      
+      // Broadcast settings update to all participants
+      this.server.to(`session:${sessionId}`).emit('session-settings-updated', settings);
+      
+      this.logger.log(`Session settings updated for session ${sessionId}`);
+    } catch (error) {
+      this.logger.error(`Error updating session settings: ${error.message}`);
+      throw new BadRequestException('Failed to update session settings');
+    }
+  }
+
+  async getSessionStats(sessionId: string): Promise<any> {
+    try {
+      const sessionData = this.activeSessions.get(sessionId);
+      if (!sessionData) {
+        throw new NotFoundException('Session not found');
+      }
+
+      const participants = Array.from(sessionData.participants.keys());
+      const stats = {
+        sessionId,
+        participantCount: participants.length,
+        participants,
+        startTime: sessionData.startTime,
+        duration: sessionData.startTime ? Date.now() - sessionData.startTime.getTime() : 0,
+        breakoutRooms: this.breakoutRooms.get(sessionId)?.length || 0,
+        recording: sessionData.recordings?.length > 0 || false,
+      };
+
+      return stats;
+    } catch (error) {
+      this.logger.error(`Error getting session stats: ${error.message}`);
+      throw new BadRequestException('Failed to get session stats');
+    }
+  }
+
   async initializeSession(
     sessionId: string,
     options: VideoSessionOptions = {},
@@ -232,10 +348,12 @@ export class VideoService implements OnModuleInit {
       options,
       participants: new Set(),
       recordings: [],
+      startTime: new Date(),
+      metadata: {},
     });
 
     // Generate JWT token
-    const token = this.generateToken(sessionId, session.therapist.id, 'host');
+    const token = this.generateToken(sessionId, session.therapistId, 'host');
 
     // Update session metadata
     await this.sessionRepository.update(sessionId, {
@@ -243,7 +361,7 @@ export class VideoService implements OnModuleInit {
         ...session.metadata,
         video: {
           routerId: router.id,
-          options,
+          options: options as any,
           status: 'initialized',
         },
       },
@@ -274,8 +392,8 @@ export class VideoService implements OnModuleInit {
       throw new BadRequestException('Session is not active');
     }
 
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
+    const isValidUser = await this.validateUser(userId);
+    if (!isValidUser) {
       throw new NotFoundException('User not found');
     }
 
@@ -292,11 +410,15 @@ export class VideoService implements OnModuleInit {
         this.waitingRoom.set(sessionId, waitingRoom);
         
         await this.notificationService.sendNotification({
-          userId: session.therapist.id,
           type: 'WAITING_ROOM_JOIN',
-          title: 'New Participant in Waiting Room',
-          message: `${user.firstName} ${user.lastName} is waiting to join the session`,
-          metadata: { sessionId, participantId: userId },
+          recipientId: session.therapistId,
+          channels: ['in-app', 'email'],
+          variables: {
+            title: 'New Participant in Waiting Room',
+            message: `User ${userId} is waiting to join the session`,
+            sessionId,
+            participantId: userId,
+          },
         });
 
         return {
@@ -471,8 +593,8 @@ export class VideoService implements OnModuleInit {
       throw new BadRequestException('Session is not active');
     }
 
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
+    const isValidUser = await this.validateUser(userId);
+    if (!isValidUser) {
       throw new NotFoundException('User not found');
     }
 
@@ -491,11 +613,12 @@ export class VideoService implements OnModuleInit {
         
         // Notify host about new participant in waiting room
         await this.notificationService.sendNotification({
-          userId: session.therapist.id,
           type: 'WAITING_ROOM_JOIN',
-          title: 'New Participant in Waiting Room',
-          message: `${user.firstName} ${user.lastName} is waiting to join the session`,
-          metadata: {
+          recipientId: session.therapistId,
+          channels: ['in-app', 'email'],
+          variables: {
+            title: 'New Participant in Waiting Room',
+            message: `User ${userId} is waiting to join the session`,
             sessionId,
             participantId: userId,
           },
@@ -584,11 +707,12 @@ export class VideoService implements OnModuleInit {
 
     // Send notification to admitted participant
     await this.notificationService.sendNotification({
-      userId: participantId,
       type: 'WAITING_ROOM_ADMITTED',
-      title: 'Admitted to Session',
-      message: 'You have been admitted to the therapy session',
-      metadata: {
+      recipientId: participantId,
+      channels: ['in-app', 'push'],
+      variables: {
+        title: 'Admitted to Session',
+        message: 'You have been admitted to the therapy session',
         sessionId,
         admittedBy,
       },
@@ -907,9 +1031,9 @@ export class VideoService implements OnModuleInit {
 
   private isUserAuthorized(session: TherapySession, userId: string): boolean {
     return (
-      session.therapist.id === userId ||
-      session.client.id === userId ||
-      session.participants.some((p) => p.id === userId)
+      session.therapistId === userId ||
+      session.clientId === userId ||
+      session.participantIds.includes(userId)
     );
   }
 

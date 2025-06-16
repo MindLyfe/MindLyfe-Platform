@@ -22,9 +22,7 @@ export const configuration = () => ({
       url: process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
       serviceToken: process.env.JWT_SERVICE_SECRET || 'mindlyf-service-secret-key-dev',
     },
-    notification: {
-      url: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3005',
-    },
+    notificationServiceUrl: process.env.NOTIFICATION_SERVICE_URL || 'http://notification-service:3005',
   },
   
   upload: {

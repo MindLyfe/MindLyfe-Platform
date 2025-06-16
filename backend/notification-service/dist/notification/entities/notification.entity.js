@@ -29,6 +29,8 @@ var NotificationType;
     NotificationType["COMMUNITY"] = "community";
     NotificationType["CHAT"] = "chat";
     NotificationType["MARKETING"] = "marketing";
+    NotificationType["PAYMENT"] = "payment";
+    NotificationType["SUBSCRIPTION"] = "subscription";
 })(NotificationType || (exports.NotificationType = NotificationType = {}));
 let NotificationEntity = class NotificationEntity {
 };

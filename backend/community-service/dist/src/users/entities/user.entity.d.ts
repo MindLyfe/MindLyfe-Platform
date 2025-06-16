@@ -69,5 +69,14 @@ export declare class User extends BaseEntity {
         lastLoginLocation?: string;
         accountCreatedFrom?: string;
         preferences?: Record<string, any>;
+        verificationRequest?: {
+            status?: string;
+            requestedAt?: Date;
+            verifiedAt?: Date;
+            verifiedBy?: string;
+            additionalNotes?: string;
+            notes?: string;
+            reason?: string;
+        };
     };
 }

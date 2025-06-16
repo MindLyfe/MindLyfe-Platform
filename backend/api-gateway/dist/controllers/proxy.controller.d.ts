@@ -9,9 +9,10 @@ export declare class ProxyController {
     proxyJournal(req: Request, res: Response): Promise<void>;
     proxyRecommender(req: Request, res: Response): Promise<void>;
     proxyLyfbot(req: Request, res: Response): Promise<void>;
+    proxyChatHealth(req: Request, res: Response): Promise<void>;
     proxyChat(req: Request, res: Response): Promise<void>;
+    proxyTeletherapyHealth(req: Request, res: Response): Promise<void>;
     proxyTeletherapy(req: Request, res: Response): Promise<void>;
-    proxyCommunity(req: Request, res: Response): Promise<void>;
     proxyNotification(req: Request, res: Response): Promise<void>;
     proxyUser(req: Request, res: Response): Promise<void>;
     private proxyToService;

@@ -25,10 +25,7 @@ export default () => ({
       url: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
       serviceToken: process.env.AUTH_SERVICE_TOKEN || 'mindlyfe-auth-service-token',
     },
-    notification: {
-      url: process.env.NOTIFICATION_SERVICE_URL || 'http://notification-service:3005',
-      serviceToken: process.env.NOTIFICATION_SERVICE_TOKEN || 'mindlyfe-notification-service-token',
-    },
+    notificationServiceUrl: process.env.NOTIFICATION_SERVICE_URL || 'http://notification-service:3005',
   },
   
   payment: {

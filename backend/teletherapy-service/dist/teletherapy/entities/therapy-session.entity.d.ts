@@ -1,4 +1,3 @@
-import { User } from '../../auth/entities/user.entity';
 export declare enum SessionStatus {
     SCHEDULED = "scheduled",
     IN_PROGRESS = "in_progress",
@@ -56,6 +55,7 @@ export declare class TherapySession {
     participantIds: string[];
     startTime: Date;
     endTime: Date;
+    duration: number;
     status: SessionStatus;
     type: SessionType;
     category: SessionCategory;
@@ -80,11 +80,30 @@ export declare class TherapySession {
         waitingRoomEnabled?: boolean;
         chatEnabled?: boolean;
         recordingEnabled?: boolean;
+        chatRoomId?: string;
+        chatRoomCreatedAt?: Date;
+        cancellationReason?: string;
+        calendar?: {
+            eventId?: string;
+            provider?: string;
+            syncStatus?: string;
+            lastSyncedAt?: Date;
+        };
+        video?: {
+            token?: string;
+            routerRtpCapabilities?: any;
+            sessionCreated?: boolean;
+            routerId?: string;
+            options?: any;
+            status?: string;
+        };
         breakoutRooms?: {
             id: string;
             name: string;
             participants: string[];
         }[];
+        breakoutRoomDuration?: number;
+        participantRoles?: Record<string, string>;
         resources?: {
             title: string;
             type: 'document' | 'link' | 'video';
@@ -117,6 +136,11 @@ export declare class TherapySession {
         earlyBirdPrice?: number;
         earlyBirdEndDate?: Date;
     };
+    paymentId: string;
+    subscriptionId: string;
+    paidFromSubscription: boolean;
+    paidFromCredit: boolean;
+    paymentStatus: PaymentStatus;
     requirements: {
         minAge?: number;
         maxAge?: number;
@@ -324,7 +348,4 @@ export declare class TherapySession {
     };
     createdAt: Date;
     updatedAt: Date;
-    therapist: User;
-    client: User;
-    participants: User[];
 }

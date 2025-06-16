@@ -91,7 +91,7 @@ let VideoController = class VideoController {
         if (!sessionData) {
             throw new common_1.BadRequestException('Session is not active');
         }
-        return this.videoService.getRoomParticipants(sessionData.roomSid);
+        return this.videoService.getRoomParticipants(sessionId);
     }
     async disconnectParticipant(sessionId, participantSid) {
         const sessionData = await this.videoService['activeSessions'].get(sessionId);

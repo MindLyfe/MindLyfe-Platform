@@ -26,6 +26,7 @@ export declare class Post extends BaseEntity {
     isAnonymous: boolean;
     pseudonym: string;
     tags: string[];
+    category: string;
     viewCount: number;
     reportCount: number;
     lastModeratedAt: Date;

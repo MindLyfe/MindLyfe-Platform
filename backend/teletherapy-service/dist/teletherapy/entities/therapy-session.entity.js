@@ -8,11 +8,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TherapySession = exports.PaymentStatus = exports.SessionTemplateType = exports.SessionFocus = exports.SessionCategory = exports.SessionType = exports.SessionStatus = void 0;
 const typeorm_1 = require("typeorm");
-const user_entity_1 = require("../../auth/entities/user.entity");
 var SessionStatus;
 (function (SessionStatus) {
     SessionStatus["SCHEDULED"] = "scheduled";
@@ -96,6 +94,10 @@ __decorate([
     __metadata("design:type", Date)
 ], TherapySession.prototype, "endTime", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'int', nullable: true, comment: 'Duration of the session in minutes' }),
+    __metadata("design:type", Number)
+], TherapySession.prototype, "duration", void 0);
+__decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: SessionStatus,
@@ -173,6 +175,30 @@ __decorate([
     __metadata("design:type", Object)
 ], TherapySession.prototype, "pricing", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'uuid', nullable: true }),
+    __metadata("design:type", String)
+], TherapySession.prototype, "paymentId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'uuid', nullable: true }),
+    __metadata("design:type", String)
+], TherapySession.prototype, "subscriptionId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    __metadata("design:type", Boolean)
+], TherapySession.prototype, "paidFromSubscription", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    __metadata("design:type", Boolean)
+], TherapySession.prototype, "paidFromCredit", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: PaymentStatus,
+        default: PaymentStatus.PENDING
+    }),
+    __metadata("design:type", String)
+], TherapySession.prototype, "paymentStatus", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
     __metadata("design:type", Object)
 ], TherapySession.prototype, "requirements", void 0);
@@ -216,25 +242,6 @@ __decorate([
     (0, typeorm_1.UpdateDateColumn)({ type: 'timestamp with time zone' }),
     __metadata("design:type", Date)
 ], TherapySession.prototype, "updatedAt", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { onDelete: 'CASCADE' }),
-    (0, typeorm_1.JoinColumn)({ name: 'therapistId' }),
-    __metadata("design:type", typeof (_a = typeof user_entity_1.User !== "undefined" && user_entity_1.User) === "function" ? _a : Object)
-], TherapySession.prototype, "therapist", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { onDelete: 'SET NULL', nullable: true }),
-    (0, typeorm_1.JoinColumn)({ name: 'clientId' }),
-    __metadata("design:type", typeof (_b = typeof user_entity_1.User !== "undefined" && user_entity_1.User) === "function" ? _b : Object)
-], TherapySession.prototype, "client", void 0);
-__decorate([
-    (0, typeorm_1.ManyToMany)(() => user_entity_1.User),
-    (0, typeorm_1.JoinTable)({
-        name: 'session_participants',
-        joinColumn: { name: 'sessionId', referencedColumnName: 'id' },
-        inverseJoinColumn: { name: 'userId', referencedColumnName: 'id' }
-    }),
-    __metadata("design:type", Array)
-], TherapySession.prototype, "participants", void 0);
 TherapySession = __decorate([
     (0, typeorm_1.Entity)('therapy_sessions')
 ], TherapySession);

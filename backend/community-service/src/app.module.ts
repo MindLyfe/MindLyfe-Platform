@@ -6,8 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
-import { AuthClientModule } from '@mindlyf/shared/auth-client';
-import { serviceTokensConfig, serviceTokensValidationSchema } from '@mindlyf/shared/config/service-tokens.config';
+import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
@@ -26,9 +25,8 @@ import { CommunityGateway } from './community.gateway';
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [configuration, serviceTokensConfig],
+      load: [configuration],
       validate,
-      validationSchema: serviceTokensValidationSchema,
     }),
     
     // Database
@@ -50,7 +48,7 @@ import { CommunityGateway } from './community.gateway';
     }),
     
     // Authentication
-    AuthClientModule,
+    AuthModule,
     
     // Feature modules
     UsersModule,

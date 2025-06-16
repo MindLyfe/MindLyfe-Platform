@@ -74,7 +74,7 @@ export class CommentsService {
 
       // Enforce anonymity - all community comments are anonymous
       const commentData = {
-        ...dto,
+      ...dto,
         authorId: userEntity.id,
         isAnonymous: true, // Force anonymity in community
         pseudonym: anonymousIdentity.displayName,
@@ -372,7 +372,7 @@ export class CommentsService {
    */
   async report(id: string, dto: ReportCommentDto, user: any): Promise<void> {
     try {
-      const comment = await this.commentRepo.findOne({ where: { id } });
+    const comment = await this.commentRepo.findOne({ where: { id } });
 
       if (!comment) {
         throw new NotFoundException('Comment not found');
@@ -408,7 +408,7 @@ export class CommentsService {
         throw new ForbiddenException('Only moderators and admins can moderate comments');
       }
 
-      const comment = await this.commentRepo.findOne({ where: { id } });
+    const comment = await this.commentRepo.findOne({ where: { id } });
 
       if (!comment) {
         throw new NotFoundException('Comment not found');

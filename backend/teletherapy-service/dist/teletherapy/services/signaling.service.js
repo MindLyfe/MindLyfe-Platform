@@ -12,6 +12,7 @@ var SignalingService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SignalingService = void 0;
 const common_1 = require("@nestjs/common");
+const websockets_1 = require("@nestjs/websockets");
 const socket_io_1 = require("socket.io");
 const jwt_1 = require("@nestjs/jwt");
 const media_session_repository_1 = require("../repositories/media-session.repository");
@@ -170,66 +171,66 @@ let SignalingService = SignalingService_1 = class SignalingService {
     }
 };
 __decorate([
-    (0, common_1.WebSocketServer)(),
+    (0, websockets_1.WebSocketServer)(),
     __metadata("design:type", socket_io_1.Server)
 ], SignalingService.prototype, "server", void 0);
 __decorate([
-    (0, common_1.SubscribeMessage)('join-session'),
+    (0, websockets_1.SubscribeMessage)('join-session'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], SignalingService.prototype, "handleJoinSession", null);
 __decorate([
-    (0, common_1.SubscribeMessage)('leave-session'),
+    (0, websockets_1.SubscribeMessage)('leave-session'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], SignalingService.prototype, "handleLeaveSession", null);
 __decorate([
-    (0, common_1.SubscribeMessage)('offer'),
+    (0, websockets_1.SubscribeMessage)('offer'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], SignalingService.prototype, "handleOffer", null);
 __decorate([
-    (0, common_1.SubscribeMessage)('answer'),
+    (0, websockets_1.SubscribeMessage)('answer'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], SignalingService.prototype, "handleAnswer", null);
 __decorate([
-    (0, common_1.SubscribeMessage)('ice-candidate'),
+    (0, websockets_1.SubscribeMessage)('ice-candidate'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], SignalingService.prototype, "handleIceCandidate", null);
 __decorate([
-    (0, common_1.SubscribeMessage)('media-status'),
+    (0, websockets_1.SubscribeMessage)('media-status'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], SignalingService.prototype, "handleMediaStatus", null);
 __decorate([
-    (0, common_1.SubscribeMessage)('chat-message'),
+    (0, websockets_1.SubscribeMessage)('chat-message'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], SignalingService.prototype, "handleChatMessage", null);
 __decorate([
-    (0, common_1.SubscribeMessage)('raise-hand'),
+    (0, websockets_1.SubscribeMessage)('raise-hand'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], SignalingService.prototype, "handleRaiseHand", null);
 __decorate([
-    (0, common_1.SubscribeMessage)('recording-status'),
+    (0, websockets_1.SubscribeMessage)('recording-status'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], SignalingService.prototype, "handleRecordingStatus", null);
 SignalingService = SignalingService_1 = __decorate([
     (0, common_1.Injectable)(),
-    (0, common_1.WebSocketGateway)({
+    (0, websockets_1.WebSocketGateway)({
         namespace: 'signaling',
         cors: {
             origin: '*',

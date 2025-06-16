@@ -17,31 +17,49 @@ exports.CalendarService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
+const axios_1 = require("@nestjs/axios");
+const config_1 = require("@nestjs/config");
 const therapy_session_entity_1 = require("../entities/therapy-session.entity");
-const user_entity_1 = require("../../auth/entities/user.entity");
 const calendar_dto_1 = require("../dto/calendar.dto");
 const therapy_session_entity_2 = require("../entities/therapy-session.entity");
 const moment = require("moment-timezone");
 const googleapis_1 = require("googleapis");
 const google_auth_library_1 = require("google-auth-library");
-const outlook_calendar_1 = require("outlook-calendar");
 let CalendarService = CalendarService_1 = class CalendarService {
-    constructor(sessionRepository, userRepository) {
+    constructor(sessionRepository, httpService, configService) {
         this.sessionRepository = sessionRepository;
-        this.userRepository = userRepository;
+        this.httpService = httpService;
+        this.configService = configService;
         this.logger = new common_1.Logger(CalendarService_1.name);
         this.googleCalendar = googleapis_1.google.calendar({ version: 'v3' });
-        this.outlookCalendar = new outlook_calendar_1.OutlookCalendar();
     }
-    async setAvailability(userId, availability) {
-        const user = await this.userRepository.findOne({ where: { id: userId } });
-        if (!user) {
+    async getUserFromAuthService(userId) {
+        try {
+            const authServiceUrl = this.configService.get('services.authServiceUrl');
+            const response = await this.httpService.get(`${authServiceUrl}/api/auth/users/${userId}`).toPromise();
+            return response.data.user;
+        }
+        catch (error) {
+            this.logger.error(`Failed to get user ${userId}: ${error.message}`);
             throw new common_1.NotFoundException('User not found');
         }
+    }
+    async updateUserInAuthService(userId, updates) {
+        try {
+            const authServiceUrl = this.configService.get('services.authServiceUrl');
+            await this.httpService.patch(`${authServiceUrl}/api/auth/users/${userId}`, updates).toPromise();
+        }
+        catch (error) {
+            this.logger.error(`Failed to update user ${userId}: ${error.message}`);
+            throw new common_1.BadRequestException('Failed to update user');
+        }
+    }
+    async setAvailability(userId, availability) {
+        const user = await this.getUserFromAuthService(userId);
         this.validateTimeFormat(availability.startTime);
         this.validateTimeFormat(availability.endTime);
         this.validateTimeRange(availability.startTime, availability.endTime);
-        await this.userRepository.update(userId, {
+        await this.updateUserInAuthService(userId, {
             metadata: {
                 ...user.metadata,
                 calendarAvailability: availability,
@@ -49,17 +67,14 @@ let CalendarService = CalendarService_1 = class CalendarService {
         });
     }
     async addException(userId, exception) {
-        const user = await this.userRepository.findOne({ where: { id: userId } });
-        if (!user) {
-            throw new common_1.NotFoundException('User not found');
-        }
+        const user = await this.getUserFromAuthService(userId);
         const availability = user.metadata?.calendarAvailability;
         if (!availability) {
             throw new common_1.BadRequestException('User has no availability settings');
         }
         const exceptions = availability.exceptions || [];
         exceptions.push(exception);
-        await this.userRepository.update(userId, {
+        await this.updateUserInAuthService(userId, {
             metadata: {
                 ...user.metadata,
                 calendarAvailability: {
@@ -70,10 +85,7 @@ let CalendarService = CalendarService_1 = class CalendarService {
         });
     }
     async syncCalendar(userId, syncSettings) {
-        const user = await this.userRepository.findOne({ where: { id: userId } });
-        if (!user) {
-            throw new common_1.NotFoundException('User not found');
-        }
+        const user = await this.getUserFromAuthService(userId);
         try {
             switch (syncSettings.provider) {
                 case calendar_dto_1.CalendarProvider.GOOGLE:
@@ -99,22 +111,15 @@ let CalendarService = CalendarService_1 = class CalendarService {
         if (!session) {
             throw new common_1.NotFoundException('Session not found');
         }
-        const therapist = session.therapist;
-        if (!therapist.metadata?.calendarProvider) {
-            throw new common_1.BadRequestException('Therapist has no calendar provider configured');
-        }
+        const therapistId = session.therapistId;
+        const calendarProvider = 'google';
         const event = this.createEventFromSession(session);
         let calendarEvent;
         try {
-            switch (therapist.metadata.calendarProvider) {
-                case calendar_dto_1.CalendarProvider.GOOGLE:
-                    calendarEvent = await this.createGoogleCalendarEvent(therapist, event);
-                    break;
-                case calendar_dto_1.CalendarProvider.OUTLOOK:
-                    calendarEvent = await this.createOutlookCalendarEvent(therapist, event);
-                    break;
-                case calendar_dto_1.CalendarProvider.ICAL:
-                    calendarEvent = await this.createICalCalendarEvent(therapist, event);
+            const therapistCalendarProvider = calendarProvider;
+            switch (therapistCalendarProvider) {
+                case 'google':
+                    calendarEvent = await this.createGoogleCalendarEvent(therapistId, event);
                     break;
                 default:
                     throw new common_1.BadRequestException('Unsupported calendar provider');
@@ -125,7 +130,7 @@ let CalendarService = CalendarService_1 = class CalendarService {
                     calendar: {
                         ...session.metadata?.calendar,
                         eventId: calendarEvent.eventId,
-                        provider: therapist.metadata.calendarProvider,
+                        provider: therapistCalendarProvider,
                         syncStatus: 'synced',
                         lastSyncedAt: new Date(),
                     },
@@ -139,10 +144,7 @@ let CalendarService = CalendarService_1 = class CalendarService {
         }
     }
     async checkAvailability(userId, startTime, endTime, excludeSessionId) {
-        const user = await this.userRepository.findOne({ where: { id: userId } });
-        if (!user) {
-            throw new common_1.NotFoundException('User not found');
-        }
+        const user = await this.getUserFromAuthService(userId);
         const availability = user.metadata?.calendarAvailability;
         if (!availability) {
             throw new common_1.BadRequestException('User has no availability settings');
@@ -184,7 +186,7 @@ let CalendarService = CalendarService_1 = class CalendarService {
             startTime: session.startTime,
             endTime: session.endTime,
             type: this.determineConflictType(startTime, endTime, session.startTime, session.endTime),
-            resolution: 'pending',
+            resolution: 'reschedule',
         }));
     }
     determineConflictType(newStart, newEnd, existingStart, existingEnd) {
@@ -224,8 +226,8 @@ let CalendarService = CalendarService_1 = class CalendarService {
             status: this.mapSessionStatusToEventStatus(session.status),
             location: session.metadata?.meetingLink || 'Online Session',
             attendees: [
-                session.therapist.email,
-                ...session.participants.map((p) => p.email),
+                `therapist-${session.therapistId}@placeholder.com`,
+                ...session.participantIds.map((id) => `participant-${id}@placeholder.com`),
             ],
             reminders: [
                 {
@@ -331,11 +333,10 @@ let CalendarService = CalendarService_1 = class CalendarService {
         return conflicts;
     }
     async createOrUpdateSessionFromEvent(userId, event) {
-        const existingSession = await this.sessionRepository.findOne({
-            where: {
-                'metadata.calendar.eventId': event.id,
-            },
-        });
+        const existingSession = await this.sessionRepository
+            .createQueryBuilder('session')
+            .where("session.metadata -> 'calendar' ->> 'eventId' = :eventId", { eventId: event.id })
+            .getOne();
         if (existingSession) {
             await this.sessionRepository.update(existingSession.id, {
                 startTime: new Date(event.start.dateTime),
@@ -360,7 +361,7 @@ let CalendarService = CalendarService_1 = class CalendarService {
                 description: event.description,
                 status: therapy_session_entity_2.SessionStatus.SCHEDULED,
                 type: this.determineSessionType(event),
-                category: SessionCategory.INDIVIDUAL,
+                category: therapy_session_entity_2.SessionCategory.INDIVIDUAL,
                 metadata: {
                     calendar: {
                         eventId: event.id,
@@ -376,12 +377,13 @@ let CalendarService = CalendarService_1 = class CalendarService {
     determineSessionType(event) {
         const description = event.description?.toLowerCase() || '';
         if (description.includes('group')) {
-            return event.conferenceData ? SessionType.GROUP_VIDEO : SessionType.GROUP_CHAT;
+            return event.conferenceData ? therapy_session_entity_2.SessionType.GROUP_VIDEO : therapy_session_entity_2.SessionType.GROUP_CHAT;
         }
-        return event.conferenceData ? SessionType.VIDEO : SessionType.CHAT;
+        return event.conferenceData ? therapy_session_entity_2.SessionType.VIDEO : therapy_session_entity_2.SessionType.CHAT;
     }
-    async createGoogleCalendarEvent(user, event) {
+    async createGoogleCalendarEvent(userId, event) {
         const oauth2Client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, process.env.GOOGLE_REDIRECT_URI);
+        const user = await this.getUserFromAuthService(userId);
         oauth2Client.setCredentials(user.metadata.calendarCredentials);
         const googleEvent = {
             summary: event.title,
@@ -424,19 +426,19 @@ let CalendarService = CalendarService_1 = class CalendarService {
             location: response.data.hangoutLink || event.location,
         };
     }
-    async createOutlookCalendarEvent(user, event) {
+    async createOutlookCalendarEvent(userId, event) {
         throw new Error('Outlook calendar event creation not implemented');
     }
-    async createICalCalendarEvent(user, event) {
+    async createICalCalendarEvent(userId, event) {
         throw new Error('iCal calendar event creation not implemented');
     }
 };
 CalendarService = CalendarService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(therapy_session_entity_1.TherapySession)),
-    __param(1, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository])
+        axios_1.HttpService,
+        config_1.ConfigService])
 ], CalendarService);
 exports.CalendarService = CalendarService;
 //# sourceMappingURL=calendar.service.js.map

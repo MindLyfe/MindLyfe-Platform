@@ -12,6 +12,7 @@ import { UserModule } from './user/user.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { OrganizationModule } from './organization/organization.module';
 import { SharedModule } from './shared/shared.module';
+import { HealthModule } from './health/health.module';
 import { User } from './entities/user.entity';
 import { UserSession } from './entities/user-session.entity';
 import { Organization } from './entities/organization.entity';
@@ -66,6 +67,7 @@ import { Payment } from './entities/payment.entity';
     UserModule,
     SubscriptionModule,
     OrganizationModule,
+    HealthModule,
     
     // Health check
     TerminusModule,

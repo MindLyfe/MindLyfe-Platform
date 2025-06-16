@@ -24,70 +24,6 @@ export enum NotificationType {
   CUSTOM = 'custom'
 }
 
-export class NotificationTemplateDto {
-  @ApiProperty({ description: 'Template name' })
-  @IsString()
-  name: string;
-
-  @ApiProperty({ description: 'Template type', enum: NotificationType })
-  @IsEnum(NotificationType)
-  type: NotificationType;
-
-  @ApiProperty({ description: 'Template subject' })
-  @IsString()
-  subject: string;
-
-  @ApiProperty({ description: 'Template body' })
-  @IsString()
-  body: string;
-
-  @ApiProperty({ description: 'Available channels', enum: NotificationChannel, isArray: true })
-  @IsArray()
-  @IsEnum(NotificationChannel, { each: true })
-  channels: NotificationChannel[];
-
-  @ApiProperty({ description: 'Template variables', type: [String] })
-  @IsArray()
-  @IsString({ each: true })
-  variables: string[];
-
-  @ApiProperty({ description: 'Whether template is active', default: true })
-  @IsBoolean()
-  @IsOptional()
-  isActive?: boolean;
-
-  @ApiProperty({ description: 'Template metadata', required: false })
-  @IsOptional()
-  @IsObject()
-  metadata?: Record<string, any>;
-}
-
-export class NotificationSettingsDto {
-  @ApiProperty({ description: 'Session reminder settings' })
-  @ValidateNested()
-  @Type(() => ReminderSettingsDto)
-  reminders: ReminderSettingsDto;
-
-  @ApiProperty({ description: 'Channel preferences', type: [ChannelPreferenceDto] })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ChannelPreferenceDto)
-  channelPreferences: ChannelPreferenceDto[];
-
-  @ApiProperty({ description: 'Custom notification rules', type: [CustomRuleDto], required: false })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CustomRuleDto)
-  customRules?: CustomRuleDto[];
-
-  @ApiProperty({ description: 'Quiet hours settings', required: false })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => QuietHoursDto)
-  quietHours?: QuietHoursDto;
-}
-
 export class ReminderSettingsDto {
   @ApiProperty({ description: 'Whether to send session reminders' })
   @IsBoolean()
@@ -168,6 +104,70 @@ export class QuietHoursDto {
   @ApiProperty({ description: 'Whether to respect quiet hours' })
   @IsBoolean()
   enabled: boolean;
+}
+
+export class NotificationTemplateDto {
+  @ApiProperty({ description: 'Template name' })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ description: 'Template type', enum: NotificationType })
+  @IsEnum(NotificationType)
+  type: NotificationType;
+
+  @ApiProperty({ description: 'Template subject' })
+  @IsString()
+  subject: string;
+
+  @ApiProperty({ description: 'Template body' })
+  @IsString()
+  body: string;
+
+  @ApiProperty({ description: 'Available channels', enum: NotificationChannel, isArray: true })
+  @IsArray()
+  @IsEnum(NotificationChannel, { each: true })
+  channels: NotificationChannel[];
+
+  @ApiProperty({ description: 'Template variables', type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  variables: string[];
+
+  @ApiProperty({ description: 'Whether template is active', default: true })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
+
+  @ApiProperty({ description: 'Template metadata', required: false })
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, any>;
+}
+
+export class NotificationSettingsDto {
+  @ApiProperty({ description: 'Session reminder settings' })
+  @ValidateNested()
+  @Type(() => ReminderSettingsDto)
+  reminders: ReminderSettingsDto;
+
+  @ApiProperty({ description: 'Channel preferences', type: [ChannelPreferenceDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ChannelPreferenceDto)
+  channelPreferences: ChannelPreferenceDto[];
+
+  @ApiProperty({ description: 'Custom notification rules', type: [CustomRuleDto], required: false })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CustomRuleDto)
+  customRules?: CustomRuleDto[];
+
+  @ApiProperty({ description: 'Quiet hours settings', required: false })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => QuietHoursDto)
+  quietHours?: QuietHoursDto;
 }
 
 export class SendNotificationDto {

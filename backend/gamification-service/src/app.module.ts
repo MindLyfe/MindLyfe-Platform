@@ -4,17 +4,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TerminusModule } from '@nestjs/terminus';
+import { HttpModule } from '@nestjs/axios';
 
 // Configuration
 import configuration from './config/configuration';
 
 // Modules
-import { StreakModule } from './modules/streak.module';
-import { BadgeModule } from './modules/badge.module';
-import { AchievementModule } from './modules/achievement.module';
-import { RewardModule } from './modules/reward.module';
-import { ActivityModule } from './modules/activity.module';
-import { LeaderboardModule } from './modules/leaderboard.module';
+import { GamificationModule } from './modules/gamification.module';
 import { HealthModule } from './modules/health.module';
 
 // Entities
@@ -40,6 +36,9 @@ import { LeaderboardEntry } from './entities/leaderboard-entry.entity';
       load: [configuration],
       envFilePath: ['.env.local', '.env'],
     }),
+
+    // HTTP client
+    HttpModule,
 
     // Database
     TypeOrmModule.forRootAsync({
@@ -91,12 +90,7 @@ import { LeaderboardEntry } from './entities/leaderboard-entry.entity';
     TerminusModule,
 
     // Feature modules
-    StreakModule,
-    BadgeModule,
-    AchievementModule,
-    RewardModule,
-    ActivityModule,
-    LeaderboardModule,
+    GamificationModule,
     HealthModule,
   ],
 })

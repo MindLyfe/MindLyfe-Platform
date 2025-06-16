@@ -8,25 +8,39 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatModule = void 0;
 const common_1 = require("@nestjs/common");
-const chat_controller_1 = require("./chat.controller");
-const chat_service_1 = require("./chat.service");
 const typeorm_1 = require("@nestjs/typeorm");
+const chat_service_1 = require("./chat.service");
+const chat_controller_1 = require("./chat.controller");
+const auth_client_module_1 = require("../shared/auth-client/auth-client.module");
 const chat_message_entity_1 = require("./entities/chat-message.entity");
 const chat_room_entity_1 = require("./entities/chat-room.entity");
-const auth_client_1 = require("@mindlyf/shared/auth-client");
 const axios_1 = require("@nestjs/axios");
+const calling_module_1 = require("./calling/calling.module");
+const notification_service_1 = require("../common/services/notification.service");
+const community_client_module_1 = require("../community/community-client.module");
 let ChatModule = class ChatModule {
 };
 ChatModule = __decorate([
     (0, common_1.Module)({
         imports: [
             typeorm_1.TypeOrmModule.forFeature([chat_message_entity_1.ChatMessage, chat_room_entity_1.ChatRoom]),
-            auth_client_1.AuthClientModule,
+            auth_client_module_1.AuthClientModule,
             axios_1.HttpModule,
+            community_client_module_1.CommunityClientModule,
+            (0, common_1.forwardRef)(() => calling_module_1.CallingModule),
         ],
-        controllers: [chat_controller_1.ChatController],
-        providers: [chat_service_1.ChatService],
-        exports: [chat_service_1.ChatService],
+        controllers: [
+            chat_controller_1.ChatController,
+            chat_controller_1.ChatRoomsController,
+            chat_controller_1.ChatMessagesController,
+            chat_controller_1.ChatSocialController,
+            chat_controller_1.ChatModerationController
+        ],
+        providers: [
+            chat_service_1.ChatService,
+            notification_service_1.ChatNotificationService
+        ],
+        exports: [chat_service_1.ChatService, notification_service_1.ChatNotificationService],
     })
 ], ChatModule);
 exports.ChatModule = ChatModule;

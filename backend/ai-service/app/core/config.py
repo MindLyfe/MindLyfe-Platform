@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "MindLyfe AI Service"
     
     # CORS
-    CORS_ORIGINS: List[AnyHttpUrl] = []
+    CORS_ORIGINS: List[str] = []
     
     @validator("CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

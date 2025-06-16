@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { TherapySession } from './therapy-session.entity';
-import { User } from '../../auth/entities/user.entity';
+// User entity is managed by auth-service
 
 export enum RecordingStatus {
   PENDING = 'pending',
@@ -42,9 +42,7 @@ export class Recording {
   @Column()
   startedBy: string;
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'startedBy' })
-  starter: User;
+  // User relation replaced with user ID from auth service
 
   @Column({
     type: 'enum',

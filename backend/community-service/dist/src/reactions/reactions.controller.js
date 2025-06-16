@@ -32,11 +32,17 @@ let ReactionsController = class ReactionsController {
     async list(query, req) {
         return this.reactionsService.list(query, req.user);
     }
+    async getStatistics(query) {
+        return this.reactionsService.getStatistics(query);
+    }
+    async getUserReactions(req, query) {
+        return this.reactionsService.getUserReactions(req.user, query);
+    }
 };
 exports.ReactionsController = ReactionsController;
 __decorate([
     (0, common_1.Post)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Add a reaction (anonymous or not)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Add a reaction (anonymous by default)' }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
@@ -54,13 +60,30 @@ __decorate([
 ], ReactionsController.prototype, "remove", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: 'List reactions' }),
+    (0, swagger_1.ApiOperation)({ summary: 'List reactions with anonymization' }),
     __param(0, (0, common_1.Query)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], ReactionsController.prototype, "list", null);
+__decorate([
+    (0, common_1.Get)('statistics'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get reaction statistics for content' }),
+    __param(0, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ReactionsController.prototype, "getStatistics", null);
+__decorate([
+    (0, common_1.Get)('my-reactions'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get current user\'s reactions' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], ReactionsController.prototype, "getUserReactions", null);
 exports.ReactionsController = ReactionsController = __decorate([
     (0, swagger_1.ApiTags)('Reactions'),
     (0, swagger_1.ApiBearerAuth)(),

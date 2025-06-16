@@ -1,4 +1,4 @@
-import { PostVisibility, PostStatus } from '../entities/post.entity';
+import { PostVisibility } from '../entities/post.entity';
 export declare class CreatePostDto {
     title: string;
     content: string;
@@ -16,7 +16,17 @@ export declare class UpdatePostDto {
 export declare class ReportPostDto {
     reason: string;
 }
+export declare enum ModerationAction {
+    APPROVE = "approve",
+    REJECT = "reject",
+    REMOVE = "remove",
+    WARN = "warn",
+    SUSPEND = "suspend",
+    BAN = "ban",
+    HIDE = "hide",
+    FLAG = "flag"
+}
 export declare class ModeratePostDto {
-    status: PostStatus;
+    action: ModerationAction;
     notes?: string;
 }

@@ -6,7 +6,7 @@ import { MediaController } from './media.controller';
 import { VideoService } from '../services/video.service';
 import { MediaSessionRepository } from '../repositories/media-session.repository';
 import { MediaSession, MediaSessionType, MediaSessionStatus } from '../entities/media-session.entity';
-import { User } from '../../auth/entities/user.entity';
+// User entity is managed by auth-service
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -60,7 +60,7 @@ describe('MediaController (e2e)', () => {
         {
           provide: MediaSessionRepository,
           useValue: {
-            findById: jest.fn().mockResolvedValue(mockSession),
+            findOne: jest.fn().mockResolvedValue(mockSession),
             findActiveByContext: jest.fn().mockResolvedValue(mockSession),
             findByParticipant: jest.fn().mockResolvedValue([mockSession]),
           },
@@ -76,10 +76,7 @@ describe('MediaController (e2e)', () => {
           provide: getRepositoryToken(MediaSession),
           useClass: Repository,
         },
-        {
-          provide: getRepositoryToken(User),
-          useClass: Repository,
-        },
+        // User repository provider removed
       ],
     }).compile();
 
@@ -166,7 +163,7 @@ describe('MediaController (e2e)', () => {
     });
 
     it('should return 404 for non-existent session', async () => {
-      jest.spyOn(mediaSessionRepository, 'findById').mockResolvedValueOnce(null);
+      jest.spyOn(mediaSessionRepository, 'findOne').mockResolvedValueOnce(null);
 
       return request(app.getHttpServer())
         .get('/media-sessions/non-existent')

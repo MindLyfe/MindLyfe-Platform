@@ -8,6 +8,7 @@ import { AnonymityService } from '../common/services/anonymity.service';
 import { PrivacyService } from '../common/services/privacy.service';
 import { ModerationService } from '../common/services/moderation.service';
 import { CommunityGateway } from '../community.gateway';
+import { CommunityNotificationService } from '../common/services/notification.service';
 
 @Injectable()
 export class PostsService {
@@ -22,6 +23,7 @@ export class PostsService {
     private readonly privacyService: PrivacyService,
     private readonly moderationService: ModerationService,
     private readonly gateway: CommunityGateway,
+    private readonly notificationService: CommunityNotificationService,
   ) {}
 
   /**
@@ -84,6 +86,24 @@ export class PostsService {
         postWithRelations, 
         anonymousIdentity
       );
+
+      // NOTIFICATION: Notify followers about new post
+      try {
+        const followers = await this.getFollowersForNotification(userEntity.id);
+        if (followers.length > 0) {
+          await this.notificationService.notifyFollowersAboutNewPost(
+            userEntity.id,
+            anonymousIdentity.displayName,
+            savedPost.id,
+            savedPost.title || 'New Post',
+            savedPost.content,
+            savedPost.category || 'general',
+            followers.map(f => f.id)
+          );
+        }
+      } catch (error) {
+        this.logger.warn(`Failed to send follower notifications for post ${savedPost.id}: ${error.message}`);
+      }
 
       // Emit real-time event
       this.gateway.emitEvent('postCreated', {
@@ -356,81 +376,146 @@ export class PostsService {
   /**
    * Reports a post for moderation
    */
-  async report(id: string, dto: ReportPostDto, user: any): Promise<void> {
+  async report(postId: string, dto: ReportPostDto, user: any): Promise<void> {
     try {
-      const post = await this.postRepo.findOne({ where: { id } });
+      // Validate user exists
+      const userEntity = await this.userRepo.findOne({ 
+        where: { authId: user.id } 
+      });
+      
+      if (!userEntity) {
+        throw new BadRequestException('User not found');
+      }
 
+      // Get the post to get current report count
+      const post = await this.postRepo.findOne({ where: { id: postId } });
       if (!post) {
         throw new NotFoundException('Post not found');
       }
 
-      // Use moderation service to handle reporting
-      await this.moderationService.reportPost(id, user.id, dto.reason);
+      // Use moderation service to handle the report
+      await this.moderationService.reportPost(postId, userEntity.id, dto.reason);
 
-      // Emit moderation event (anonymized)
-      this.gateway.emitEvent('contentReported', {
-        type: 'post',
-        id: post.id,
-        reason: dto.reason
-      });
+      // NOTIFICATION: Notify moderators about new report
+      try {
+        const moderators = await this.userRepo.find({ 
+          where: { role: UserRole.MODERATOR } 
+        });
+        
+        if (moderators.length > 0) {
+          await this.notificationService.notifyModeratorsAboutReport(
+            'post',
+            postId,
+            dto.reason,
+            userEntity.id,
+            (post.reportCount || 0) + 1,
+            moderators.map(m => m.id)
+          );
+        }
+      } catch (error) {
+        this.logger.warn(`Failed to send moderator notifications for post report ${postId}: ${error.message}`);
+      }
 
-      this.logger.log(`Post reported: ${id} by user ${user.id}`);
+      this.logger.log(`Post ${postId} reported by user ${userEntity.id}`);
 
     } catch (error) {
-      this.logger.error(`Failed to report post ${id}: ${error.message}`, error.stack);
+      this.logger.error(`Failed to report post: ${error.message}`, error.stack);
       throw error;
     }
   }
 
   /**
-   * Moderates a post (moderators/admins only)
+   * Moderates a post (admin/moderator only)
    */
-  async moderate(id: string, dto: ModeratePostDto, user: any): Promise<any> {
+  async moderate(postId: string, dto: ModeratePostDto, user: any): Promise<any> {
     try {
-      const userEntity = await this.userRepo.findOne({ where: { authId: user.id } });
+      // Validate user exists and has moderator role
+      const userEntity = await this.userRepo.findOne({ 
+        where: { authId: user.id } 
+      });
       
-      if (!userEntity || (userEntity.role !== UserRole.MODERATOR && userEntity.role !== UserRole.ADMIN)) {
-        throw new ForbiddenException('Only moderators and admins can moderate posts');
+      if (!userEntity) {
+        throw new BadRequestException('User not found');
       }
 
-      const post = await this.postRepo.findOne({ where: { id } });
+      if (![UserRole.ADMIN, UserRole.MODERATOR].includes(userEntity.role)) {
+        throw new ForbiddenException('Only admins and moderators can moderate posts');
+      }
+
+      // Get the post
+      const post = await this.postRepo.findOne({ 
+        where: { id: postId },
+        relations: ['author']
+      });
 
       if (!post) {
         throw new NotFoundException('Post not found');
       }
 
-      // Update post status
-      await this.postRepo.update(id, {
-        status: dto.status,
-        lastModeratedAt: new Date(),
-        lastModeratedBy: userEntity.id
-      });
+      // Map ModerationAction to expected string literals
+      const actionMap = {
+        'approve': 'approve',
+        'remove': 'remove', 
+        'warn': 'warn',
+        'reject': 'remove',
+        'hide': 'remove',
+        'flag': 'warn',
+        'suspend': 'warn',
+        'ban': 'remove'
+      };
+      
+      const mappedAction = actionMap[dto.action] || 'warn';
 
-      // Use moderation service for comprehensive handling
+      // Use moderation service to handle the moderation
       await this.moderationService.reviewContent(
-        id, 
+        postId, 
         'post', 
         userEntity.id, 
-        dto.status === PostStatus.PUBLISHED ? 'approve' : 'remove',
-        dto.notes || 'Moderated via API'
+        mappedAction as 'approve' | 'remove' | 'warn', 
+        dto.notes
       );
 
-      // Get updated post
-      const updatedPost = await this.get(id, user);
+      // NOTIFICATION: Notify post author about moderation action
+      try {
+        // Map ModerationAction to notification action types
+        const notificationActionMap = {
+          'approve': 'approved',
+          'remove': 'removed', 
+          'warn': 'warned',
+          'reject': 'removed',
+          'hide': 'removed',
+          'flag': 'warned',
+          'suspend': 'warned',
+          'ban': 'removed'
+        };
+        
+        const notificationAction = notificationActionMap[dto.action] || 'warned';
+        
+        await this.notificationService.notifyContentModerated(
+          post.authorId,
+          notificationAction as 'approved' | 'removed' | 'warned',
+          'post',
+          postId,
+          dto.notes,
+          userEntity.id
+        );
+      } catch (error) {
+        this.logger.warn(`Failed to send moderation notification for post ${postId}: ${error.message}`);
+      }
 
-      // Emit moderation event
-      this.gateway.emitEvent('contentModerated', {
-        type: 'post',
-        id: post.id,
-        status: dto.status,
-        moderatorId: userEntity.id
+      // Emit real-time event
+      this.gateway.emitEvent('postModerated', {
+        id: postId,
+        action: dto.action,
+        moderatedBy: userEntity.id
       });
 
-      this.logger.log(`Post moderated: ${id} status: ${dto.status}`);
-      return updatedPost;
+      this.logger.log(`Post ${postId} moderated by ${userEntity.id} with action: ${dto.action}`);
+
+      return { message: 'Post moderated successfully' };
 
     } catch (error) {
-      this.logger.error(`Failed to moderate post ${id}: ${error.message}`, error.stack);
+      this.logger.error(`Failed to moderate post: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -456,6 +541,20 @@ export class PostsService {
         
       default:
         return false;
+    }
+  }
+
+  /**
+   * Get followers for notification purposes
+   */
+  private async getFollowersForNotification(userId: string): Promise<User[]> {
+    try {
+      // This would be implemented based on the follows relationship
+      // For now, return empty array - will be implemented when follows service is ready
+      return [];
+    } catch (error) {
+      this.logger.warn(`Failed to get followers for user ${userId}: ${error.message}`);
+      return [];
     }
   }
 } 

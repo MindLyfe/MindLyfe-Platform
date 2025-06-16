@@ -4,23 +4,19 @@ import { Post } from './entities/post.entity';
 import { User } from '../users/entities/user.entity';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
-import { AnonymityService } from '../common/services/anonymity.service';
-import { PrivacyService } from '../common/services/privacy.service';
-import { ModerationService } from '../common/services/moderation.service';
 import { CommunityGateway } from '../community.gateway';
 import { Comment } from '../comments/entities/comment.entity';
 import { Reaction } from '../reactions/entities/reaction.entity';
+import { CommonModule } from '../common/common.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Post, User, Comment, Reaction])
+    TypeOrmModule.forFeature([Post, User, Comment, Reaction]),
+    CommonModule,
   ],
   controllers: [PostsController],
   providers: [
     PostsService,
-    AnonymityService,
-    PrivacyService,
-    ModerationService,
     CommunityGateway
   ],
   exports: [PostsService],

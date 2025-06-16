@@ -11,6 +11,7 @@ import configuration from './config/configuration';
 // Controllers
 import { HealthController } from './health/health.controller';
 import { ProxyController } from './controllers/proxy.controller';
+import { AdminController } from './controllers/admin.controller';
 
 // Services
 import { ProxyService } from './services/proxy.service';
@@ -23,9 +24,12 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { UserModule } from './user/user.module';
 import { AiModule } from './modules/ai.module';
 import { CommunityModule } from './modules/community.module';
+import { PaymentModule } from './modules/payment.module';
+import { ResourcesModule } from './modules/resources.module';
 import { NotificationModule } from './modules/notification.module';
 import { LyfbotModule } from './modules/lyfbot.module';
 import { TherapyModule } from './modules/therapy.module';
+import { DocsModule } from './docs/docs.module';
 
 @Module({
   imports: [
@@ -57,13 +61,17 @@ import { TherapyModule } from './modules/therapy.module';
     UserModule,
     AiModule,
     CommunityModule,
+    PaymentModule,
+    ResourcesModule,
     NotificationModule,
     LyfbotModule,
     TherapyModule,
+    DocsModule,
   ],
   controllers: [
     HealthController,
     ProxyController,
+    AdminController,
   ],
   providers: [
     ProxyService,

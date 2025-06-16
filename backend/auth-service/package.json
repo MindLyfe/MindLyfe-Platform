@@ -37,6 +37,7 @@
     "@nestjs/terminus": "^10.0.0",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/typeorm": "^10.0.2",
+    "@mindlyf/shared": "file:../shared",
     "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
@@ -57,7 +58,8 @@
     "sqlite3": "^5.1.7",
     "swagger-ui-express": "^5.0.0",
     "typeorm": "^0.3.20",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "cli-highlight": "^2.1.11"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

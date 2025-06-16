@@ -27,5 +27,10 @@ export const configuration = () => ({
   services: {
     chatServiceUrl: process.env.CHAT_SERVICE_URL || 'http://chat-service:3003',
     authServiceUrl: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
+    notificationServiceUrl: process.env.NOTIFICATION_SERVICE_URL || 'http://notification-service:3005',
+  },
+  auth: {
+    serviceToken: process.env.SERVICE_TOKEN || 'teletherapy-service-token',
+    serviceName: 'teletherapy-service',
   },
 });

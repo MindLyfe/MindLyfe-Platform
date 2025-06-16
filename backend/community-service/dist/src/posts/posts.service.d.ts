@@ -1,18 +1,29 @@
 import { Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
+import { User } from '../users/entities/user.entity';
 import { CreatePostDto, UpdatePostDto, ReportPostDto, ModeratePostDto } from './dto';
-import { AuthClientService } from '@mindlyf/shared/auth-client';
+import { AnonymityService } from '../common/services/anonymity.service';
+import { PrivacyService } from '../common/services/privacy.service';
+import { ModerationService } from '../common/services/moderation.service';
 import { CommunityGateway } from '../community.gateway';
+import { CommunityNotificationService } from '../common/services/notification.service';
 export declare class PostsService {
     private readonly postRepo;
-    private readonly authClient;
+    private readonly userRepo;
+    private readonly anonymityService;
+    private readonly privacyService;
+    private readonly moderationService;
     private readonly gateway;
-    constructor(postRepo: Repository<Post>, authClient: AuthClientService, gateway: CommunityGateway);
-    create(dto: CreatePostDto, user: any): Promise<void>;
-    list(query: any, user: any): Promise<void>;
-    get(id: string, user: any): Promise<void>;
-    update(id: string, dto: UpdatePostDto, user: any): Promise<void>;
+    private readonly notificationService;
+    private readonly logger;
+    constructor(postRepo: Repository<Post>, userRepo: Repository<User>, anonymityService: AnonymityService, privacyService: PrivacyService, moderationService: ModerationService, gateway: CommunityGateway, notificationService: CommunityNotificationService);
+    create(dto: CreatePostDto, user: any): Promise<any>;
+    list(query: any, user: any): Promise<any>;
+    get(id: string, user: any): Promise<any>;
+    update(id: string, dto: UpdatePostDto, user: any): Promise<any>;
     delete(id: string, user: any): Promise<void>;
-    report(id: string, dto: ReportPostDto, user: any): Promise<void>;
-    moderate(id: string, dto: ModeratePostDto, user: any): Promise<void>;
+    report(postId: string, dto: ReportPostDto, user: any): Promise<void>;
+    moderate(postId: string, dto: ModeratePostDto, user: any): Promise<any>;
+    private canUserViewPost;
+    private getFollowersForNotification;
 }

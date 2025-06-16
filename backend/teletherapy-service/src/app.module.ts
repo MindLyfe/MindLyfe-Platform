@@ -3,12 +3,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { HttpModule } from '@nestjs/axios';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { JwtStrategy } from './auth/strategies/jwt.strategy';
+import { AuthClientService } from './teletherapy/services/auth-client.service';
 import { configuration } from './config/configuration';
 import { validate } from './config/env.validator';
-import { AuthClientModule } from '@mindlyf/shared/auth-client';
-import { serviceTokensConfig, serviceTokensValidationSchema } from '@mindlyf/shared/config/service-tokens.config';
+// Note: AuthClientModule will be implemented as HTTP client for auth service
 import { TeletherapyModule } from './teletherapy/teletherapy.module';
 
 @Module({
@@ -19,11 +21,7 @@ import { TeletherapyModule } from './teletherapy/teletherapy.module';
       load: [configuration],
       validate,
     }),
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [serviceTokensConfig],
-      validationSchema: serviceTokensValidationSchema,
-    }),
+    // Service tokens config will be included in main configuration
     
     // Database
     TypeOrmModule.forRootAsync({
@@ -54,11 +52,17 @@ import { TeletherapyModule } from './teletherapy/teletherapy.module';
         },
       }),
     }),
-    AuthClientModule,
+    
+    // HTTP Client for auth service
+    HttpModule,
+    
+    // AuthClientModule replaced by HTTP client in services
     TeletherapyModule,
   ],
   controllers: [],
   providers: [
+    JwtStrategy,
+    AuthClientService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

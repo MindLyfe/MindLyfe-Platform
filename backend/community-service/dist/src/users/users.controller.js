@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
@@ -54,7 +53,7 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_a = typeof dto_1.UpdateUserDto !== "undefined" && dto_1.UpdateUserDto) === "function" ? _a : Object, Object]),
+    __metadata("design:paramtypes", [dto_1.UpdateUserDto, Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "updateMe", null);
 __decorate([
@@ -63,7 +62,7 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_b = typeof dto_1.TherapistVerificationRequestDto !== "undefined" && dto_1.TherapistVerificationRequestDto) === "function" ? _b : Object, Object]),
+    __metadata("design:paramtypes", [dto_1.TherapistVerificationRequestDto, Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "requestTherapistVerification", null);
 __decorate([
@@ -74,7 +73,7 @@ __decorate([
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_c = typeof dto_1.TherapistVerifyDto !== "undefined" && dto_1.TherapistVerifyDto) === "function" ? _c : Object, Object]),
+    __metadata("design:paramtypes", [String, dto_1.TherapistVerifyDto, Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "verifyTherapist", null);
 exports.UsersController = UsersController = __decorate([

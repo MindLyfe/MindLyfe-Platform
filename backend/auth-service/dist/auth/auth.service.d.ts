@@ -4,7 +4,7 @@ import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, RefreshToke
 import { EmailService } from '../shared/services/email.service';
 import { SessionService } from './session/session.service';
 import { EventService } from '../shared/events/event.service';
-import { UserService } from '../user/user.service';
+import { UserService, SafeUser } from '../user/user.service';
 import { RedisService } from '../shared/services/redis.service';
 import { HttpService } from '@nestjs/axios';
 interface AuthMetadata {
@@ -73,7 +73,7 @@ export declare class AuthService {
     logout(userId: string, sessionId?: string, metadata?: AuthMetadata): Promise<{
         message: string;
     }>;
-    validateUserById(userId: string): Promise<any>;
+    validateUserById(userId: string): Promise<SafeUser | null>;
     private parseTimeToMs;
     private generateRefreshToken;
     validateServiceToken(serviceName: string, token: string, requestingService: string): Promise<boolean>;
@@ -86,5 +86,12 @@ export declare class AuthService {
         lastName: string;
     }): Promise<void>;
     generateServiceToken(): Promise<string>;
+    getUserSubscriptionStatus(userId: string): Promise<any>;
+    handlePaymentNotification(userId: string, notification: any): Promise<any>;
+    validatePaymentAccess(userId: string, paymentType: string, amount: number): Promise<boolean>;
+    private handlePaymentSuccess;
+    private handlePaymentFailure;
+    private handleSubscriptionCreated;
+    private handleSubscriptionCanceled;
 }
 export {};

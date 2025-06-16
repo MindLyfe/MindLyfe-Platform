@@ -360,7 +360,7 @@ export class VideoController {
       throw new BadRequestException('Session is not active');
     }
 
-    return this.videoService.getRoomParticipants(sessionData.roomSid);
+    return this.videoService.getRoomParticipants(sessionId);
   }
 
   @Post('sessions/:sessionId/participants/:participantSid/disconnect')

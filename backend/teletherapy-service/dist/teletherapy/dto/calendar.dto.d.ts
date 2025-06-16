@@ -19,6 +19,11 @@ export declare class CalendarAvailabilityDto {
     minNoticeHours?: number;
     maxAdvanceDays?: number;
 }
+export declare class CalendarReminderDto {
+    type: 'email' | 'popup' | 'sms';
+    minutes: number;
+    enabled: boolean;
+}
 export declare class CalendarExceptionDto {
     date: Date;
     available: boolean;
@@ -47,11 +52,6 @@ export declare class CalendarEventDto {
     reminders: CalendarReminderDto[];
     recurrenceRule?: string;
     metadata?: Record<string, any>;
-}
-export declare class CalendarReminderDto {
-    type: 'email' | 'popup' | 'sms';
-    minutes: number;
-    enabled: boolean;
 }
 export declare class CalendarConflictDto {
     eventId: string;

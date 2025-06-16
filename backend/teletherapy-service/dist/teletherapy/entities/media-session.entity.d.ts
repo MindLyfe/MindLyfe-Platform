@@ -1,4 +1,3 @@
-import { User } from '../../auth/entities/user.entity';
 export declare enum MediaSessionType {
     TELETHERAPY = "teletherapy",
     CHAT = "chat"
@@ -12,7 +11,7 @@ export declare class MediaSession {
     id: string;
     type: MediaSessionType;
     contextId: string;
-    participants: User[];
+    participants: string[];
     status: MediaSessionStatus;
     startedBy: string;
     startedAt: Date;

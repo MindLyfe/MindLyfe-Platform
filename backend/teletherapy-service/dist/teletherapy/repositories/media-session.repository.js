@@ -25,6 +25,12 @@ let MediaSessionRepository = class MediaSessionRepository {
         const session = this.repository.create(data);
         return this.repository.save(session);
     }
+    async save(entity) {
+        return this.repository.save(entity);
+    }
+    async findOne(options) {
+        return this.repository.findOne(options);
+    }
     async findById(id) {
         return this.repository.findOne({
             where: { id },
@@ -61,9 +67,9 @@ let MediaSessionRepository = class MediaSessionRepository {
         if (!session) {
             throw new Error(`Media session not found: ${sessionId}`);
         }
-        const participantExists = session.participants.some(p => p.id === userId);
+        const participantExists = session.participants.includes(userId);
         if (!participantExists) {
-            session.participants = [...session.participants, { id: userId }];
+            session.participants = [...session.participants, userId];
             return this.repository.save(session);
         }
         return session;
@@ -73,7 +79,7 @@ let MediaSessionRepository = class MediaSessionRepository {
         if (!session) {
             throw new Error(`Media session not found: ${sessionId}`);
         }
-        session.participants = session.participants.filter(p => p.id !== userId);
+        session.participants = session.participants.filter(id => id !== userId);
         return this.repository.save(session);
     }
     async updateStatus(id, status) {

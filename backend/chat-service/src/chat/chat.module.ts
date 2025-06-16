@@ -1,24 +1,40 @@
-import { Module } from '@nestjs/common';
-import { ChatController } from './chat.controller';
-import { ChatService } from './chat.service';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ChatService } from './chat.service';
+import { 
+  ChatController, 
+  ChatRoomsController, 
+  ChatMessagesController, 
+  ChatSocialController, 
+  ChatModerationController 
+} from './chat.controller';
+import { AuthClientModule } from '../shared/auth-client/auth-client.module';
 import { ChatMessage } from './entities/chat-message.entity';
 import { ChatRoom } from './entities/chat-room.entity';
-import { AuthClientModule } from '@mindlyf/shared/auth-client';
 import { HttpModule } from '@nestjs/axios';
-import { CommunityClientService } from '../community/community-client.service';
+import { CallingModule } from './calling/calling.module';
+import { ChatNotificationService } from '../common/services/notification.service';
+import { CommunityClientModule } from '../community/community-client.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ChatMessage, ChatRoom]),
     AuthClientModule,
     HttpModule,
+    CommunityClientModule,
+    forwardRef(() => CallingModule),
   ],
-  controllers: [ChatController],
+  controllers: [
+    ChatController, 
+    ChatRoomsController, 
+    ChatMessagesController, 
+    ChatSocialController, 
+    ChatModerationController
+  ],
   providers: [
     ChatService,
-    CommunityClientService
+    ChatNotificationService
   ],
-  exports: [ChatService],
+  exports: [ChatService, ChatNotificationService],
 })
 export class ChatModule {}

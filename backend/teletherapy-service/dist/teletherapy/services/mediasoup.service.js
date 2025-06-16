@@ -18,6 +18,9 @@ let MediaSoupService = MediaSoupService_1 = class MediaSoupService {
         this.logger = new common_1.Logger(MediaSoupService_1.name);
         this.initializeWorker();
     }
+    getWorker() {
+        return this.worker;
+    }
     async initializeWorker() {
         try {
             this.worker = await mediasoup.createWorker({
@@ -69,10 +72,8 @@ let MediaSoupService = MediaSoupService_1 = class MediaSoupService {
                 enableTcp: options.enableTcp ?? true,
                 preferUdp: options.preferUdp ?? true,
                 initialAvailableOutgoingBitrate: options.initialAvailableOutgoingBitrate ?? 1000,
-                minimumAvailableOutgoingBitrate: options.minimumAvailableOutgoingBitrate ?? 600,
                 maxSctpMessageSize: options.maxSctpMessageSize ?? 262144,
                 numSctpStreams: options.numSctpStreams ?? { OS: 1024, MIS: 1024 },
-                maxIncomingBitrate: options.maxIncomingBitrate,
             });
             this.logger.log(`WebRTC transport created: ${transport.id}`);
             transport.on('dtlsstatechange', (dtlsState) => {
@@ -80,7 +81,7 @@ let MediaSoupService = MediaSoupService_1 = class MediaSoupService {
                     this.logger.log(`Transport closed: ${transport.id}`);
                 }
             });
-            transport.on('close', () => {
+            transport.on('@close', () => {
                 this.logger.log(`Transport closed: ${transport.id}`);
             });
             return transport;
@@ -100,9 +101,6 @@ let MediaSoupService = MediaSoupService_1 = class MediaSoupService {
                 enableSctp: options.enableSctp ?? false,
                 numSctpStreams: options.numSctpStreams,
                 maxSctpMessageSize: options.maxSctpMessageSize,
-                enableTcp: options.enableTcp ?? false,
-                preferUdp: options.preferUdp ?? false,
-                initialAvailableOutgoingBitrate: options.initialAvailableOutgoingBitrate,
             });
             this.logger.log(`Plain transport created: ${transport.id}`);
             return transport;
@@ -135,9 +133,6 @@ let MediaSoupService = MediaSoupService_1 = class MediaSoupService {
         try {
             const transport = await router.createDirectTransport({
                 maxMessageSize: options.maxMessageSize,
-                enableSctp: options.enableSctp ?? false,
-                numSctpStreams: options.numSctpStreams,
-                maxSctpMessageSize: options.maxSctpMessageSize,
                 appData: options.appData,
             });
             this.logger.log(`Direct transport created: ${transport.id}`);
@@ -151,8 +146,11 @@ let MediaSoupService = MediaSoupService_1 = class MediaSoupService {
     async createDataProducer(transport, options) {
         try {
             const dataProducer = await transport.produceData({
-                ordered: options.ordered,
-                maxRetransmits: options.maxRetransmits,
+                sctpStreamParameters: {
+                    streamId: 0,
+                    ordered: options.ordered,
+                    maxRetransmits: options.maxRetransmits,
+                },
                 label: options.label,
                 protocol: options.protocol,
                 appData: options.appData,

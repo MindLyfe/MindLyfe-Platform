@@ -81,6 +81,10 @@ __decorate([
     __metadata("design:type", Array)
 ], Post.prototype, "tags", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 100, default: 'general' }),
+    __metadata("design:type", String)
+], Post.prototype, "category", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: 'integer', default: 0 }),
     __metadata("design:type", Number)
 ], Post.prototype, "viewCount", void 0);

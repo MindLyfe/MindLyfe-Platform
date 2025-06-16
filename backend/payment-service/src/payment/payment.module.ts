@@ -12,6 +12,7 @@ import { StripeGatewayService } from '../gateways/stripe/stripe-gateway.service'
 import { PayPalGatewayService } from '../gateways/paypal/paypal-gateway.service';
 import { DpoGatewayService } from '../gateways/dpo/dpo-gateway.service';
 import { AuthModule } from '../auth/auth.module';
+import { PaymentNotificationService } from '../common/services/notification.service';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { AuthModule } from '../auth/auth.module';
     DpoGatewayService,
     StripeGatewayService,
     PayPalGatewayService,
+    PaymentNotificationService,
   ],
-  exports: [PaymentService, PaymentGatewayFactory, CurrencyConverterService],
+  exports: [PaymentService, PaymentGatewayFactory, CurrencyConverterService, PaymentNotificationService],
 })
 export class PaymentModule {} 

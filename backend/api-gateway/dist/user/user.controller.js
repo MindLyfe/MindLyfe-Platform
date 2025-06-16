@@ -24,7 +24,7 @@ let UserController = class UserController {
     findAll(req, query) {
         var _a;
         const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
-        return this.userService.findAll(token, query);
+        return this.userService.findAll(token);
     }
     findOne(id, req) {
         var _a;

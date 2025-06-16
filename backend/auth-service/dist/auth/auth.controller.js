@@ -96,11 +96,62 @@ let AuthController = class AuthController {
             user: {
                 id: user.id,
                 email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
                 role: user.role,
                 status: user.status,
                 emailVerified: user.emailVerified,
                 twoFactorEnabled: user.twoFactorEnabled,
             },
+        };
+    }
+    async getUserSubscriptionStatus(userId) {
+        const user = await this.authService.validateUserById(userId);
+        if (!user) {
+            throw new common_1.NotFoundException('User not found');
+        }
+        return {
+            user: {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role
+            },
+            subscription: {
+                hasActiveSubscription: false,
+                subscriptions: [],
+                userType: 'individual',
+                organizationId: null,
+                canMakePayments: true
+            }
+        };
+    }
+    async handlePaymentNotification(userId, notification) {
+        console.log(`Payment notification received for user ${userId}:`, notification);
+        return {
+            message: 'Payment notification received',
+            userId,
+            type: notification.type,
+            processed: true
+        };
+    }
+    async validatePaymentAccess(body) {
+        const user = await this.authService.validateUserById(body.userId);
+        if (!user) {
+            return { canMakePayment: false, reason: 'User not found' };
+        }
+        if (!user.emailVerified) {
+            return { canMakePayment: false, reason: 'Email not verified' };
+        }
+        if (user.status !== 'active') {
+            return { canMakePayment: false, reason: 'Account not active' };
+        }
+        return {
+            canMakePayment: true,
+            userId: body.userId,
+            paymentType: body.paymentType,
+            amount: body.amount
         };
     }
 };
@@ -502,6 +553,71 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getUserInfo", null);
+__decorate([
+    (0, common_1.Get)('users/:userId/subscription-status'),
+    (0, common_1.UseGuards)(service_token_guard_1.ServiceTokenGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Get user subscription status (Service-to-Service)' }),
+    (0, swagger_1.ApiHeader)({ name: 'X-Service-Name', description: 'Name of the requesting service' }),
+    (0, swagger_1.ApiParam)({ name: 'userId', description: 'User ID to get subscription status for' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'User subscription status retrieved successfully',
+        schema: {
+            type: 'object',
+            properties: {
+                user: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        email: { type: 'string' },
+                        firstName: { type: 'string' },
+                        lastName: { type: 'string' },
+                        role: { type: 'string' }
+                    }
+                },
+                subscription: {
+                    type: 'object',
+                    properties: {
+                        hasActiveSubscription: { type: 'boolean' },
+                        subscriptions: { type: 'array' },
+                        userType: { type: 'string' },
+                        organizationId: { type: 'string', nullable: true },
+                        canMakePayments: { type: 'boolean' }
+                    }
+                }
+            }
+        }
+    }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
+    __param(0, (0, common_1.Param)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "getUserSubscriptionStatus", null);
+__decorate([
+    (0, common_1.Post)('users/:userId/payment-notification'),
+    (0, common_1.UseGuards)(service_token_guard_1.ServiceTokenGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Receive payment notifications from payment service (Service-to-Service)' }),
+    (0, swagger_1.ApiHeader)({ name: 'X-Service-Name', description: 'Name of the requesting service (should be payment-service)' }),
+    (0, swagger_1.ApiParam)({ name: 'userId', description: 'User ID for the payment notification' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Payment notification processed successfully' }),
+    __param(0, (0, common_1.Param)('userId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "handlePaymentNotification", null);
+__decorate([
+    (0, common_1.Post)('validate-payment-access'),
+    (0, common_1.UseGuards)(service_token_guard_1.ServiceTokenGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Validate if user can make payments (Service-to-Service)' }),
+    (0, swagger_1.ApiHeader)({ name: 'X-Service-Name', description: 'Name of the requesting service (should be payment-service)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Payment access validation result' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "validatePaymentAccess", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)('auth'),
     (0, common_1.Controller)('auth'),

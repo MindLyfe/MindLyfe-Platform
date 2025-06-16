@@ -6,21 +6,17 @@ import { User } from '../users/entities/user.entity';
 import { Reaction } from '../reactions/entities/reaction.entity';
 import { CommentsController } from './comments.controller';
 import { CommentsService } from './comments.service';
-import { AnonymityService } from '../common/services/anonymity.service';
-import { PrivacyService } from '../common/services/privacy.service';
-import { ModerationService } from '../common/services/moderation.service';
 import { CommunityGateway } from '../community.gateway';
+import { CommonModule } from '../common/common.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Comment, Post, User, Reaction])
+    TypeOrmModule.forFeature([Comment, Post, User, Reaction]),
+    CommonModule,
   ],
   controllers: [CommentsController],
   providers: [
     CommentsService,
-    AnonymityService,
-    PrivacyService,
-    ModerationService,
     CommunityGateway
   ],
   exports: [CommentsService],

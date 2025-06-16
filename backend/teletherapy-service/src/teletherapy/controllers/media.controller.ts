@@ -24,6 +24,18 @@ import { IsEnum, IsString, IsOptional, IsNumber, Min, Max, IsArray, ValidateNest
 import { Type } from 'class-transformer';
 
 // Enhanced DTOs with validation
+class CodecOptionsDto {
+  @ApiProperty({ enum: ['VP8', 'VP9', 'H264'], required: false })
+  @IsEnum(['VP8', 'VP9', 'H264'])
+  @IsOptional()
+  video?: string;
+
+  @ApiProperty({ enum: ['opus'], required: false })
+  @IsEnum(['opus'])
+  @IsOptional()
+  audio?: string;
+}
+
 class MediaSessionOptionsDto {
   @ApiProperty({ description: 'Enable session recording', required: false })
   @IsBoolean()
@@ -62,18 +74,6 @@ class MediaSessionOptionsDto {
   @ValidateNested()
   @Type(() => CodecOptionsDto)
   codec?: CodecOptionsDto;
-}
-
-class CodecOptionsDto {
-  @ApiProperty({ enum: ['VP8', 'VP9', 'H264'], required: false })
-  @IsEnum(['VP8', 'VP9', 'H264'])
-  @IsOptional()
-  video?: string;
-
-  @ApiProperty({ enum: ['opus'], required: false })
-  @IsEnum(['opus'])
-  @IsOptional()
-  audio?: string;
 }
 
 class CreateMediaSessionDto {
@@ -338,7 +338,9 @@ export class MediaController {
     @Body() message: { content: string; type?: 'text' | 'file'; metadata?: any },
   ) {
     const chatMessage = await this.videoService.sendChatMessage(sessionId, {
+      sessionId,
       senderId: req.user.id,
+      senderName: req.user.firstName + ' ' + req.user.lastName,
       content: message.content,
       type: message.type || 'text',
       metadata: message.metadata,
@@ -615,7 +617,7 @@ export class MediaController {
     }
 
     // Check if user is authorized to view stats
-    if (!session.participants.some(p => p.id === req.user.id)) {
+    if (!session.participants.includes(req.user.id)) {
       throw new ForbiddenException('Not authorized to view session statistics');
     }
 

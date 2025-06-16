@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
@@ -7,8 +7,12 @@ import { configuration } from './config/configuration';
 import { validate } from './config/env.validator';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
-import { AuthClientModule } from '@mindlyf/shared/auth-client';
-import { serviceTokensConfig, serviceTokensValidationSchema } from '@mindlyf/shared/config/service-tokens.config';
+import { HealthModule } from './health/health.module';
+import { AuthClientModule } from './shared/auth-client/auth-client.module';
+import { RequestLoggingMiddleware } from './common/middleware/request-logging.middleware';
+import { CustomLoggerService } from './common/services/logger.service';
+import { WebSocketDocsController } from './websocket/websocket-docs.controller';
+import { NotificationDocsController } from './notifications/notification-docs.controller';
 
 @Module({
   imports: [
@@ -33,24 +37,33 @@ import { serviceTokensConfig, serviceTokensValidationSchema } from '@mindlyf/sha
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get('database.synchronize'),
         logging: configService.get('database.logging'),
+        retryAttempts: 3,
+        retryDelay: 3000,
+        autoLoadEntities: true,
       }),
     }),
     
     // Authentication
     AuthModule,
     AuthClientModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [serviceTokensConfig],
-      validationSchema: serviceTokensValidationSchema,
-    }),
+    
+    // Core modules
+    ChatModule,
+    HealthModule,
   ],
-  controllers: [],
+  controllers: [WebSocketDocsController, NotificationDocsController],
   providers: [
+    CustomLoggerService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RequestLoggingMiddleware)
+      .forRoutes('*');
+  }
+}

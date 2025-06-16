@@ -52,13 +52,14 @@ class ReportCommentDto {
 exports.ReportCommentDto = ReportCommentDto;
 __decorate([
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(1),
     __metadata("design:type", String)
 ], ReportCommentDto.prototype, "reason", void 0);
 class ModerateCommentDto {
 }
 exports.ModerateCommentDto = ModerateCommentDto;
 __decorate([
-    IsEnum(comment_entity_1.CommentStatus),
+    (0, class_validator_1.IsEnum)(comment_entity_1.CommentStatus),
     __metadata("design:type", String)
 ], ModerateCommentDto.prototype, "status", void 0);
 __decorate([

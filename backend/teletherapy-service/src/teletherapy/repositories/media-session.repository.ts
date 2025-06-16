@@ -15,6 +15,14 @@ export class MediaSessionRepository {
     return this.repository.save(session);
   }
 
+  async save(entity: MediaSession): Promise<MediaSession> {
+    return this.repository.save(entity);
+  }
+
+  async findOne(options: any): Promise<MediaSession | null> {
+    return this.repository.findOne(options);
+  }
+
   async findById(id: string): Promise<MediaSession> {
     return this.repository.findOne({
       where: { id },
@@ -57,9 +65,9 @@ export class MediaSessionRepository {
     }
 
     // Add participant if not already present
-    const participantExists = session.participants.some(p => p.id === userId);
+    const participantExists = session.participants.includes(userId);
     if (!participantExists) {
-      session.participants = [...session.participants, { id: userId } as any];
+      session.participants = [...session.participants, userId];
       return this.repository.save(session);
     }
 
@@ -72,7 +80,7 @@ export class MediaSessionRepository {
       throw new Error(`Media session not found: ${sessionId}`);
     }
 
-    session.participants = session.participants.filter(p => p.id !== userId);
+    session.participants = session.participants.filter(id => id !== userId);
     return this.repository.save(session);
   }
 

@@ -26,8 +26,45 @@ export declare const configuration: () => {
         };
     };
     services: {
+        auth: {
+            url: string;
+            serviceToken: string;
+        };
+        community: {
+            url: string;
+            serviceToken: string;
+        };
+        teletherapy: {
+            url: string;
+            serviceToken: string;
+        };
+        notification: {
+            url: string;
+            serviceToken: string;
+        };
         communityServiceUrl: string;
         teletherapyServiceUrl: string;
         authServiceUrl: string;
+        notificationServiceUrl: string;
     };
+    SERVICE_NAME: string;
+    upload: {
+        maxFileSize: number;
+        allowedTypes: string[];
+        destination: string;
+    };
+    rateLimit: {
+        max: number;
+        windowMs: number;
+    };
+    cors: {
+        origin: string[];
+        credentials: boolean;
+    };
+    log: {
+        level: string;
+    };
+    environment: string;
+    isDevelopment: boolean;
+    isProduction: boolean;
 };

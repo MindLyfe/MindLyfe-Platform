@@ -54,22 +54,22 @@ export class FollowsService {
       if (!followingEntity) {
         throw new NotFoundException('User to follow not found');
       }
-
-      // Prevent self-following
+    
+    // Prevent self-following
       if (followerEntity.id === followingEntity.id) {
         throw new BadRequestException('Cannot follow yourself');
-      }
-
+    }
+    
       // Check if already following
       const existingFollow = await this.followRepo.findOne({
-        where: {
+      where: {
           followerId: followerEntity.id,
           followingId: followingEntity.id,
           status: FollowStatus.ACTIVE
         }
-      });
-
-      if (existingFollow) {
+    });
+    
+    if (existingFollow) {
         throw new BadRequestException('Already following this user');
       }
 
@@ -190,17 +190,17 @@ export class FollowsService {
       const followingUserId = await this.userMappingService.anonymousIdToRealUserId(followingAnonymousId);
 
       const follow = await this.followRepo.findOne({
-        where: {
+      where: {
           followerId: followerEntity.id,
           followingId: followingUserId,
           status: FollowStatus.ACTIVE
         }
-      });
-
-      if (!follow) {
-        throw new NotFoundException('Follow relationship not found');
-      }
-
+    });
+    
+    if (!follow) {
+      throw new NotFoundException('Follow relationship not found');
+    }
+    
       // If this was a mutual follow, update the reverse relationship
       if (follow.isMutualFollow) {
         await this.followRepo.update(
@@ -358,7 +358,7 @@ export class FollowsService {
           }
         }),
         this.followRepo.count({
-          where: {
+      where: {
             followerId: userEntity.id,
             status: FollowStatus.ACTIVE
           }

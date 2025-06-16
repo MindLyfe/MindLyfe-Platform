@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NotificationHistoryDto = exports.SendNotificationDto = exports.QuietHoursDto = exports.CustomRuleDto = exports.ChannelPreferenceDto = exports.ReminderSettingsDto = exports.NotificationSettingsDto = exports.NotificationTemplateDto = exports.NotificationType = exports.NotificationChannel = void 0;
+exports.NotificationHistoryDto = exports.SendNotificationDto = exports.NotificationSettingsDto = exports.NotificationTemplateDto = exports.QuietHoursDto = exports.CustomRuleDto = exports.ChannelPreferenceDto = exports.ReminderSettingsDto = exports.NotificationType = exports.NotificationChannel = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
@@ -35,84 +35,6 @@ var NotificationType;
     NotificationType["RESOURCE_SHARED"] = "resource_shared";
     NotificationType["CUSTOM"] = "custom";
 })(NotificationType = exports.NotificationType || (exports.NotificationType = {}));
-class NotificationTemplateDto {
-}
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Template name' }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], NotificationTemplateDto.prototype, "name", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Template type', enum: NotificationType }),
-    (0, class_validator_1.IsEnum)(NotificationType),
-    __metadata("design:type", String)
-], NotificationTemplateDto.prototype, "type", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Template subject' }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], NotificationTemplateDto.prototype, "subject", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Template body' }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], NotificationTemplateDto.prototype, "body", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Available channels', enum: NotificationChannel, isArray: true }),
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsEnum)(NotificationChannel, { each: true }),
-    __metadata("design:type", Array)
-], NotificationTemplateDto.prototype, "channels", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Template variables', type: [String] }),
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsString)({ each: true }),
-    __metadata("design:type", Array)
-], NotificationTemplateDto.prototype, "variables", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Whether template is active', default: true }),
-    (0, class_validator_1.IsBoolean)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Boolean)
-], NotificationTemplateDto.prototype, "isActive", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Template metadata', required: false }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsObject)(),
-    __metadata("design:type", Object)
-], NotificationTemplateDto.prototype, "metadata", void 0);
-exports.NotificationTemplateDto = NotificationTemplateDto;
-class NotificationSettingsDto {
-}
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Session reminder settings' }),
-    (0, class_validator_1.ValidateNested)(),
-    (0, class_transformer_1.Type)(() => ReminderSettingsDto),
-    __metadata("design:type", ReminderSettingsDto)
-], NotificationSettingsDto.prototype, "reminders", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Channel preferences', type: [ChannelPreferenceDto] }),
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.ValidateNested)({ each: true }),
-    (0, class_transformer_1.Type)(() => ChannelPreferenceDto),
-    __metadata("design:type", Array)
-], NotificationSettingsDto.prototype, "channelPreferences", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Custom notification rules', type: [CustomRuleDto], required: false }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.ValidateNested)({ each: true }),
-    (0, class_transformer_1.Type)(() => CustomRuleDto),
-    __metadata("design:type", Array)
-], NotificationSettingsDto.prototype, "customRules", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Quiet hours settings', required: false }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.ValidateNested)(),
-    (0, class_transformer_1.Type)(() => QuietHoursDto),
-    __metadata("design:type", QuietHoursDto)
-], NotificationSettingsDto.prototype, "quietHours", void 0);
-exports.NotificationSettingsDto = NotificationSettingsDto;
 class ReminderSettingsDto {
 }
 __decorate([
@@ -216,6 +138,84 @@ __decorate([
     __metadata("design:type", Boolean)
 ], QuietHoursDto.prototype, "enabled", void 0);
 exports.QuietHoursDto = QuietHoursDto;
+class NotificationTemplateDto {
+}
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Template name' }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], NotificationTemplateDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Template type', enum: NotificationType }),
+    (0, class_validator_1.IsEnum)(NotificationType),
+    __metadata("design:type", String)
+], NotificationTemplateDto.prototype, "type", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Template subject' }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], NotificationTemplateDto.prototype, "subject", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Template body' }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], NotificationTemplateDto.prototype, "body", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Available channels', enum: NotificationChannel, isArray: true }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsEnum)(NotificationChannel, { each: true }),
+    __metadata("design:type", Array)
+], NotificationTemplateDto.prototype, "channels", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Template variables', type: [String] }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsString)({ each: true }),
+    __metadata("design:type", Array)
+], NotificationTemplateDto.prototype, "variables", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Whether template is active', default: true }),
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], NotificationTemplateDto.prototype, "isActive", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Template metadata', required: false }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsObject)(),
+    __metadata("design:type", Object)
+], NotificationTemplateDto.prototype, "metadata", void 0);
+exports.NotificationTemplateDto = NotificationTemplateDto;
+class NotificationSettingsDto {
+}
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Session reminder settings' }),
+    (0, class_validator_1.ValidateNested)(),
+    (0, class_transformer_1.Type)(() => ReminderSettingsDto),
+    __metadata("design:type", ReminderSettingsDto)
+], NotificationSettingsDto.prototype, "reminders", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Channel preferences', type: [ChannelPreferenceDto] }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => ChannelPreferenceDto),
+    __metadata("design:type", Array)
+], NotificationSettingsDto.prototype, "channelPreferences", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Custom notification rules', type: [CustomRuleDto], required: false }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => CustomRuleDto),
+    __metadata("design:type", Array)
+], NotificationSettingsDto.prototype, "customRules", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Quiet hours settings', required: false }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateNested)(),
+    (0, class_transformer_1.Type)(() => QuietHoursDto),
+    __metadata("design:type", QuietHoursDto)
+], NotificationSettingsDto.prototype, "quietHours", void 0);
+exports.NotificationSettingsDto = NotificationSettingsDto;
 class SendNotificationDto {
 }
 __decorate([

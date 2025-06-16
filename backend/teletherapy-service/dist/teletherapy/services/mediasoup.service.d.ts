@@ -3,7 +3,8 @@ export declare class MediaSoupService {
     private readonly logger;
     private worker;
     constructor();
-    private initializeWorker;
+    getWorker(): mediasoup.types.Worker;
+    initializeWorker(): Promise<void>;
     createRouter(options: {
         mediaCodecs: mediasoup.types.RtpCodecCapability[];
     }): Promise<mediasoup.types.Router>;

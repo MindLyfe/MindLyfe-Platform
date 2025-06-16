@@ -6,6 +6,7 @@ import { ResourcesController } from './resources.controller';
 import { ResourcesService } from './resources.service';
 import { Resource } from '../entities/resource.entity';
 import { AuthModule } from '../auth/auth.module';
+import { ResourceNotificationService } from '../common/services/notification.service';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { AuthModule } from '../auth/auth.module';
     AuthModule,
   ],
   controllers: [ResourcesController],
-  providers: [ResourcesService],
-  exports: [ResourcesService],
+  providers: [ResourcesService, ResourceNotificationService],
+  exports: [ResourcesService, ResourceNotificationService],
 })
 export class ResourcesModule {} 

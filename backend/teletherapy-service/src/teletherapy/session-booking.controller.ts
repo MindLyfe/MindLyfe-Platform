@@ -46,11 +46,16 @@ export class SessionBookingController {
       const createSessionData: CreateSessionDto = {
         clientId: req.user.id,
         therapistId: bookSessionDto.therapistId,
-        sessionDate: bookSessionDto.sessionDate,
-        sessionType: bookSessionDto.sessionType,
-        duration: bookSessionDto.duration || 60,
-        notes: bookSessionDto.notes,
-        isEmergency: bookSessionDto.isEmergency || false
+        startTime: bookSessionDto.sessionDate,
+        endTime: new Date(new Date(bookSessionDto.sessionDate).getTime() + (bookSessionDto.duration || 60) * 60000),
+        type: bookSessionDto.sessionType as any, // TODO: Fix type mapping
+        category: 'individual' as any, // Default to individual
+        focus: [], // Default empty focus array
+        title: `Therapy Session with ${bookSessionDto.therapistId}`, // Default title
+        metadata: {
+          notes: bookSessionDto.notes,
+          isEmergency: bookSessionDto.isEmergency || false
+        }
       };
 
       // 3. Create session in teletherapy service
@@ -130,7 +135,9 @@ export class SessionBookingController {
     @Param('therapistId') therapistId: string,
     @Request() req
   ) {
-    return await this.teletherapyService.getAvailableSlots(therapistId, req.query.date);
+    const date = req.query.date as string;
+    const endDate = new Date(new Date(date).getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    return await this.teletherapyService.getAvailableSlots(therapistId, date, endDate, 60);
   }
 
   @Get('subscription-status')

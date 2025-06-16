@@ -8,12 +8,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Recording = exports.RecordingResolution = exports.RecordingFormat = exports.RecordingQuality = exports.RecordingStatus = void 0;
 const typeorm_1 = require("typeorm");
 const therapy_session_entity_1 = require("./therapy-session.entity");
-const user_entity_1 = require("../../auth/entities/user.entity");
 var RecordingStatus;
 (function (RecordingStatus) {
     RecordingStatus["PENDING"] = "pending";
@@ -58,11 +56,6 @@ __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Recording.prototype, "startedBy", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => user_entity_1.User),
-    (0, typeorm_1.JoinColumn)({ name: 'startedBy' }),
-    __metadata("design:type", typeof (_a = typeof user_entity_1.User !== "undefined" && user_entity_1.User) === "function" ? _a : Object)
-], Recording.prototype, "starter", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',

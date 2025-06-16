@@ -31,6 +31,8 @@ echo "  - AI Service (Port 8000)"
 echo "  - Journal Service (Port 8001)"
 echo "  - Recommender Service (Port 8002)"
 echo "  - LyfBot Service (Port 8003)"
+echo "  - Reporting Service (Port 3009)"
+echo "  - Gamification Service (Port 3010)"
 echo ""
 
 # Stop any existing containers
@@ -69,6 +71,8 @@ services=(
     "journal-service:8001"
     "recommender-service:8002"
     "lyfbot-service:8003"
+    "reporting-service:3009"
+    "gamification-service:3010"
 )
 
 for service in "${services[@]}"; do

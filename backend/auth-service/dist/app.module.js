@@ -21,6 +21,7 @@ const user_module_1 = require("./user/user.module");
 const subscription_module_1 = require("./subscription/subscription.module");
 const organization_module_1 = require("./organization/organization.module");
 const shared_module_1 = require("./shared/shared.module");
+const health_module_1 = require("./health/health.module");
 const user_entity_1 = require("./entities/user.entity");
 const user_session_entity_1 = require("./entities/user-session.entity");
 const organization_entity_1 = require("./entities/organization.entity");
@@ -69,6 +70,7 @@ exports.AppModule = AppModule = __decorate([
             user_module_1.UserModule,
             subscription_module_1.SubscriptionModule,
             organization_module_1.OrganizationModule,
+            health_module_1.HealthModule,
             terminus_1.TerminusModule,
             axios_1.HttpModule,
         ],

@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModerationController = void 0;
 const common_1 = require("@nestjs/common");
@@ -40,7 +39,7 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_a = typeof dto_1.ReportContentDto !== "undefined" && dto_1.ReportContentDto) === "function" ? _a : Object, Object]),
+    __metadata("design:paramtypes", [dto_1.ReportContentDto, Object]),
     __metadata("design:returntype", Promise)
 ], ModerationController.prototype, "report", null);
 __decorate([
@@ -51,7 +50,7 @@ __decorate([
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_b = typeof dto_1.ReviewContentDto !== "undefined" && dto_1.ReviewContentDto) === "function" ? _b : Object, Object]),
+    __metadata("design:paramtypes", [String, dto_1.ReviewContentDto, Object]),
     __metadata("design:returntype", Promise)
 ], ModerationController.prototype, "review", null);
 exports.ModerationController = ModerationController = __decorate([

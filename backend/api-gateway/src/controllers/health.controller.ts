@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, timeout, catchError } from 'rxjs';
+import { AxiosResponse } from 'axios';
 import { of } from 'rxjs';
 
 export interface HealthCheckResult {
@@ -240,19 +241,19 @@ export class HealthController {
 
       return {
         name,
-        status: response.status === 200 ? 'healthy' : 'unhealthy',
+        status: (response && typeof response === 'object' && 'status' in response && response.status === 200) ? 'healthy' : 'unhealthy',
         url: healthUrl,
         responseTime,
         lastChecked: new Date().toISOString(),
       };
 
-    } catch (error) {
+    } catch (error: any) {
       const responseTime = Date.now() - startTime;
       
       let status: 'unhealthy' | 'timeout' = 'unhealthy';
-      let errorMessage = error.message;
+      let errorMessage = error?.message || 'Unknown error';
 
-      if (error.name === 'TimeoutError' || responseTime >= serviceTimeout) {
+      if (error?.name === 'TimeoutError' || responseTime >= serviceTimeout) {
         status = 'timeout';
         errorMessage = `Service timeout after ${serviceTimeout}ms`;
       }

@@ -22,6 +22,20 @@ const media_session_repository_1 = require("../repositories/media-session.reposi
 const swagger_2 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
+class CodecOptionsDto {
+}
+__decorate([
+    (0, swagger_2.ApiProperty)({ enum: ['VP8', 'VP9', 'H264'], required: false }),
+    (0, class_validator_1.IsEnum)(['VP8', 'VP9', 'H264']),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CodecOptionsDto.prototype, "video", void 0);
+__decorate([
+    (0, swagger_2.ApiProperty)({ enum: ['opus'], required: false }),
+    (0, class_validator_1.IsEnum)(['opus']),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CodecOptionsDto.prototype, "audio", void 0);
 class MediaSessionOptionsDto {
 }
 __decorate([
@@ -69,20 +83,6 @@ __decorate([
     (0, class_transformer_1.Type)(() => CodecOptionsDto),
     __metadata("design:type", CodecOptionsDto)
 ], MediaSessionOptionsDto.prototype, "codec", void 0);
-class CodecOptionsDto {
-}
-__decorate([
-    (0, swagger_2.ApiProperty)({ enum: ['VP8', 'VP9', 'H264'], required: false }),
-    (0, class_validator_1.IsEnum)(['VP8', 'VP9', 'H264']),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CodecOptionsDto.prototype, "video", void 0);
-__decorate([
-    (0, swagger_2.ApiProperty)({ enum: ['opus'], required: false }),
-    (0, class_validator_1.IsEnum)(['opus']),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CodecOptionsDto.prototype, "audio", void 0);
 class CreateMediaSessionDto {
 }
 __decorate([
@@ -236,7 +236,9 @@ let MediaController = class MediaController {
     }
     async sendChatMessage(req, sessionId, message) {
         const chatMessage = await this.videoService.sendChatMessage(sessionId, {
+            sessionId,
             senderId: req.user.id,
+            senderName: req.user.firstName + ' ' + req.user.lastName,
             content: message.content,
             type: message.type || 'text',
             metadata: message.metadata,
@@ -354,7 +356,7 @@ let MediaController = class MediaController {
         if (!session) {
             throw new common_1.NotFoundException('Media session not found');
         }
-        if (!session.participants.some(p => p.id === req.user.id)) {
+        if (!session.participants.includes(req.user.id)) {
             throw new common_1.ForbiddenException('Not authorized to view session statistics');
         }
         const stats = await this.videoService.getSessionStats(sessionId);

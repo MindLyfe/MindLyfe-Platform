@@ -51,7 +51,7 @@ let ModerationService = ModerationService_1 = class ModerationService {
         post.moderationNotes.reportedBy.push(reporterId);
         const maxReports = this.configService.get('moderation.maxReportsBeforeReview');
         if (post.reportCount >= maxReports) {
-            post.status = 'under_review';
+            post.status = post_entity_1.PostStatus.UNDER_REVIEW;
             this.logger.warn(`Post ${postId} has been flagged for review due to ${post.reportCount} reports`);
         }
         await this.postRepository.save(post);
@@ -77,51 +77,79 @@ let ModerationService = ModerationService_1 = class ModerationService {
         comment.moderationNotes.reportedBy.push(reporterId);
         const maxReports = this.configService.get('moderation.maxReportsBeforeReview');
         if (comment.reportCount >= maxReports) {
-            comment.status = 'under_review';
+            comment.status = comment_entity_1.CommentStatus.UNDER_REVIEW;
             this.logger.warn(`Comment ${commentId} has been flagged for review due to ${comment.reportCount} reports`);
         }
         await this.commentRepository.save(comment);
         await this.notifyModerators('comment', commentId, reason);
     }
     async reviewContent(contentId, contentType, moderatorId, action, notes) {
-        const repository = contentType === 'post' ? this.postRepository : this.commentRepository;
-        const content = await repository.findOne({ where: { id: contentId } });
-        if (!content) {
-            throw new Error(`${contentType} not found`);
-        }
-        if (!content.moderationNotes) {
-            content.moderationNotes = {
-                reportedBy: [],
-                reviewNotes: [],
-                actionTaken: null,
-                actionTakenBy: null,
-                actionTakenAt: null,
-            };
-        }
-        content.moderationNotes.reviewNotes.push(notes);
-        content.moderationNotes.actionTaken = action;
-        content.moderationNotes.actionTakenBy = moderatorId;
-        content.moderationNotes.actionTakenAt = new Date();
-        switch (action) {
-            case 'approve':
-                content.status = contentType === 'post' ? 'published' : 'active';
-                content.reportCount = 0;
-                break;
-            case 'remove':
-                content.status = 'removed';
-                break;
-            case 'warn':
-                content.status = contentType === 'post' ? 'published' : 'active';
-                content.metadata = {
-                    ...content.metadata,
-                    warned: true,
-                    warningDate: new Date(),
-                    warningNotes: notes,
+        if (contentType === 'post') {
+            const post = await this.postRepository.findOne({ where: { id: contentId } });
+            if (!post) {
+                throw new Error('Post not found');
+            }
+            if (!post.moderationNotes) {
+                post.moderationNotes = {
+                    reportedBy: [],
+                    reviewNotes: [],
+                    actionTaken: null,
+                    actionTakenBy: null,
+                    actionTakenAt: null,
                 };
-                break;
+            }
+            post.moderationNotes.reviewNotes.push(notes);
+            post.moderationNotes.actionTaken = action;
+            post.moderationNotes.actionTakenBy = moderatorId;
+            post.moderationNotes.actionTakenAt = new Date();
+            switch (action) {
+                case 'approve':
+                    post.status = post_entity_1.PostStatus.PUBLISHED;
+                    post.reportCount = 0;
+                    break;
+                case 'remove':
+                    post.status = post_entity_1.PostStatus.REMOVED;
+                    break;
+                case 'warn':
+                    post.status = post_entity_1.PostStatus.PUBLISHED;
+                    break;
+            }
+            await this.postRepository.save(post);
+            await this.notifyContentAuthor(post, action, notes);
         }
-        await repository.save(content);
-        await this.notifyContentAuthor(content, action, notes);
+        else {
+            const comment = await this.commentRepository.findOne({ where: { id: contentId } });
+            if (!comment) {
+                throw new Error('Comment not found');
+            }
+            if (!comment.moderationNotes) {
+                comment.moderationNotes = {
+                    reportedBy: [],
+                    reviewNotes: [],
+                    actionTaken: null,
+                    actionTakenBy: null,
+                    actionTakenAt: null,
+                };
+            }
+            comment.moderationNotes.reviewNotes.push(notes);
+            comment.moderationNotes.actionTaken = action;
+            comment.moderationNotes.actionTakenBy = moderatorId;
+            comment.moderationNotes.actionTakenAt = new Date();
+            switch (action) {
+                case 'approve':
+                    comment.status = comment_entity_1.CommentStatus.ACTIVE;
+                    comment.reportCount = 0;
+                    break;
+                case 'remove':
+                    comment.status = comment_entity_1.CommentStatus.REMOVED;
+                    break;
+                case 'warn':
+                    comment.status = comment_entity_1.CommentStatus.ACTIVE;
+                    break;
+            }
+            await this.commentRepository.save(comment);
+            await this.notifyContentAuthor(comment, action, notes);
+        }
     }
     async checkUserModeration(userId) {
         const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -129,7 +157,7 @@ let ModerationService = ModerationService_1 = class ModerationService {
             throw new Error('User not found');
         }
         if (user.reportCount >= this.configService.get('moderation.maxReportsBeforeReview')) {
-            user.status = 'suspended';
+            user.status = user_entity_1.UserStatus.SUSPENDED;
             this.logger.warn(`User ${userId} has been suspended due to high report count`);
             await this.userRepository.save(user);
         }

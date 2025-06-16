@@ -10,7 +10,11 @@ export class MediaSoupService {
     this.initializeWorker();
   }
 
-  private async initializeWorker() {
+  getWorker(): mediasoup.types.Worker {
+    return this.worker;
+  }
+
+  async initializeWorker() {
     try {
       this.worker = await mediasoup.createWorker({
         logLevel: 'warn',
@@ -79,10 +83,9 @@ export class MediaSoupService {
         enableTcp: options.enableTcp ?? true,
         preferUdp: options.preferUdp ?? true,
         initialAvailableOutgoingBitrate: options.initialAvailableOutgoingBitrate ?? 1000,
-        minimumAvailableOutgoingBitrate: options.minimumAvailableOutgoingBitrate ?? 600,
         maxSctpMessageSize: options.maxSctpMessageSize ?? 262144,
         numSctpStreams: options.numSctpStreams ?? { OS: 1024, MIS: 1024 },
-        maxIncomingBitrate: options.maxIncomingBitrate,
+        // maxIncomingBitrate: options.maxIncomingBitrate, // Not available in current MediaSoup version
       });
 
       this.logger.log(`WebRTC transport created: ${transport.id}`);
@@ -94,7 +97,7 @@ export class MediaSoupService {
         }
       });
 
-      transport.on('close', () => {
+      transport.on('@close', () => {
         this.logger.log(`Transport closed: ${transport.id}`);
       });
 
@@ -129,9 +132,7 @@ export class MediaSoupService {
         enableSctp: options.enableSctp ?? false,
         numSctpStreams: options.numSctpStreams,
         maxSctpMessageSize: options.maxSctpMessageSize,
-        enableTcp: options.enableTcp ?? false,
-        preferUdp: options.preferUdp ?? false,
-        initialAvailableOutgoingBitrate: options.initialAvailableOutgoingBitrate,
+        // initialAvailableOutgoingBitrate: options.initialAvailableOutgoingBitrate, // Not available for plain transport
       });
 
       this.logger.log(`Plain transport created: ${transport.id}`);
@@ -186,9 +187,8 @@ export class MediaSoupService {
     try {
       const transport = await router.createDirectTransport({
         maxMessageSize: options.maxMessageSize,
-        enableSctp: options.enableSctp ?? false,
-        numSctpStreams: options.numSctpStreams,
-        maxSctpMessageSize: options.maxSctpMessageSize,
+        // numSctpStreams: options.numSctpStreams, // Not available in DirectTransport
+        // maxSctpMessageSize: options.maxSctpMessageSize, // Not available in DirectTransport
         appData: options.appData,
       });
 
@@ -212,8 +212,11 @@ export class MediaSoupService {
   ): Promise<mediasoup.types.DataProducer> {
     try {
       const dataProducer = await transport.produceData({
-        ordered: options.ordered,
-        maxRetransmits: options.maxRetransmits,
+        sctpStreamParameters: {
+          streamId: 0,
+          ordered: options.ordered,
+          maxRetransmits: options.maxRetransmits,
+        },
         label: options.label,
         protocol: options.protocol,
         appData: options.appData,

@@ -59,12 +59,12 @@ export declare class AuthController {
         token: string;
     }): Promise<{
         user: {
-            id: any;
-            email: any;
-            role: any;
-            status: any;
-            emailVerified: any;
-            twoFactorEnabled: any;
+            id: string;
+            email: string;
+            role: import("../entities/user.entity").UserRole;
+            status: import("../entities/user.entity").UserStatus;
+            emailVerified: boolean;
+            twoFactorEnabled: boolean;
         };
     }>;
     validateServiceToken(body: {
@@ -80,12 +80,61 @@ export declare class AuthController {
     }>;
     getUserInfo(userId: string): Promise<{
         user: {
-            id: any;
-            email: any;
-            role: any;
-            status: any;
-            emailVerified: any;
-            twoFactorEnabled: any;
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+            role: import("../entities/user.entity").UserRole;
+            status: import("../entities/user.entity").UserStatus;
+            emailVerified: boolean;
+            twoFactorEnabled: boolean;
         };
+    }>;
+    getUserSubscriptionStatus(userId: string): Promise<{
+        user: {
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+            role: import("../entities/user.entity").UserRole;
+        };
+        subscription: {
+            hasActiveSubscription: boolean;
+            subscriptions: any[];
+            userType: string;
+            organizationId: any;
+            canMakePayments: boolean;
+        };
+    }>;
+    handlePaymentNotification(userId: string, notification: {
+        type: 'payment_succeeded' | 'payment_failed' | 'subscription_created' | 'subscription_canceled';
+        paymentId?: string;
+        subscriptionId?: string;
+        amount?: number;
+        currency?: string;
+        gateway?: string;
+        metadata?: Record<string, any>;
+    }): Promise<{
+        message: string;
+        userId: string;
+        type: "payment_succeeded" | "payment_failed" | "subscription_created" | "subscription_canceled";
+        processed: boolean;
+    }>;
+    validatePaymentAccess(body: {
+        userId: string;
+        paymentType: string;
+        amount: number;
+    }): Promise<{
+        canMakePayment: boolean;
+        reason: string;
+        userId?: undefined;
+        paymentType?: undefined;
+        amount?: undefined;
+    } | {
+        canMakePayment: boolean;
+        userId: string;
+        paymentType: string;
+        amount: number;
+        reason?: undefined;
     }>;
 }

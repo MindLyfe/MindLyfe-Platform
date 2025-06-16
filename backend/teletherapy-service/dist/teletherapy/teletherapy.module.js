@@ -14,7 +14,6 @@ const axios_1 = require("@nestjs/axios");
 const teletherapy_service_1 = require("./teletherapy.service");
 const teletherapy_controller_1 = require("./teletherapy.controller");
 const therapy_session_entity_1 = require("./entities/therapy-session.entity");
-const user_entity_1 = require("../auth/entities/user.entity");
 const recording_entity_1 = require("./entities/recording.entity");
 const media_session_entity_1 = require("./entities/media-session.entity");
 const calendar_service_1 = require("./services/calendar.service");
@@ -30,16 +29,18 @@ const signaling_service_1 = require("./services/signaling.service");
 const recording_service_1 = require("./services/recording.service");
 const recording_repository_1 = require("./repositories/recording.repository");
 const media_session_repository_1 = require("./repositories/media-session.repository");
-const auth_client_1 = require("@mindlyf/shared/auth-client");
+const redis_service_1 = require("./services/redis.service");
+const session_note_entity_1 = require("./entities/session-note.entity");
+const auth_client_service_1 = require("./services/auth-client.service");
+const jwt_1 = require("@nestjs/jwt");
 let TeletherapyModule = class TeletherapyModule {
 };
 TeletherapyModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forFeature([therapy_session_entity_1.TherapySession, user_entity_1.User, recording_entity_1.Recording, media_session_entity_1.MediaSession]),
+            typeorm_1.TypeOrmModule.forFeature([therapy_session_entity_1.TherapySession, recording_entity_1.Recording, media_session_entity_1.MediaSession, session_note_entity_1.SessionNote]),
             config_1.ConfigModule,
             axios_1.HttpModule,
-            auth_client_1.AuthClientModule,
         ],
         controllers: [
             teletherapy_controller_1.TeletherapyController,
@@ -53,19 +54,22 @@ TeletherapyModule = __decorate([
             calendar_service_1.CalendarService,
             video_service_1.VideoService,
             storage_service_1.StorageService,
-            notification_service_1.NotificationService,
+            notification_service_1.TeletherapyNotificationService,
             mediasoup_service_1.MediaSoupService,
             signaling_service_1.SignalingService,
             recording_service_1.RecordingService,
             recording_repository_1.RecordingRepository,
             media_session_repository_1.MediaSessionRepository,
+            redis_service_1.RedisService,
+            auth_client_service_1.AuthClientService,
+            jwt_1.JwtService,
         ],
         exports: [
             teletherapy_service_1.TeletherapyService,
             calendar_service_1.CalendarService,
             video_service_1.VideoService,
             storage_service_1.StorageService,
-            notification_service_1.NotificationService,
+            notification_service_1.TeletherapyNotificationService,
             mediasoup_service_1.MediaSoupService,
             signaling_service_1.SignalingService,
             recording_service_1.RecordingService,

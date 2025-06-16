@@ -7,7 +7,6 @@ const media_controller_1 = require("./media.controller");
 const video_service_1 = require("../services/video.service");
 const media_session_repository_1 = require("../repositories/media-session.repository");
 const media_session_entity_1 = require("../entities/media-session.entity");
-const user_entity_1 = require("../../auth/entities/user.entity");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 describe('MediaController (e2e)', () => {
@@ -56,7 +55,7 @@ describe('MediaController (e2e)', () => {
                 {
                     provide: media_session_repository_1.MediaSessionRepository,
                     useValue: {
-                        findById: jest.fn().mockResolvedValue(mockSession),
+                        findOne: jest.fn().mockResolvedValue(mockSession),
                         findActiveByContext: jest.fn().mockResolvedValue(mockSession),
                         findByParticipant: jest.fn().mockResolvedValue([mockSession]),
                     },
@@ -70,10 +69,6 @@ describe('MediaController (e2e)', () => {
                 },
                 {
                     provide: (0, typeorm_1.getRepositoryToken)(media_session_entity_1.MediaSession),
-                    useClass: typeorm_2.Repository,
-                },
-                {
-                    provide: (0, typeorm_1.getRepositoryToken)(user_entity_1.User),
                     useClass: typeorm_2.Repository,
                 },
             ],
@@ -150,7 +145,7 @@ describe('MediaController (e2e)', () => {
             });
         });
         it('should return 404 for non-existent session', async () => {
-            jest.spyOn(mediaSessionRepository, 'findById').mockResolvedValueOnce(null);
+            jest.spyOn(mediaSessionRepository, 'findOne').mockResolvedValueOnce(null);
             return request(app.getHttpServer())
                 .get('/media-sessions/non-existent')
                 .set('Authorization', `Bearer ${generateAuthToken()}`)

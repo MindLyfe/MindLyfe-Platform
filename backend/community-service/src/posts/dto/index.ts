@@ -53,9 +53,21 @@ export class ReportPostDto {
   reason: string;
 }
 
+export enum ModerationAction {
+  APPROVE = 'approve',
+  REJECT = 'reject',
+  REMOVE = 'remove',
+  WARN = 'warn',
+  SUSPEND = 'suspend',
+  BAN = 'ban',
+  HIDE = 'hide',
+  FLAG = 'flag',
+}
+
 export class ModeratePostDto {
-  @IsEnum(PostStatus)
-  status: PostStatus;
+  @IsEnum(ModerationAction)
+  action: ModerationAction;
+  
   @IsString()
   @IsOptional()
   notes?: string;

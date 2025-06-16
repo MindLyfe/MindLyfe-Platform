@@ -1,5 +1,4 @@
 import { TherapySession } from './therapy-session.entity';
-import { User } from '../../auth/entities/user.entity';
 export declare enum RecordingStatus {
     PENDING = "pending",
     RECORDING = "recording",
@@ -26,7 +25,6 @@ export declare class Recording {
     sessionId: string;
     session: TherapySession;
     startedBy: string;
-    starter: User;
     status: RecordingStatus;
     quality: RecordingQuality;
     format: RecordingFormat;
