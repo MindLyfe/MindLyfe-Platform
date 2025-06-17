@@ -21,93 +21,95 @@ let UserController = class UserController {
     constructor(userService) {
         this.userService = userService;
     }
-    findAll(req, query) {
-        var _a;
-        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
-        return this.userService.findAll(token);
+    async getAllUsers() {
+        return this.userService.getAllUsers();
     }
-    findOne(id, req) {
-        var _a;
-        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
-        return this.userService.findById(id, token);
+    async getUserById(id) {
+        return this.userService.getUserById(id);
     }
-    update(id, updateDto, req) {
-        var _a;
-        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
-        return this.userService.update(id, updateDto, token);
+    async updateUser(id, updateDto) {
+        return this.userService.updateUser(id, updateDto);
     }
-    remove(id, req) {
-        var _a;
-        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
-        return this.userService.delete(id, token);
+    async deleteUser(id) {
+        return this.userService.deleteUser(id);
     }
-    updatePassword(id, passwordDto, req) {
-        var _a;
-        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
-        return this.userService.updatePassword(id, passwordDto, token);
+    async updateUserPassword(id, passwordDto) {
+        return this.userService.updateUserPassword(id, passwordDto);
     }
 };
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get all users' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Return all users' }),
-    __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Query)()),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all users', description: 'Retrieve list of all users (admin only)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Users retrieved successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden - Admin access required' }),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", void 0)
-], UserController.prototype, "findAll", null);
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "getAllUsers", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get user by ID' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Return a user by ID' }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'User ID' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get user by ID', description: 'Retrieve specific user information' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'User retrieved successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", void 0)
-], UserController.prototype, "findOne", null);
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "getUserById", null);
 __decorate([
     (0, common_1.Patch)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Update user by ID' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'User successfully updated' }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'User ID' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Update user by ID', description: 'Update user information' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'User updated successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
-    __param(2, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object, Object]),
-    __metadata("design:returntype", void 0)
-], UserController.prototype, "update", null);
-__decorate([
-    (0, common_1.Delete)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Delete user by ID' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'User successfully deleted' }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", void 0)
-], UserController.prototype, "remove", null);
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "updateUser", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'User ID' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete user by ID', description: 'Delete user account' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'User deleted successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "deleteUser", null);
 __decorate([
     (0, common_1.Patch)(':id/password'),
-    (0, swagger_1.ApiOperation)({ summary: 'Update user password' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Password successfully updated' }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: 'Invalid current password' }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'User ID' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Update user password', description: 'Update user password (admin only)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Password updated successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden - Admin access required' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
-    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object, Object]),
-    __metadata("design:returntype", void 0)
-], UserController.prototype, "updatePassword", null);
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "updateUserPassword", null);
 UserController = __decorate([
     (0, swagger_1.ApiTags)('users'),
     (0, common_1.Controller)('users'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, swagger_1.ApiBearerAuth)(),
     __metadata("design:paramtypes", [user_service_1.UserService])
 ], UserController);
 exports.UserController = UserController;

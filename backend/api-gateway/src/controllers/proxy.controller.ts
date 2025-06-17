@@ -158,18 +158,23 @@ export class ProxyController {
 
   private async proxyToService(serviceName: string, req: Request, res: Response) {
     try {
-      const path = req.url;
+      let path = req.url;
       const method = req.method;
       const body = req.body;
       const headers = { ...req.headers };
       const params = req.query;
+
+      // Transform path for services that need /api prefix
+      if (serviceName === 'auth' && !path.startsWith('/api/')) {
+        path = `/api${path}`;
+      }
 
       // Remove gateway-specific headers
       delete headers.host;
       delete headers.connection;
       delete headers['content-length'];
 
-      this.logger.log(`Proxying ${method} ${path} to ${serviceName} service`);
+      this.logger.log(`Proxying ${method} ${req.url} to ${serviceName} service as ${path}`);
 
       const response = await this.proxyService.forwardRequest(
         serviceName,

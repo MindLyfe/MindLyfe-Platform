@@ -29,6 +29,7 @@
     "migration:revert": "npm run typeorm -- migration:revert -d src/database/typeorm.config.ts"
   },
   "dependencies": {
+    "@mindlyf/shared": "file:../shared",
     "@nestjs/axios": "^3.0.2",
     "@nestjs/common": "^10.4.17",
     "@nestjs/config": "^3.2.3",
@@ -41,11 +42,11 @@
     "@nestjs/terminus": "^10.2.3",
     "@nestjs/throttler": "^6.2.1",
     "@nestjs/typeorm": "^10.0.2",
-    "@mindlyf/shared": "file:../shared",
     "axios": "^1.7.8",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "cli-highlight": "^2.1.11",
     "compression": "^1.7.4",
     "helmet": "^8.0.0",
     "ioredis": "^5.4.1",
@@ -62,8 +63,7 @@
     "sqlite3": "^5.1.7",
     "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.20",
-    "uuid": "^10.0.0",
-    "cli-highlight": "^2.1.11"
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.9",

@@ -4,11 +4,11 @@ export declare class UserService {
     private httpService;
     private configService;
     private readonly logger;
-    private readonly userServiceUrl;
+    private readonly authServiceUrl;
     constructor(httpService: HttpService, configService: ConfigService);
-    findById(id: string, token: string): Promise<any>;
-    findAll(token: string): Promise<any>;
-    update(id: string, updateDto: any, token: string): Promise<any>;
-    delete(id: string, token: string): Promise<any>;
-    updatePassword(id: string, passwordDto: any, token: string): Promise<any>;
+    getAllUsers(): Promise<any>;
+    getUserById(id: string): Promise<any>;
+    updateUser(id: string, updateDto: any): Promise<any>;
+    deleteUser(id: string): Promise<any>;
+    updateUserPassword(id: string, passwordDto: any): Promise<any>;
 }

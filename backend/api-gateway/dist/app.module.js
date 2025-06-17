@@ -27,6 +27,10 @@ const resources_module_1 = require("./modules/resources.module");
 const notification_module_1 = require("./modules/notification.module");
 const lyfbot_module_1 = require("./modules/lyfbot.module");
 const therapy_module_1 = require("./modules/therapy.module");
+const chat_module_1 = require("./modules/chat.module");
+const gamification_module_1 = require("./modules/gamification.module");
+const journal_module_1 = require("./modules/journal.module");
+const support_module_1 = require("./modules/support.module");
 const docs_module_1 = require("./docs/docs.module");
 let AppModule = class AppModule {
 };
@@ -57,6 +61,10 @@ AppModule = __decorate([
             notification_module_1.NotificationModule,
             lyfbot_module_1.LyfbotModule,
             therapy_module_1.TherapyModule,
+            chat_module_1.ChatModule,
+            gamification_module_1.GamificationModule,
+            journal_module_1.JournalModule,
+            support_module_1.SupportModule,
             docs_module_1.DocsModule,
         ],
         controllers: [

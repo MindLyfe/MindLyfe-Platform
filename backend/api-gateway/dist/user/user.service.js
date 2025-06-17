@@ -20,90 +20,70 @@ let UserService = UserService_1 = class UserService {
         this.httpService = httpService;
         this.configService = configService;
         this.logger = new common_1.Logger(UserService_1.name);
-        this.userServiceUrl = this.configService.get('services.user.url');
+        this.authServiceUrl = this.configService.get('services.auth.url');
     }
-    async findById(id, token) {
+    async getAllUsers() {
         try {
-            const response = await (0, rxjs_1.firstValueFrom)(this.httpService
-                .get(`${this.userServiceUrl}/users/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-                .pipe((0, rxjs_1.catchError)((error) => {
-                this.logger.error(`Failed to find user: ${error.message}`);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.authServiceUrl}/api/users`).pipe((0, rxjs_1.catchError)((error) => {
+                this.logger.error(`Get all users failed: ${error.message}`);
                 throw error;
             })));
             return response.data;
         }
         catch (error) {
-            this.logger.error(`Error finding user: ${error.message}`);
+            this.logger.error(`Get all users error: ${error.message}`);
             throw error;
         }
     }
-    async findAll(token) {
+    async getUserById(id) {
         try {
-            const response = await (0, rxjs_1.firstValueFrom)(this.httpService
-                .get(`${this.userServiceUrl}/users`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-                .pipe((0, rxjs_1.catchError)((error) => {
-                this.logger.error(`Failed to find users: ${error.message}`);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.authServiceUrl}/api/users/${id}`).pipe((0, rxjs_1.catchError)((error) => {
+                this.logger.error(`Get user by ID failed: ${error.message}`);
                 throw error;
             })));
             return response.data;
         }
         catch (error) {
-            this.logger.error(`Error finding users: ${error.message}`);
+            this.logger.error(`Get user by ID error: ${error.message}`);
             throw error;
         }
     }
-    async update(id, updateDto, token) {
+    async updateUser(id, updateDto) {
         try {
-            const response = await (0, rxjs_1.firstValueFrom)(this.httpService
-                .patch(`${this.userServiceUrl}/users/${id}`, updateDto, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-                .pipe((0, rxjs_1.catchError)((error) => {
-                this.logger.error(`Failed to update user: ${error.message}`);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.patch(`${this.authServiceUrl}/api/users/${id}`, updateDto).pipe((0, rxjs_1.catchError)((error) => {
+                this.logger.error(`Update user failed: ${error.message}`);
                 throw error;
             })));
             return response.data;
         }
         catch (error) {
-            this.logger.error(`Error updating user: ${error.message}`);
+            this.logger.error(`Update user error: ${error.message}`);
             throw error;
         }
     }
-    async delete(id, token) {
+    async deleteUser(id) {
         try {
-            const response = await (0, rxjs_1.firstValueFrom)(this.httpService
-                .delete(`${this.userServiceUrl}/users/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-                .pipe((0, rxjs_1.catchError)((error) => {
-                this.logger.error(`Failed to delete user: ${error.message}`);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.delete(`${this.authServiceUrl}/api/users/${id}`).pipe((0, rxjs_1.catchError)((error) => {
+                this.logger.error(`Delete user failed: ${error.message}`);
                 throw error;
             })));
             return response.data;
         }
         catch (error) {
-            this.logger.error(`Error deleting user: ${error.message}`);
+            this.logger.error(`Delete user error: ${error.message}`);
             throw error;
         }
     }
-    async updatePassword(id, passwordDto, token) {
+    async updateUserPassword(id, passwordDto) {
         try {
-            const response = await (0, rxjs_1.firstValueFrom)(this.httpService
-                .patch(`${this.userServiceUrl}/users/${id}/password`, passwordDto, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-                .pipe((0, rxjs_1.catchError)((error) => {
-                this.logger.error(`Failed to update password: ${error.message}`);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.patch(`${this.authServiceUrl}/api/users/${id}/password`, passwordDto).pipe((0, rxjs_1.catchError)((error) => {
+                this.logger.error(`Update user password failed: ${error.message}`);
                 throw error;
             })));
             return response.data;
         }
         catch (error) {
-            this.logger.error(`Error updating password: ${error.message}`);
+            this.logger.error(`Update user password error: ${error.message}`);
             throw error;
         }
     }

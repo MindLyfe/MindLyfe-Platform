@@ -29,6 +29,10 @@ import { ResourcesModule } from './modules/resources.module';
 import { NotificationModule } from './modules/notification.module';
 import { LyfbotModule } from './modules/lyfbot.module';
 import { TherapyModule } from './modules/therapy.module';
+import { ChatModule } from './modules/chat.module';
+import { GamificationModule } from './modules/gamification.module';
+import { JournalModule } from './modules/journal.module';
+import { SupportModule } from './modules/support.module';
 import { DocsModule } from './docs/docs.module';
 
 @Module({
@@ -66,6 +70,10 @@ import { DocsModule } from './docs/docs.module';
     NotificationModule,
     LyfbotModule,
     TherapyModule,
+    ChatModule,
+    GamificationModule,
+    JournalModule,
+    SupportModule,
     DocsModule,
   ],
   controllers: [

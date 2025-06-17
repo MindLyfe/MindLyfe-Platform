@@ -21,26 +21,142 @@ export class AuthController {
   @Post('register')
   @Throttle({ default: { limit: 5, ttl: 60 } }) // Strict rate limiting for registration
   @ApiOperation({ 
-    summary: 'Register a new user',
-    description: 'Creates a new user account in the system. An email verification link will be sent to the provided email address.'
+    summary: '👤 Register New User',
+    description: `
+## Registration Flow Overview
+
+**Step 1: Submit Registration Data**
+- Provide all required user information (email, password, names)
+- Optional: phone number, date of birth, preferences
+- **Important**: If user is under 18, guardian information is required
+
+**Step 2: Email Verification**
+- System sends verification email to provided address
+- User must click verification link to activate account
+- Account remains inactive until email is verified
+
+**Step 3: Account Activation**
+- After email verification, account becomes active
+- User can now login and access the platform
+
+### Age-Based Requirements:
+- **Adults (18+)**: Basic information only
+- **Minors (<18)**: Guardian email and phone required
+- System automatically validates age and enforces guardian requirements
+
+### Data Processing:
+- Passwords are encrypted using bcrypt
+- Personal data is stored securely with HIPAA compliance
+- Email addresses are normalized (lowercase, trimmed)
+- Phone numbers are formatted and validated
+    `
   })
   @ApiBody({ 
     type: RegisterDto,
-    description: 'User registration data including email, password, and personal details'
-  })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'User successfully created',
-    schema: {
-      type: 'object',
-      properties: {
-        message: { type: 'string', example: 'Registration successful. Please check your email to verify your account.' },
-        userId: { type: 'string', example: '5f8d7e6b-d3f4-4c2a-9f6a-8d7c9e6b5f4a' }
+    description: 'Complete user registration data',
+    examples: {
+      'Adult User': {
+        value: {
+          email: 'john.doe@mindlyf.com',
+          password: 'StrongP@ss123',
+          firstName: 'John',
+          lastName: 'Doe',
+          phoneNumber: '+1-555-123-4567',
+          dateOfBirth: '1990-01-15',
+          preferredLanguage: 'en',
+          communicationPreference: 'email',
+          timezone: 'America/New_York',
+          agreeToTerms: true,
+          agreeToPrivacy: true,
+          marketingOptIn: false
+        }
+      },
+      'Minor User': {
+        value: {
+          email: 'teen.user@mindlyf.com',
+          password: 'SecureP@ss456',
+          firstName: 'Jane',
+          lastName: 'Smith',
+          phoneNumber: '+1-555-987-6543',
+          dateOfBirth: '2008-05-20',
+          guardianEmail: 'parent@example.com',
+          guardianPhone: '+1-555-123-9876',
+          preferredLanguage: 'en',
+          communicationPreference: 'email',
+          agreeToTerms: true,
+          agreeToPrivacy: true
+        }
       }
     }
   })
-  @ApiResponse({ status: 400, description: 'Invalid input - Validation errors in the registration data' })
-  @ApiResponse({ status: 409, description: 'User already exists with this email address' })
+  @ApiResponse({ 
+    status: 201, 
+    description: '✅ User successfully registered - email verification required',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Registration successful. Please check your email to verify your account.' },
+        userId: { type: 'string', example: '550e8400-e29b-41d4-a716-446655440000', description: 'Unique user identifier' },
+        email: { type: 'string', example: 'john.doe@mindlyf.com', description: 'Registered email address' },
+        verificationRequired: { type: 'boolean', example: true, description: 'Email verification is required' },
+        nextSteps: { 
+          type: 'array', 
+          items: { type: 'string' },
+          example: [
+            'Check your email for verification link',
+            'Click the verification link to activate your account',
+            'Return to login page after verification'
+          ]
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '❌ Validation errors in registration data',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 400 },
+        message: { 
+          type: 'array',
+          items: { type: 'string' },
+          example: [
+            'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character',
+            'First name must be at least 2 characters',
+            'Guardian email is required for users under 18'
+          ]
+        },
+        error: { type: 'string', example: 'Bad Request' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 409, 
+    description: '❌ User already exists with this email address',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 409 },
+        message: { type: 'string', example: 'User with this email already exists' },
+        error: { type: 'string', example: 'Conflict' },
+        suggestion: { type: 'string', example: 'Try logging in instead, or use forgot password if needed' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 429, 
+    description: '❌ Too many registration attempts',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 429 },
+        message: { type: 'string', example: 'Too many registration attempts. Please try again later.' },
+        retryAfter: { type: 'number', example: 60, description: 'Seconds to wait before next attempt' }
+      }
+    }
+  })
   @ApiProduces('application/json')
   @ApiConsumes('application/json')
   async register(
@@ -53,11 +169,161 @@ export class AuthController {
 
   @Post('register/therapist')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Register a new therapist' })
-  @ApiBody({ type: TherapistRegisterDto })
-  @ApiResponse({ status: 201, description: 'Therapist registered successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid input data' })
-  @ApiResponse({ status: 409, description: 'Therapist already exists' })
+  @ApiOperation({ 
+    summary: '🩺 Register New Therapist',
+    description: `
+## Therapist Registration Flow
+
+**Step 1: Submit Professional Information**
+- All standard user information (email, password, names)
+- Professional license number (must be unique)
+- Specializations and credentials
+- Optional: hourly rate, bio, education details
+
+**Step 2: License Verification Process**
+- System validates license number format
+- License is flagged for manual verification by admin
+- Therapist account created but marked as "pending approval"
+
+**Step 3: Admin Review & Approval**
+- Admin team reviews credentials and license
+- Background checks may be performed
+- Approval or rejection notification sent
+
+**Step 4: Account Activation**
+- After admin approval, therapist can access full features
+- Can create therapy sessions, set availability
+- Listed in therapist directory for client matching
+
+### Required Professional Information:
+- **License Number**: Unique professional license identifier
+- **Specializations**: Areas of expertise (1-10 specializations)
+- **Credentials**: Professional certifications (optional but recommended)
+
+### Optional Enhancement Data:
+- **Hourly Rate**: Suggested session pricing ($1-500)
+- **Professional Bio**: Detailed background (50-2000 characters)
+- **Education**: Educational background
+- **Years of Experience**: Professional experience duration
+- **Languages**: Languages spoken for client matching
+    `
+  })
+  @ApiBody({ 
+    type: TherapistRegisterDto,
+    description: 'Complete therapist registration data with professional credentials',
+    examples: {
+      'Licensed Therapist': {
+        value: {
+          email: 'dr.sarah.wilson@mindlyf.com',
+          password: 'TherapistP@ss123',
+          firstName: 'Sarah',
+          lastName: 'Wilson',
+          phoneNumber: '+1-555-789-0123',
+          dateOfBirth: '1985-03-15',
+          licenseNumber: 'LIC987654321',
+          specialization: [
+            'Anxiety Disorders',
+            'Depression',
+            'Cognitive Behavioral Therapy',
+            'Trauma and PTSD'
+          ],
+          credentials: [
+            'PhD in Clinical Psychology',
+            'Licensed Clinical Psychologist',
+            'Certified Trauma Specialist'
+          ],
+          hourlyRate: 175,
+          professionalBio: 'Dr. Sarah Wilson is a licensed clinical psychologist with over 12 years of experience treating anxiety, depression, and trauma. She specializes in cognitive behavioral therapy and has extensive training in trauma-informed care.',
+          education: 'PhD in Clinical Psychology, Harvard University',
+          yearsOfExperience: 12,
+          languagesSpoken: ['English', 'Spanish'],
+          licenseState: 'California',
+          licenseExpirationDate: '2025-12-31',
+          preferredLanguage: 'en',
+          communicationPreference: 'email',
+          agreeToTerms: true,
+          agreeToPrivacy: true
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 201, 
+    description: '✅ Therapist registered successfully - pending admin approval',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Therapist registration successful. Your application is under review.' },
+        userId: { type: 'string', example: '550e8400-e29b-41d4-a716-446655440001' },
+        email: { type: 'string', example: 'dr.sarah.wilson@mindlyf.com' },
+        status: { type: 'string', example: 'pending_approval', description: 'Account status awaiting admin review' },
+        licenseNumber: { type: 'string', example: 'LIC987654321' },
+        approvalProcess: {
+          type: 'object',
+          properties: {
+            estimatedReviewTime: { type: 'string', example: '2-5 business days' },
+            nextSteps: {
+              type: 'array',
+              items: { type: 'string' },
+              example: [
+                'Admin team will verify your professional license',
+                'Background check may be conducted',
+                'You will receive approval/rejection notification via email',
+                'Check your email for verification link to activate basic account access'
+              ]
+            }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: '❌ Invalid therapist registration data',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 400 },
+        message: { 
+          type: 'array',
+          items: { type: 'string' },
+          example: [
+            'License number must be at least 5 characters',
+            'At least one specialization is required',
+            'Hourly rate must be between $1 and $500',
+            'Professional bio must be at least 50 characters'
+          ]
+        },
+        error: { type: 'string', example: 'Bad Request' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 409, 
+    description: '❌ Therapist already exists or license number is taken',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 409 },
+        message: { type: 'string', example: 'License number already registered or email already exists' },
+        error: { type: 'string', example: 'Conflict' },
+        conflictType: { type: 'string', example: 'license_number', enum: ['email', 'license_number'] }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 429, 
+    description: '❌ Too many therapist registration attempts',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 429 },
+        message: { type: 'string', example: 'Too many therapist registration attempts. Please try again later.' },
+        retryAfter: { type: 'number', example: 180, description: 'Seconds to wait before next attempt' }
+      }
+    }
+  })
   @ApiProduces('application/json')
   @ApiConsumes('application/json')
   @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 requests per minute
