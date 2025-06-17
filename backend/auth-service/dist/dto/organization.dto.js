@@ -14,6 +14,11 @@ const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 const payment_entity_1 = require("../entities/payment.entity");
 class CreateOrganizationRequestDto {
+    name;
+    email;
+    phoneNumber;
+    address;
+    maxUsers;
 }
 exports.CreateOrganizationRequestDto = CreateOrganizationRequestDto;
 __decorate([
@@ -65,6 +70,8 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateOrganizationRequestDto.prototype, "maxUsers", void 0);
 class OrganizationSubscriptionRequestDto {
+    paymentMethod;
+    phoneNumber;
 }
 exports.OrganizationSubscriptionRequestDto = OrganizationSubscriptionRequestDto;
 __decorate([
@@ -86,6 +93,7 @@ __decorate([
     __metadata("design:type", String)
 ], OrganizationSubscriptionRequestDto.prototype, "phoneNumber", void 0);
 class AddUserToOrganizationRequestDto {
+    userEmail;
 }
 exports.AddUserToOrganizationRequestDto = AddUserToOrganizationRequestDto;
 __decorate([
@@ -97,6 +105,9 @@ __decorate([
     __metadata("design:type", String)
 ], AddUserToOrganizationRequestDto.prototype, "userEmail", void 0);
 class OrganizationDetailsResponseDto {
+    organization;
+    users;
+    subscriptionStatus;
 }
 exports.OrganizationDetailsResponseDto = OrganizationDetailsResponseDto;
 __decorate([

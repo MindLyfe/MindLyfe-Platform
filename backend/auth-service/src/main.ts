@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { ConfigService } from '@nestjs/config';
-import * as compression from 'compression';
+import compression from 'compression';
 
 // Polyfill crypto for older Node.js versions or environments
 if (!global.crypto) {
@@ -100,13 +100,15 @@ Use the "Try it out" feature below to test endpoints. For protected endpoints, f
     .setVersion('1.0.0')
     .setContact('MindLyf Support', 'https://mindlyf.app/support', 'support@mindlyf.app')
     .setLicense('MIT', 'https://opensource.org/licenses/MIT')
-    .addTag('🔐 auth', 'Core authentication endpoints - registration, login, logout, password management')
-    .addTag('🔄 sessions', 'Session management - refresh tokens, device tracking, session cleanup')
-    .addTag('🛡️ mfa', 'Multi-factor authentication - TOTP setup, verification, backup codes')
-    .addTag('👤 users', 'User profile management - account details, preferences, privacy settings')
-    .addTag('🏢 organizations', 'Organization management - multi-tenant features, admin controls')
-    .addTag('💳 subscriptions', 'Subscription and billing - payment integration, plan management')
-    .addTag('❤️ health', 'Health checks and monitoring - service status, database connectivity')
+    .addTag('auth', 'Core authentication endpoints - registration, login, logout, password management')
+    .addTag('sessions', 'Session management - refresh tokens, device tracking, session cleanup')
+    .addTag('mfa', 'Multi-factor authentication - TOTP setup, verification, backup codes')
+    .addTag('users', 'User profile management - account details, preferences, privacy settings')
+    .addTag('organizations', 'Organization management - multi-tenant features, admin controls')
+    .addTag('subscriptions', 'Subscription and billing - payment integration, plan management')
+    .addTag('support', 'Support team management - shifts, requests, routing, and dashboard analytics')
+    .addTag('therapists', 'Therapist management - applications, approvals, status updates, and profile management')
+    .addTag('health', 'Health checks and monitoring - service status, database connectivity')
     .addBearerAuth(
       { 
         type: 'http', 

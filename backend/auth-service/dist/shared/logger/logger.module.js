@@ -46,7 +46,7 @@ exports.LoggerModule = LoggerModule = __decorate([
                                 const user = req.user;
                                 return {
                                     context: 'HTTP',
-                                    userId: user === null || user === void 0 ? void 0 : user.sub,
+                                    userId: user?.sub,
                                     correlationId: req.headers['x-correlation-id'],
                                 };
                             },

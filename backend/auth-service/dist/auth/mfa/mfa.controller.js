@@ -19,6 +19,7 @@ const jwt_auth_guard_1 = require("../guards/jwt-auth.guard");
 const mfa_service_1 = require("./mfa.service");
 const mfa_dto_1 = require("./dto/mfa.dto");
 let MfaController = class MfaController {
+    mfaService;
     constructor(mfaService) {
         this.mfaService = mfaService;
     }

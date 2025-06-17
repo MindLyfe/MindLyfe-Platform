@@ -19,6 +19,23 @@ var OrganizationStatus;
     OrganizationStatus["INACTIVE"] = "inactive";
 })(OrganizationStatus || (exports.OrganizationStatus = OrganizationStatus = {}));
 let Organization = class Organization {
+    id;
+    name;
+    description;
+    email;
+    phoneNumber;
+    address;
+    status;
+    maxUsers;
+    currentUsers;
+    pricePerUser;
+    sessionsPerUser;
+    subscriptionStartDate;
+    subscriptionEndDate;
+    isActive;
+    users;
+    createdAt;
+    updatedAt;
 };
 exports.Organization = Organization;
 __decorate([

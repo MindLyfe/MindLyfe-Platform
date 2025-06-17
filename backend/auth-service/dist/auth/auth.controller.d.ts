@@ -1,11 +1,26 @@
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, ChangePasswordDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, ChangePasswordDto, TherapistRegisterDto, OrganizationUserDto, SupportTeamUserDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UserRole } from '../entities/user.entity';
 export declare class AuthController {
     private readonly authService;
     private readonly jwtService;
     constructor(authService: AuthService, jwtService: JwtService);
     register(registerDto: RegisterDto, userAgent: string, ipAddress: string): Promise<{
+        message: string;
+        userId: string;
+        isMinor: boolean;
+    }>;
+    registerTherapist(therapistDto: TherapistRegisterDto, clientIp?: string, userAgent?: string): Promise<{
+        message: string;
+        userId: string;
+        therapistId: string;
+    }>;
+    registerOrganizationUser(orgUserDto: OrganizationUserDto, clientIp?: string, userAgent?: string): Promise<{
+        message: string;
+        userId: string;
+    }>;
+    registerSupportTeam(supportDto: SupportTeamUserDto, clientIp?: string, userAgent?: string): Promise<{
         message: string;
         userId: string;
     }>;
@@ -29,7 +44,7 @@ export declare class AuthController {
         email: string;
         firstName: string;
         lastName: string;
-        role: import("../entities/user.entity").UserRole;
+        role: UserRole;
         accessToken: string;
         refreshToken: string;
         sessionId: string;
@@ -61,7 +76,7 @@ export declare class AuthController {
         user: {
             id: string;
             email: string;
-            role: import("../entities/user.entity").UserRole;
+            role: UserRole;
             status: import("../entities/user.entity").UserStatus;
             emailVerified: boolean;
             twoFactorEnabled: boolean;
@@ -84,7 +99,7 @@ export declare class AuthController {
             email: string;
             firstName: string;
             lastName: string;
-            role: import("../entities/user.entity").UserRole;
+            role: UserRole;
             status: import("../entities/user.entity").UserStatus;
             emailVerified: boolean;
             twoFactorEnabled: boolean;
@@ -96,7 +111,7 @@ export declare class AuthController {
             email: string;
             firstName: string;
             lastName: string;
-            role: import("../entities/user.entity").UserRole;
+            role: UserRole;
         };
         subscription: {
             hasActiveSubscription: boolean;

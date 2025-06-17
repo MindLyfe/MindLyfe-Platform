@@ -1,0 +1,10 @@
+{
+  "email": "minor@example.com",
+  "password": "MinorPass123!",
+  "firstName": "Alex",
+  "lastName": "Smith",
+  "phoneNumber": "+1234567891",
+  "dateOfBirth": "2010-05-15",
+  "guardianEmail": "parent@example.com",
+  "guardianPhone": "+1234567892"
+}

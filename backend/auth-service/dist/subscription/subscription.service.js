@@ -21,38 +21,43 @@ const subscription_entity_1 = require("../entities/subscription.entity");
 const organization_entity_1 = require("../entities/organization.entity");
 const payment_entity_1 = require("../entities/payment.entity");
 let SubscriptionService = class SubscriptionService {
+    userRepository;
+    subscriptionRepository;
+    organizationRepository;
+    paymentRepository;
+    dataSource;
+    PLANS = {
+        [subscription_entity_1.SubscriptionType.MONTHLY]: {
+            type: subscription_entity_1.SubscriptionType.MONTHLY,
+            name: 'Monthly Membership',
+            price: 200000,
+            sessions: 4,
+            duration: 30,
+            description: 'Monthly membership with 4 therapy sessions'
+        },
+        [subscription_entity_1.SubscriptionType.ORGANIZATION]: {
+            type: subscription_entity_1.SubscriptionType.ORGANIZATION,
+            name: 'Organization Plan',
+            price: 680000,
+            sessions: 8,
+            duration: 365,
+            description: 'Annual organization plan with 8 sessions per user'
+        },
+        [subscription_entity_1.SubscriptionType.CREDIT]: {
+            type: subscription_entity_1.SubscriptionType.CREDIT,
+            name: 'Session Credits',
+            price: 76000,
+            sessions: 1,
+            duration: 90,
+            description: 'Individual session credits'
+        }
+    };
     constructor(userRepository, subscriptionRepository, organizationRepository, paymentRepository, dataSource) {
         this.userRepository = userRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.organizationRepository = organizationRepository;
         this.paymentRepository = paymentRepository;
         this.dataSource = dataSource;
-        this.PLANS = {
-            [subscription_entity_1.SubscriptionType.MONTHLY]: {
-                type: subscription_entity_1.SubscriptionType.MONTHLY,
-                name: 'Monthly Membership',
-                price: 200000,
-                sessions: 4,
-                duration: 30,
-                description: 'Monthly membership with 4 therapy sessions'
-            },
-            [subscription_entity_1.SubscriptionType.ORGANIZATION]: {
-                type: subscription_entity_1.SubscriptionType.ORGANIZATION,
-                name: 'Organization Plan',
-                price: 680000,
-                sessions: 8,
-                duration: 365,
-                description: 'Annual organization plan with 8 sessions per user'
-            },
-            [subscription_entity_1.SubscriptionType.CREDIT]: {
-                type: subscription_entity_1.SubscriptionType.CREDIT,
-                name: 'Session Credits',
-                price: 76000,
-                sessions: 1,
-                duration: 90,
-                description: 'Individual session credits'
-            }
-        };
     }
     async getAvailablePlans(userId) {
         const user = await this.userRepository.findOne({
@@ -152,7 +157,6 @@ let SubscriptionService = class SubscriptionService {
         });
     }
     async getUserSubscriptionStatus(userId) {
-        var _a;
         const user = await this.userRepository.findOne({
             where: { id: userId },
             relations: ['subscriptions', 'organization']
@@ -160,7 +164,7 @@ let SubscriptionService = class SubscriptionService {
         if (!user) {
             throw new common_1.NotFoundException('User not found');
         }
-        const activeSubscriptions = ((_a = user.subscriptions) === null || _a === void 0 ? void 0 : _a.filter(sub => sub.status === subscription_entity_1.SubscriptionStatus.ACTIVE && !sub.isExpired)) || [];
+        const activeSubscriptions = user.subscriptions?.filter(sub => sub.status === subscription_entity_1.SubscriptionStatus.ACTIVE && !sub.isExpired) || [];
         const totalAvailableSessions = activeSubscriptions.reduce((total, sub) => total + sub.totalAvailableSessions, 0);
         return {
             hasActiveSubscription: activeSubscriptions.length > 0,
@@ -192,7 +196,6 @@ let SubscriptionService = class SubscriptionService {
         });
     }
     async validateUserCanBookSession(userId) {
-        var _a;
         const user = await this.userRepository.findOne({
             where: { id: userId },
             relations: ['subscriptions']
@@ -200,7 +203,7 @@ let SubscriptionService = class SubscriptionService {
         if (!user) {
             throw new common_1.NotFoundException('User not found');
         }
-        const activeSubscriptions = ((_a = user.subscriptions) === null || _a === void 0 ? void 0 : _a.filter(sub => sub.status === subscription_entity_1.SubscriptionStatus.ACTIVE && !sub.isExpired)) || [];
+        const activeSubscriptions = user.subscriptions?.filter(sub => sub.status === subscription_entity_1.SubscriptionStatus.ACTIVE && !sub.isExpired) || [];
         const totalAvailableSessions = activeSubscriptions.reduce((total, sub) => total + sub.totalAvailableSessions, 0);
         if (totalAvailableSessions <= 0) {
             return {
@@ -211,8 +214,8 @@ let SubscriptionService = class SubscriptionService {
         }
         const lastSessionSub = activeSubscriptions
             .filter(sub => sub.lastSessionDate)
-            .sort((a, b) => { var _a, _b; return (((_a = b.lastSessionDate) === null || _a === void 0 ? void 0 : _a.getTime()) || 0) - (((_b = a.lastSessionDate) === null || _b === void 0 ? void 0 : _b.getTime()) || 0); })[0];
-        if (lastSessionSub === null || lastSessionSub === void 0 ? void 0 : lastSessionSub.lastSessionDate) {
+            .sort((a, b) => (b.lastSessionDate?.getTime() || 0) - (a.lastSessionDate?.getTime() || 0))[0];
+        if (lastSessionSub?.lastSessionDate) {
             const oneWeekAgo = new Date();
             oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
             if (lastSessionSub.lastSessionDate > oneWeekAgo) {
@@ -233,7 +236,6 @@ let SubscriptionService = class SubscriptionService {
     }
     async consumeSession(userId) {
         return await this.dataSource.transaction(async (manager) => {
-            var _a;
             const user = await manager.findOne(user_entity_1.User, {
                 where: { id: userId },
                 relations: ['subscriptions']
@@ -241,7 +243,9 @@ let SubscriptionService = class SubscriptionService {
             if (!user) {
                 throw new common_1.NotFoundException('User not found');
             }
-            const activeSubscriptions = (_a = user.subscriptions) === null || _a === void 0 ? void 0 : _a.filter(sub => sub.status === subscription_entity_1.SubscriptionStatus.ACTIVE && !sub.isExpired).sort((a, b) => {
+            const activeSubscriptions = user.subscriptions
+                ?.filter(sub => sub.status === subscription_entity_1.SubscriptionStatus.ACTIVE && !sub.isExpired)
+                .sort((a, b) => {
                 if (a.remainingSessions > 0 && b.remainingSessions === 0)
                     return -1;
                 if (b.remainingSessions > 0 && a.remainingSessions === 0)
@@ -281,11 +285,10 @@ let SubscriptionService = class SubscriptionService {
         });
     }
     async validateSubscriptionType(user, type) {
-        var _a;
         if (user.isOrganizationMember && type !== subscription_entity_1.SubscriptionType.CREDIT) {
             throw new common_1.ForbiddenException('Organization members can only purchase session credits');
         }
-        const existingSubscription = (_a = user.subscriptions) === null || _a === void 0 ? void 0 : _a.find(sub => sub.status === subscription_entity_1.SubscriptionStatus.ACTIVE &&
+        const existingSubscription = user.subscriptions?.find(sub => sub.status === subscription_entity_1.SubscriptionStatus.ACTIVE &&
             sub.type === type &&
             !sub.isExpired);
         if (existingSubscription && type === subscription_entity_1.SubscriptionType.MONTHLY) {

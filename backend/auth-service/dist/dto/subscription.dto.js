@@ -15,6 +15,9 @@ const swagger_1 = require("@nestjs/swagger");
 const subscription_entity_1 = require("../entities/subscription.entity");
 const payment_entity_1 = require("../entities/payment.entity");
 class CreateSubscriptionRequestDto {
+    type;
+    paymentMethod;
+    phoneNumber;
 }
 exports.CreateSubscriptionRequestDto = CreateSubscriptionRequestDto;
 __decorate([
@@ -46,6 +49,9 @@ __decorate([
     __metadata("design:type", String)
 ], CreateSubscriptionRequestDto.prototype, "phoneNumber", void 0);
 class PurchaseCreditsRequestDto {
+    credits;
+    paymentMethod;
+    phoneNumber;
 }
 exports.PurchaseCreditsRequestDto = PurchaseCreditsRequestDto;
 __decorate([
@@ -80,6 +86,11 @@ __decorate([
     __metadata("design:type", String)
 ], PurchaseCreditsRequestDto.prototype, "phoneNumber", void 0);
 class SubscriptionStatusResponseDto {
+    hasActiveSubscription;
+    totalAvailableSessions;
+    canBookSession;
+    nextAvailableBookingDate;
+    subscriptions;
 }
 exports.SubscriptionStatusResponseDto = SubscriptionStatusResponseDto;
 __decorate([
@@ -106,6 +117,12 @@ __decorate([
     __metadata("design:type", Array)
 ], SubscriptionStatusResponseDto.prototype, "subscriptions", void 0);
 class SubscriptionPlanResponseDto {
+    type;
+    name;
+    price;
+    sessions;
+    duration;
+    description;
 }
 exports.SubscriptionPlanResponseDto = SubscriptionPlanResponseDto;
 __decorate([

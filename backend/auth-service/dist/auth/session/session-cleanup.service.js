@@ -16,10 +16,12 @@ const schedule_1 = require("@nestjs/schedule");
 const config_1 = require("@nestjs/config");
 const session_repository_1 = require("./session.repository");
 let SessionCleanupService = SessionCleanupService_1 = class SessionCleanupService {
+    sessionRepository;
+    configService;
+    logger = new common_1.Logger(SessionCleanupService_1.name);
     constructor(sessionRepository, configService) {
         this.sessionRepository = sessionRepository;
         this.configService = configService;
-        this.logger = new common_1.Logger(SessionCleanupService_1.name);
     }
     async handleSessionCleanup() {
         const cleanupInterval = this.configService.get('session.cleanupInterval', '0 0 * * *');

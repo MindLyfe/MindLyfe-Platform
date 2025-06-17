@@ -13,13 +13,13 @@ exports.ServiceTokenGuard = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 let ServiceTokenGuard = class ServiceTokenGuard {
+    configService;
     constructor(configService) {
         this.configService = configService;
     }
     canActivate(context) {
-        var _a;
         const request = context.switchToHttp().getRequest();
-        const serviceToken = (_a = request.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+        const serviceToken = request.headers.authorization?.split(' ')[1];
         const serviceName = request.headers['x-service-name'];
         if (!serviceToken || !serviceName) {
             throw new common_1.UnauthorizedException('Missing service token or service name');

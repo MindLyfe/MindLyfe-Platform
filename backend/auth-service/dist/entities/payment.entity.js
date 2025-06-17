@@ -37,6 +37,28 @@ var PaymentType;
     PaymentType["SESSION_PAYMENT"] = "session_payment";
 })(PaymentType || (exports.PaymentType = PaymentType = {}));
 let Payment = class Payment {
+    id;
+    userId;
+    user;
+    subscriptionId;
+    subscription;
+    organizationId;
+    organization;
+    type;
+    status;
+    method;
+    amount;
+    currency;
+    reference;
+    externalReference;
+    phoneNumber;
+    description;
+    metadata;
+    paidAt;
+    expiresAt;
+    failureReason;
+    createdAt;
+    updatedAt;
     get isCompleted() {
         return this.status === PaymentStatus.COMPLETED;
     }

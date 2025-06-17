@@ -31,6 +31,9 @@ var NotificationType;
     NotificationType["MARKETING"] = "marketing";
     NotificationType["PAYMENT"] = "payment";
     NotificationType["SUBSCRIPTION"] = "subscription";
+    NotificationType["SUPPORT"] = "support";
+    NotificationType["SUPPORT_SHIFT"] = "support_shift";
+    NotificationType["SUPPORT_REQUEST"] = "support_request";
 })(NotificationType || (exports.NotificationType = NotificationType = {}));
 let NotificationEntity = class NotificationEntity {
 };

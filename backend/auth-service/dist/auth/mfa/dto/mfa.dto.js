@@ -13,6 +13,7 @@ exports.DisableMfaDto = exports.VerifyMfaDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 class VerifyMfaDto {
+    token;
 }
 exports.VerifyMfaDto = VerifyMfaDto;
 __decorate([
@@ -22,6 +23,7 @@ __decorate([
     __metadata("design:type", String)
 ], VerifyMfaDto.prototype, "token", void 0);
 class DisableMfaDto {
+    password;
 }
 exports.DisableMfaDto = DisableMfaDto;
 __decorate([

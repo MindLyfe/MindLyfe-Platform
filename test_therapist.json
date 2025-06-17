@@ -1,0 +1,11 @@
+{
+  "email": "therapist@example.com",
+  "password": "TherapistPass123!",
+  "firstName": "Dr. Sarah",
+  "lastName": "Johnson",
+  "phoneNumber": "+1234567890",
+  "licenseNumber": "LIC123456789",
+  "specialization": ["Anxiety", "Depression", "Cognitive Behavioral Therapy"],
+  "credentials": ["PhD in Psychology", "Licensed Clinical Psychologist"],
+  "hourlyRate": 150
+}

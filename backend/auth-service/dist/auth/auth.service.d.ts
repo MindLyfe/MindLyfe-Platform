@@ -1,12 +1,14 @@
 import { JwtService } from '@nestjs/jwt';
+import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, RefreshTokenDto, VerifyEmailDto, ChangePasswordDto } from './dto/auth.dto';
-import { EmailService } from '../shared/services/email.service';
+import { UserRole } from '../entities/user.entity';
+import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, RefreshTokenDto, VerifyEmailDto, ChangePasswordDto, TherapistRegisterDto, OrganizationUserDto, SupportTeamUserDto } from './dto/auth.dto';
 import { SessionService } from './session/session.service';
 import { EventService } from '../shared/events/event.service';
 import { UserService, SafeUser } from '../user/user.service';
 import { RedisService } from '../shared/services/redis.service';
 import { HttpService } from '@nestjs/axios';
+import { Therapist } from '../entities/therapist.entity';
 interface AuthMetadata {
     ipAddress?: string;
     userAgent?: string;
@@ -15,16 +17,30 @@ interface AuthMetadata {
 export declare class AuthService {
     private readonly jwtService;
     private readonly configService;
-    private readonly emailService;
+    private readonly httpService;
     private readonly sessionService;
     private readonly eventService;
     private readonly userService;
     private readonly redisService;
-    private readonly httpService;
+    private readonly therapistRepository;
     private readonly logger;
-    constructor(jwtService: JwtService, configService: ConfigService, emailService: EmailService, sessionService: SessionService, eventService: EventService, userService: UserService, redisService: RedisService, httpService: HttpService);
+    constructor(jwtService: JwtService, configService: ConfigService, httpService: HttpService, sessionService: SessionService, eventService: EventService, userService: UserService, redisService: RedisService, therapistRepository: Repository<Therapist>);
     private generateAccessToken;
     register(registerDto: RegisterDto, metadata?: AuthMetadata): Promise<{
+        message: string;
+        userId: string;
+        isMinor: boolean;
+    }>;
+    registerTherapist(therapistDto: TherapistRegisterDto, metadata?: AuthMetadata): Promise<{
+        message: string;
+        userId: string;
+        therapistId: string;
+    }>;
+    registerOrganizationUser(orgUserDto: OrganizationUserDto, adminUserId: string, metadata?: AuthMetadata): Promise<{
+        message: string;
+        userId: string;
+    }>;
+    registerSupportTeam(supportDto: SupportTeamUserDto, adminUserId: string, metadata?: AuthMetadata): Promise<{
         message: string;
         userId: string;
     }>;
@@ -48,7 +64,7 @@ export declare class AuthService {
         email: string;
         firstName: string;
         lastName: string;
-        role: import("../entities/user.entity").UserRole;
+        role: UserRole;
         accessToken: string;
         refreshToken: string;
         sessionId: string;
@@ -93,5 +109,6 @@ export declare class AuthService {
     private handlePaymentFailure;
     private handleSubscriptionCreated;
     private handleSubscriptionCanceled;
+    private sendNotificationRequest;
 }
 export {};

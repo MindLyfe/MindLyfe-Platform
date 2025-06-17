@@ -14,6 +14,8 @@ const common_1 = require("@nestjs/common");
 const terminus_1 = require("@nestjs/terminus");
 const swagger_1 = require("@nestjs/swagger");
 let HealthController = class HealthController {
+    health;
+    db;
     constructor(health, db) {
         this.health = health;
         this.db = db;

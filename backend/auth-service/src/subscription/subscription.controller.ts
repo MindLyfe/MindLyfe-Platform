@@ -5,7 +5,7 @@ import { ServiceTokenGuard } from '../auth/guards/service-token.guard';
 import { SubscriptionService, CreateSubscriptionDto, PurchaseCreditsDto } from './subscription.service';
 import { SubscriptionType } from '../entities/subscription.entity';
 
-@ApiTags('Subscriptions')
+@ApiTags('subscriptions')
 @Controller('subscriptions')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

@@ -1,11 +1,14 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, Req, Get, UseGuards, Patch, Headers, Param, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiHeader, ApiBody, ApiParam, ApiConsumes, ApiProduces } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, ChangePasswordDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, ChangePasswordDto, TherapistRegisterDto, OrganizationUserDto, SupportTeamUserDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Throttle } from '@nestjs/throttler';
 import { ServiceTokenGuard } from './guards/service-token.guard';
 import { JwtService } from '@nestjs/jwt';
+import { Roles } from './decorators/roles.decorator';
+import { RolesGuard } from './guards/roles.guard';
+import { UserRole } from '../entities/user.entity';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -46,6 +49,75 @@ export class AuthController {
     @Headers('x-forwarded-for') ipAddress: string
   ) {
     return this.authService.register(registerDto, { ipAddress, userAgent });
+  }
+
+  @Post('register/therapist')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new therapist' })
+  @ApiBody({ type: TherapistRegisterDto })
+  @ApiResponse({ status: 201, description: 'Therapist registered successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 409, description: 'Therapist already exists' })
+  @ApiProduces('application/json')
+  @ApiConsumes('application/json')
+  @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 requests per minute
+  async registerTherapist(
+    @Body() therapistDto: TherapistRegisterDto,
+    @Headers('x-forwarded-for') clientIp?: string,
+    @Headers('user-agent') userAgent?: string,
+  ) {
+    const metadata = { clientIp, userAgent };
+    return this.authService.registerTherapist(therapistDto, metadata);
+  }
+
+  @Post('register/organization-user')
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZATION_ADMIN)
+  @ApiOperation({ summary: 'Register a new organization user (Admin only)' })
+  @ApiBody({ type: OrganizationUserDto })
+  @ApiResponse({ status: 201, description: 'Organization user registered successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({ status: 409, description: 'User already exists' })
+  @ApiProduces('application/json')
+  @ApiConsumes('application/json')
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute for admins
+  async registerOrganizationUser(
+    @Body() orgUserDto: OrganizationUserDto,
+    @Headers('x-forwarded-for') clientIp?: string,
+    @Headers('user-agent') userAgent?: string,
+  ) {
+    const metadata = { clientIp, userAgent };
+    // TODO: Get admin user ID from JWT token
+    const adminUserId = 'admin-user-id'; // This should come from the authenticated user
+    return this.authService.registerOrganizationUser(orgUserDto, adminUserId, metadata);
+  }
+
+  @Post('register/support-team')
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Register a new support team member (Admin only)' })
+  @ApiBody({ type: SupportTeamUserDto })
+  @ApiResponse({ status: 201, description: 'Support team member registered successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({ status: 409, description: 'User already exists' })
+  @ApiProduces('application/json')
+  @ApiConsumes('application/json')
+  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 requests per minute for admins
+  async registerSupportTeam(
+    @Body() supportDto: SupportTeamUserDto,
+    @Headers('x-forwarded-for') clientIp?: string,
+    @Headers('user-agent') userAgent?: string,
+  ) {
+    const metadata = { clientIp, userAgent };
+    // TODO: Get admin user ID from JWT token
+    const adminUserId = 'admin-user-id'; // This should come from the authenticated user
+    return this.authService.registerSupportTeam(supportDto, adminUserId, metadata);
   }
 
   @Post('verify-email')
@@ -569,4 +641,4 @@ export class AuthController {
       amount: body.amount
     };
   }
-} 
+}

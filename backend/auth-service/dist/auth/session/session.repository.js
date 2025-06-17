@@ -18,6 +18,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_session_entity_1 = require("../../entities/user-session.entity");
 let SessionRepository = class SessionRepository {
+    userSessionRepository;
     constructor(userSessionRepository) {
         this.userSessionRepository = userSessionRepository;
     }
@@ -58,7 +59,11 @@ let SessionRepository = class SessionRepository {
         if (sessionData.id) {
             const existingSession = await this.findById(sessionData.id);
             if (existingSession) {
-                return this.userSessionRepository.save(Object.assign(Object.assign(Object.assign({}, existingSession), sessionData), { updatedAt: new Date() }));
+                return this.userSessionRepository.save({
+                    ...existingSession,
+                    ...sessionData,
+                    updatedAt: new Date(),
+                });
             }
         }
         return this.userSessionRepository.save(sessionData);

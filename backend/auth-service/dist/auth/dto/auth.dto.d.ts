@@ -3,6 +3,26 @@ export declare class RegisterDto {
     password: string;
     firstName: string;
     lastName: string;
+    phoneNumber?: string;
+    dateOfBirth?: string;
+    guardianEmail?: string;
+    guardianPhone?: string;
+}
+export declare class TherapistRegisterDto extends RegisterDto {
+    licenseNumber: string;
+    specialization: string[];
+    credentials?: string[];
+    hourlyRate?: number;
+}
+export declare class OrganizationUserDto {
+    email: string;
+    firstName: string;
+    lastName: string;
+    organizationId: string;
+    phoneNumber?: string;
+}
+export declare class SupportTeamUserDto extends RegisterDto {
+    department: string;
 }
 export declare class LoginDto {
     email: string;

@@ -21,6 +21,11 @@ const user_entity_1 = require("../entities/user.entity");
 const subscription_entity_1 = require("../entities/subscription.entity");
 const payment_entity_1 = require("../entities/payment.entity");
 let OrganizationService = class OrganizationService {
+    organizationRepository;
+    userRepository;
+    subscriptionRepository;
+    paymentRepository;
+    dataSource;
     constructor(organizationRepository, userRepository, subscriptionRepository, paymentRepository, dataSource) {
         this.organizationRepository = organizationRepository;
         this.userRepository = userRepository;

@@ -14,13 +14,17 @@ import { RolesGuard } from './roles/roles.guard';
 import { UserModule } from '../user/user.module';
 import { SessionModule } from './session/session.module';
 import { User } from '../entities/user.entity';
+import { Therapist } from '../entities/therapist.entity';
+import { TherapistController } from '../therapist/therapist.controller';
+import { TherapistService } from '../therapist/therapist.service';
+// Removed EmailService - notifications handled by notification service
 
 @Module({
   imports: [
     UserModule,
     SessionModule,
     HttpModule,
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Therapist]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -33,11 +37,13 @@ import { User } from '../entities/user.entity';
       }),
     }),
   ],
-  controllers: [AuthController, MfaController],
+  controllers: [AuthController, MfaController, TherapistController],
   providers: [
     AuthService, 
     JwtStrategy, 
     MfaService,
+    TherapistService,
+    // EmailService removed - using notification service instead
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

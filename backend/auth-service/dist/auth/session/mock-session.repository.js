@@ -10,9 +10,7 @@ exports.MockSessionRepository = void 0;
 const common_1 = require("@nestjs/common");
 const uuid_1 = require("uuid");
 let MockSessionRepository = class MockSessionRepository {
-    constructor() {
-        this.sessions = [];
-    }
+    sessions = [];
     async find() {
         return this.sessions;
     }
@@ -26,9 +24,9 @@ let MockSessionRepository = class MockSessionRepository {
         if (sessionData.id) {
             const index = this.sessions.findIndex(s => s.id === sessionData.id);
             if (index >= 0) {
-                const updatedSession = Object.assign(Object.assign({}, this.sessions[index]), sessionData);
+                const updatedSession = { ...this.sessions[index], ...sessionData };
                 this.sessions[index] = updatedSession;
-                return Object.assign({}, updatedSession);
+                return { ...updatedSession };
             }
         }
         return this.createSession(sessionData);
@@ -62,7 +60,7 @@ let MockSessionRepository = class MockSessionRepository {
             user: null,
         };
         this.sessions.push(newSession);
-        return Object.assign({}, newSession);
+        return { ...newSession };
     }
 };
 exports.MockSessionRepository = MockSessionRepository;

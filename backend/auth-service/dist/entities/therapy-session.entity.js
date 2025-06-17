@@ -28,6 +28,29 @@ var SessionType;
     SessionType["EMERGENCY"] = "emergency";
 })(SessionType || (exports.SessionType = SessionType = {}));
 let TherapySession = class TherapySession {
+    id;
+    userId;
+    user;
+    therapistId;
+    therapist;
+    subscriptionId;
+    subscription;
+    status;
+    type;
+    scheduledAt;
+    startedAt;
+    endedAt;
+    durationMinutes;
+    cost;
+    paidFromCredit;
+    paidFromSubscription;
+    paymentReference;
+    notes;
+    cancellationReason;
+    meetingLink;
+    meetingId;
+    createdAt;
+    updatedAt;
     get isCompleted() {
         return this.status === SessionStatus.COMPLETED;
     }

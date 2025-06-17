@@ -13,6 +13,22 @@ exports.UserSession = void 0;
 const typeorm_1 = require("typeorm");
 const user_entity_1 = require("./user.entity");
 let UserSession = class UserSession {
+    id;
+    userId;
+    user;
+    refreshToken;
+    ipAddress;
+    userAgent;
+    deviceInfo;
+    lastUsedAt;
+    isRevoked;
+    revokedAt;
+    revokedReason;
+    status;
+    endedAt;
+    createdAt;
+    updatedAt;
+    expiresAt;
 };
 exports.UserSession = UserSession;
 __decorate([

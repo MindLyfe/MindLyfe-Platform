@@ -17,10 +17,12 @@ const uuid_1 = require("uuid");
 const session_repository_1 = require("./session.repository");
 const common_2 = require("@nestjs/common");
 let SessionService = SessionService_1 = class SessionService {
+    configService;
+    sessionRepository;
+    logger = new common_2.Logger(SessionService_1.name);
     constructor(configService, sessionRepository) {
         this.configService = configService;
         this.sessionRepository = sessionRepository;
-        this.logger = new common_2.Logger(SessionService_1.name);
     }
     toSessionData(session) {
         return {
@@ -94,7 +96,11 @@ let SessionService = SessionService_1 = class SessionService {
         if (!session) {
             throw new common_1.NotFoundException(`Session with ID ${id} not found`);
         }
-        const updatedSession = await this.sessionRepository.save(Object.assign(Object.assign(Object.assign({}, session), data), { updatedAt: new Date() }));
+        const updatedSession = await this.sessionRepository.save({
+            ...session,
+            ...data,
+            updatedAt: new Date(),
+        });
         return this.toSessionData(updatedSession);
     }
     async updateSessionLastUsed(id) {

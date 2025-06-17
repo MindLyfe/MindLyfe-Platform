@@ -21,13 +21,32 @@ const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
 const throttler_1 = require("@nestjs/throttler");
 const service_token_guard_1 = require("./guards/service-token.guard");
 const jwt_1 = require("@nestjs/jwt");
+const roles_decorator_1 = require("./decorators/roles.decorator");
+const roles_guard_1 = require("./guards/roles.guard");
+const user_entity_1 = require("../entities/user.entity");
 let AuthController = class AuthController {
+    authService;
+    jwtService;
     constructor(authService, jwtService) {
         this.authService = authService;
         this.jwtService = jwtService;
     }
     async register(registerDto, userAgent, ipAddress) {
         return this.authService.register(registerDto, { ipAddress, userAgent });
+    }
+    async registerTherapist(therapistDto, clientIp, userAgent) {
+        const metadata = { clientIp, userAgent };
+        return this.authService.registerTherapist(therapistDto, metadata);
+    }
+    async registerOrganizationUser(orgUserDto, clientIp, userAgent) {
+        const metadata = { clientIp, userAgent };
+        const adminUserId = 'admin-user-id';
+        return this.authService.registerOrganizationUser(orgUserDto, adminUserId, metadata);
+    }
+    async registerSupportTeam(supportDto, clientIp, userAgent) {
+        const metadata = { clientIp, userAgent };
+        const adminUserId = 'admin-user-id';
+        return this.authService.registerSupportTeam(supportDto, adminUserId, metadata);
     }
     async verifyEmail(verifyEmailDto, userAgent, ipAddress) {
         return this.authService.verifyEmail(verifyEmailDto, { ipAddress, userAgent });
@@ -189,6 +208,68 @@ __decorate([
     __metadata("design:paramtypes", [auth_dto_1.RegisterDto, String, String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "register", null);
+__decorate([
+    (0, common_1.Post)('register/therapist'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    (0, swagger_1.ApiOperation)({ summary: 'Register a new therapist' }),
+    (0, swagger_1.ApiBody)({ type: auth_dto_1.TherapistRegisterDto }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Therapist registered successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Invalid input data' }),
+    (0, swagger_1.ApiResponse)({ status: 409, description: 'Therapist already exists' }),
+    (0, swagger_1.ApiProduces)('application/json'),
+    (0, swagger_1.ApiConsumes)('application/json'),
+    (0, throttler_1.Throttle)({ default: { limit: 3, ttl: 60000 } }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Headers)('x-forwarded-for')),
+    __param(2, (0, common_1.Headers)('user-agent')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [auth_dto_1.TherapistRegisterDto, String, String]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "registerTherapist", null);
+__decorate([
+    (0, common_1.Post)('register/organization-user'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.ADMIN, user_entity_1.UserRole.ORGANIZATION_ADMIN),
+    (0, swagger_1.ApiOperation)({ summary: 'Register a new organization user (Admin only)' }),
+    (0, swagger_1.ApiBody)({ type: auth_dto_1.OrganizationUserDto }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Organization user registered successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Invalid input data' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden - Admin access required' }),
+    (0, swagger_1.ApiResponse)({ status: 409, description: 'User already exists' }),
+    (0, swagger_1.ApiProduces)('application/json'),
+    (0, swagger_1.ApiConsumes)('application/json'),
+    (0, throttler_1.Throttle)({ default: { limit: 10, ttl: 60000 } }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Headers)('x-forwarded-for')),
+    __param(2, (0, common_1.Headers)('user-agent')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [auth_dto_1.OrganizationUserDto, String, String]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "registerOrganizationUser", null);
+__decorate([
+    (0, common_1.Post)('register/support-team'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.ADMIN),
+    (0, swagger_1.ApiOperation)({ summary: 'Register a new support team member (Admin only)' }),
+    (0, swagger_1.ApiBody)({ type: auth_dto_1.SupportTeamUserDto }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Support team member registered successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Invalid input data' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden - Admin access required' }),
+    (0, swagger_1.ApiResponse)({ status: 409, description: 'User already exists' }),
+    (0, swagger_1.ApiProduces)('application/json'),
+    (0, swagger_1.ApiConsumes)('application/json'),
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Headers)('x-forwarded-for')),
+    __param(2, (0, common_1.Headers)('user-agent')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [auth_dto_1.SupportTeamUserDto, String, String]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "registerSupportTeam", null);
 __decorate([
     (0, common_1.Post)('verify-email'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),

@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
-@ApiTags('test')
+@ApiTags('auth')
 @Controller()
 export class AppController {
   constructor() {}

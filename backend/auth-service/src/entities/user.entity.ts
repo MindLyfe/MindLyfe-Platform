@@ -4,6 +4,8 @@ import * as bcrypt from 'bcrypt';
 export enum UserRole {
   USER = 'user',
   ADMIN = 'admin',
+  SUPER_ADMIN = 'super_admin',
+  SUPPORT_TEAM = 'support_team',
   THERAPIST = 'therapist',
   ORGANIZATION_ADMIN = 'organization_admin',
 }
@@ -159,4 +161,4 @@ export class User {
 // Import these here to avoid circular dependency issues
 import { Organization } from './organization.entity';
 import { Subscription } from './subscription.entity';
-import { TherapySession } from './therapy-session.entity'; 
+import { TherapySession } from './therapy-session.entity';

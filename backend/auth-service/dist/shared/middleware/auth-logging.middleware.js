@@ -13,17 +13,18 @@ exports.AuthLoggingMiddleware = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 let AuthLoggingMiddleware = class AuthLoggingMiddleware {
+    configService;
+    logger = new common_1.Logger('AuthSecurity');
+    sensitiveRoutes = [
+        '/api/auth/login',
+        '/api/auth/register',
+        '/api/auth/refresh-token',
+        '/api/mfa/verify',
+        '/api/mfa/enable',
+        '/api/mfa/disable',
+    ];
     constructor(configService) {
         this.configService = configService;
-        this.logger = new common_1.Logger('AuthSecurity');
-        this.sensitiveRoutes = [
-            '/api/auth/login',
-            '/api/auth/register',
-            '/api/auth/refresh-token',
-            '/api/mfa/verify',
-            '/api/mfa/enable',
-            '/api/mfa/disable',
-        ];
     }
     use(req, res, next) {
         const { ip, method, originalUrl } = req;

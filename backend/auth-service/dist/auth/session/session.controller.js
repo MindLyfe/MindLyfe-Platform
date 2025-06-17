@@ -20,6 +20,7 @@ const session_service_1 = require("./session.service");
 const roles_decorator_1 = require("../roles/roles.decorator");
 const user_entity_1 = require("../../entities/user.entity");
 let SessionController = class SessionController {
+    sessionService;
     constructor(sessionService) {
         this.sessionService = sessionService;
     }

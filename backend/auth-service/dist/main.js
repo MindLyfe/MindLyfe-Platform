@@ -1,12 +1,15 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@nestjs/core");
 const common_1 = require("@nestjs/common");
 const app_module_1 = require("./app.module");
 const swagger_1 = require("@nestjs/swagger");
-const helmet_1 = require("helmet");
+const helmet_1 = __importDefault(require("helmet"));
 const config_1 = require("@nestjs/config");
-const compression = require("compression");
+const compression_1 = __importDefault(require("compression"));
 if (!global.crypto) {
     global.crypto = require('crypto').webcrypto;
 }
@@ -31,7 +34,7 @@ async function bootstrap() {
         },
         crossOriginEmbedderPolicy: false,
     }));
-    app.use(compression());
+    app.use((0, compression_1.default)());
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
         transform: true,
@@ -80,13 +83,15 @@ Use the "Try it out" feature below to test endpoints. For protected endpoints, f
         .setVersion('1.0.0')
         .setContact('MindLyf Support', 'https://mindlyf.app/support', 'support@mindlyf.app')
         .setLicense('MIT', 'https://opensource.org/licenses/MIT')
-        .addTag('🔐 auth', 'Core authentication endpoints - registration, login, logout, password management')
-        .addTag('🔄 sessions', 'Session management - refresh tokens, device tracking, session cleanup')
-        .addTag('🛡️ mfa', 'Multi-factor authentication - TOTP setup, verification, backup codes')
-        .addTag('👤 users', 'User profile management - account details, preferences, privacy settings')
-        .addTag('🏢 organizations', 'Organization management - multi-tenant features, admin controls')
-        .addTag('💳 subscriptions', 'Subscription and billing - payment integration, plan management')
-        .addTag('❤️ health', 'Health checks and monitoring - service status, database connectivity')
+        .addTag('auth', 'Core authentication endpoints - registration, login, logout, password management')
+        .addTag('sessions', 'Session management - refresh tokens, device tracking, session cleanup')
+        .addTag('mfa', 'Multi-factor authentication - TOTP setup, verification, backup codes')
+        .addTag('users', 'User profile management - account details, preferences, privacy settings')
+        .addTag('organizations', 'Organization management - multi-tenant features, admin controls')
+        .addTag('subscriptions', 'Subscription and billing - payment integration, plan management')
+        .addTag('support', 'Support team management - shifts, requests, routing, and dashboard analytics')
+        .addTag('therapists', 'Therapist management - applications, approvals, status updates, and profile management')
+        .addTag('health', 'Health checks and monitoring - service status, database connectivity')
         .addBearerAuth({
         type: 'http',
         scheme: 'bearer',

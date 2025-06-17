@@ -14,6 +14,23 @@ const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 const class_transformer_1 = require("class-transformer");
 class UpdateUserDto {
+    email;
+    firstName;
+    lastName;
+    phoneNumber;
+    dateOfBirth;
+    gender;
+    profilePictureUrl;
+    bio;
+    preferences;
+    address;
+    timezone;
+    language;
+    specialization;
+    licensure;
+    professionalDetails;
+    education;
+    certifications;
 }
 exports.UpdateUserDto = UpdateUserDto;
 __decorate([

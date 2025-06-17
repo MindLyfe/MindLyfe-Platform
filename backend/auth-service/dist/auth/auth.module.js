@@ -23,6 +23,9 @@ const roles_guard_1 = require("./roles/roles.guard");
 const user_module_1 = require("../user/user.module");
 const session_module_1 = require("./session/session.module");
 const user_entity_1 = require("../entities/user.entity");
+const therapist_entity_1 = require("../entities/therapist.entity");
+const therapist_controller_1 = require("../therapist/therapist.controller");
+const therapist_service_1 = require("../therapist/therapist.service");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -32,7 +35,7 @@ exports.AuthModule = AuthModule = __decorate([
             user_module_1.UserModule,
             session_module_1.SessionModule,
             axios_1.HttpModule,
-            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User]),
+            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, therapist_entity_1.Therapist]),
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
@@ -45,11 +48,12 @@ exports.AuthModule = AuthModule = __decorate([
                 }),
             }),
         ],
-        controllers: [auth_controller_1.AuthController, mfa_controller_1.MfaController],
+        controllers: [auth_controller_1.AuthController, mfa_controller_1.MfaController, therapist_controller_1.TherapistController],
         providers: [
             auth_service_1.AuthService,
             jwt_strategy_1.JwtStrategy,
             mfa_service_1.MfaService,
+            therapist_service_1.TherapistService,
             {
                 provide: core_1.APP_GUARD,
                 useClass: roles_guard_1.RolesGuard,

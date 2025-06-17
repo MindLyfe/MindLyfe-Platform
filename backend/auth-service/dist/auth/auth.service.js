@@ -1,40 +1,86 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
 };
 var AuthService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
 const config_1 = require("@nestjs/config");
 const user_entity_1 = require("../entities/user.entity");
-const email_service_1 = require("../shared/services/email.service");
 const session_service_1 = require("./session/session.service");
 const event_service_1 = require("../shared/events/event.service");
-const bcrypt = require("bcrypt");
+const bcrypt = __importStar(require("bcrypt"));
 const uuid_1 = require("uuid");
 const user_service_1 = require("../user/user.service");
 const redis_service_1 = require("../shared/services/redis.service");
 const axios_1 = require("@nestjs/axios");
 const rxjs_1 = require("rxjs");
+const therapist_entity_1 = require("../entities/therapist.entity");
 let AuthService = AuthService_1 = class AuthService {
-    constructor(jwtService, configService, emailService, sessionService, eventService, userService, redisService, httpService) {
+    jwtService;
+    configService;
+    httpService;
+    sessionService;
+    eventService;
+    userService;
+    redisService;
+    therapistRepository;
+    logger = new common_1.Logger(AuthService_1.name);
+    constructor(jwtService, configService, httpService, sessionService, eventService, userService, redisService, therapistRepository) {
         this.jwtService = jwtService;
         this.configService = configService;
-        this.emailService = emailService;
+        this.httpService = httpService;
         this.sessionService = sessionService;
         this.eventService = eventService;
         this.userService = userService;
         this.redisService = redisService;
-        this.httpService = httpService;
-        this.logger = new common_1.Logger(AuthService_1.name);
+        this.therapistRepository = therapistRepository;
     }
     generateAccessToken(user) {
         const payload = {
@@ -47,18 +93,73 @@ let AuthService = AuthService_1 = class AuthService {
         });
     }
     async register(registerDto, metadata) {
-        const { email } = registerDto;
+        const { email, dateOfBirth, guardianEmail, guardianPhone } = registerDto;
         const existingUser = await this.userService.findByEmail(email);
         if (existingUser) {
             this.logger.warn(`Registration attempt with existing email: ${email}`);
             throw new common_1.ConflictException('User with this email already exists');
         }
+        if (dateOfBirth) {
+            const today = new Date();
+            const birthDate = new Date(dateOfBirth);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            if (age < 18) {
+                if (!guardianEmail || !guardianPhone) {
+                    throw new common_1.BadRequestException('Guardian email and phone are required for users under 18');
+                }
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(guardianEmail)) {
+                    throw new common_1.BadRequestException('Invalid guardian email format');
+                }
+                this.logger.log(`Minor registration detected for user ${email}, age: ${age}`);
+            }
+        }
         const verificationToken = (0, uuid_1.v4)();
-        const user = await this.userService.createUser(Object.assign(Object.assign({}, registerDto), { verificationToken, status: user_entity_1.UserStatus.PENDING }));
+        const userData = {
+            ...registerDto,
+            verificationToken,
+            status: user_entity_1.UserStatus.PENDING,
+            role: user_entity_1.UserRole.USER,
+            userType: user_entity_1.UserType.INDIVIDUAL,
+        };
+        const userDataForCreation = { ...userData };
+        if (userDataForCreation.dateOfBirth) {
+            userDataForCreation.dateOfBirth = new Date(userDataForCreation.dateOfBirth);
+        }
+        const user = await this.userService.createUser(userDataForCreation);
         try {
-            await this.emailService.sendVerificationEmail(user.email, verificationToken);
+            await this.sendNotificationRequest('auth/verification-email', {
+                userId: user.id,
+                email: user.email,
+                token: verificationToken,
+                firstName: user.firstName,
+                lastName: user.lastName
+            });
             this.logger.log(`Verification email sent to ${user.email}`);
-            this.eventService.emit(event_service_1.EventType.USER_CREATED, { userId: user.id, email: user.email }, {
+            if (user.isMinor && guardianEmail) {
+                try {
+                    await this.sendNotificationRequest('auth/guardian-notification', {
+                        guardianEmail,
+                        userName: `${user.firstName} ${user.lastName}`,
+                        userEmail: user.email,
+                        userId: user.id
+                    });
+                    this.logger.log(`Guardian notification sent to ${guardianEmail}`);
+                }
+                catch (error) {
+                    this.logger.error(`Failed to send guardian notification to ${guardianEmail}`, error);
+                }
+            }
+            this.eventService.emit(event_service_1.EventType.USER_CREATED, {
+                userId: user.id,
+                email: user.email,
+                isMinor: user.isMinor,
+                userType: user.userType
+            }, {
                 userId: user.id,
                 metadata
             });
@@ -71,8 +172,165 @@ let AuthService = AuthService_1 = class AuthService {
             this.logger.error(`Failed to send verification email to ${user.email}`, error);
         }
         await this.sendWelcomeNotification(user);
+        const message = user.isMinor
+            ? 'Registration successful. Please check your email to verify your account. A notification has been sent to your guardian.'
+            : 'Registration successful. Please check your email to verify your account.';
         return {
-            message: 'Registration successful. Please check your email to verify your account.',
+            message,
+            userId: user.id,
+            isMinor: user.isMinor,
+        };
+    }
+    async registerTherapist(therapistDto, metadata) {
+        const { email, licenseNumber, specialization, credentials, hourlyRate, ...userDto } = therapistDto;
+        const existingUser = await this.userService.findByEmail(email);
+        if (existingUser) {
+            this.logger.warn(`Therapist registration attempt with existing email: ${email}`);
+            throw new common_1.ConflictException('User with this email already exists');
+        }
+        const existingTherapist = await this.therapistRepository.findOne({
+            where: { licenseNumber }
+        });
+        if (existingTherapist) {
+            this.logger.warn(`Therapist registration attempt with existing license: ${licenseNumber}`);
+            throw new common_1.ConflictException('Therapist with this license number already exists');
+        }
+        const verificationToken = (0, uuid_1.v4)();
+        const userData = {
+            ...userDto,
+            email,
+            verificationToken,
+            status: user_entity_1.UserStatus.PENDING,
+            role: user_entity_1.UserRole.THERAPIST,
+            userType: user_entity_1.UserType.INDIVIDUAL,
+        };
+        const userDataForCreation = { ...userData };
+        if (userDataForCreation.dateOfBirth) {
+            userDataForCreation.dateOfBirth = new Date(userDataForCreation.dateOfBirth);
+        }
+        const user = await this.userService.createUser(userDataForCreation);
+        const therapist = this.therapistRepository.create({
+            userId: user.id,
+            licenseNumber,
+            licenseState: 'PENDING',
+            specialization: Array.isArray(specialization) ? specialization.join(', ') : specialization,
+            credentials: credentials ? {
+                education: [],
+                certifications: credentials,
+                experience: ''
+            } : undefined,
+            hourlyRate: hourlyRate || 0,
+            status: therapist_entity_1.TherapistStatus.PENDING_VERIFICATION,
+            isAcceptingNewClients: false,
+        });
+        await this.therapistRepository.save(therapist);
+        try {
+            await this.sendNotificationRequest('auth/verification-email', {
+                userId: user.id,
+                email: user.email,
+                token: verificationToken,
+                firstName: user.firstName,
+                lastName: user.lastName
+            });
+            this.logger.log(`Therapist verification email sent to ${user.email}`);
+            this.eventService.emit(event_service_1.EventType.USER_CREATED, { userId: user.id, email: user.email, role: user_entity_1.UserRole.THERAPIST }, { userId: user.id, metadata });
+            this.eventService.emit(event_service_1.EventType.EMAIL_VERIFICATION_SENT, { userId: user.id, email: user.email }, { userId: user.id, metadata });
+        }
+        catch (error) {
+            this.logger.error(`Failed to send therapist verification email to ${user.email}`, error);
+        }
+        return {
+            message: 'Therapist registration successful. Please check your email to verify your account and await license verification.',
+            userId: user.id,
+            therapistId: therapist.id,
+        };
+    }
+    async registerOrganizationUser(orgUserDto, adminUserId, metadata) {
+        const { email, organizationId, ...userDto } = orgUserDto;
+        const adminUser = await this.userService.findById(adminUserId);
+        if (!adminUser || (adminUser.role !== user_entity_1.UserRole.ADMIN && adminUser.organizationId !== organizationId)) {
+            throw new common_1.UnauthorizedException('Insufficient permissions to add organization users');
+        }
+        const existingUser = await this.userService.findByEmail(email);
+        if (existingUser) {
+            this.logger.warn(`Organization user registration attempt with existing email: ${email}`);
+            throw new common_1.ConflictException('User with this email already exists');
+        }
+        const verificationToken = (0, uuid_1.v4)();
+        const userData = {
+            ...userDto,
+            email,
+            verificationToken,
+            status: user_entity_1.UserStatus.ACTIVE,
+            role: user_entity_1.UserRole.USER,
+            userType: user_entity_1.UserType.ORGANIZATION_MEMBER,
+            organizationId,
+        };
+        const userDataForCreation = { ...userData };
+        if (userDataForCreation.dateOfBirth) {
+            userDataForCreation.dateOfBirth = new Date(userDataForCreation.dateOfBirth);
+        }
+        const user = await this.userService.createUser(userDataForCreation);
+        try {
+            await this.sendNotificationRequest('auth/verification-email', {
+                userId: user.id,
+                email: user.email,
+                token: verificationToken,
+                firstName: user.firstName,
+                lastName: user.lastName
+            });
+            this.logger.log(`Organization user welcome email sent to ${user.email}`);
+            this.eventService.emit(event_service_1.EventType.USER_CREATED, { userId: user.id, email: user.email, organizationId }, { userId: user.id, metadata });
+        }
+        catch (error) {
+            this.logger.error(`Failed to send organization user welcome email to ${user.email}`, error);
+        }
+        return {
+            message: 'Organization user created successfully.',
+            userId: user.id,
+        };
+    }
+    async registerSupportTeam(supportDto, adminUserId, metadata) {
+        const { email, department, ...userDto } = supportDto;
+        const adminUser = await this.userService.findById(adminUserId);
+        if (!adminUser || adminUser.role !== user_entity_1.UserRole.ADMIN) {
+            throw new common_1.UnauthorizedException('Only administrators can add support team members');
+        }
+        const existingUser = await this.userService.findByEmail(email);
+        if (existingUser) {
+            this.logger.warn(`Support team registration attempt with existing email: ${email}`);
+            throw new common_1.ConflictException('User with this email already exists');
+        }
+        const verificationToken = (0, uuid_1.v4)();
+        const userData = {
+            ...userDto,
+            email,
+            verificationToken,
+            status: user_entity_1.UserStatus.ACTIVE,
+            role: user_entity_1.UserRole.ADMIN,
+            userType: user_entity_1.UserType.INDIVIDUAL,
+        };
+        const userDataForCreation = { ...userData };
+        if (userDataForCreation.dateOfBirth) {
+            userDataForCreation.dateOfBirth = new Date(userDataForCreation.dateOfBirth);
+        }
+        const user = await this.userService.createUser(userDataForCreation);
+        try {
+            await this.sendNotificationRequest('auth/verification-email', {
+                userId: user.id,
+                email: user.email,
+                token: verificationToken,
+                firstName: user.firstName,
+                lastName: user.lastName
+            });
+            this.logger.log(`Support team welcome email sent to ${user.email}`);
+            this.eventService.emit(event_service_1.EventType.USER_CREATED, { userId: user.id, email: user.email, role: user_entity_1.UserRole.ADMIN, department }, { userId: user.id, metadata });
+        }
+        catch (error) {
+            this.logger.error(`Failed to send support team welcome email to ${user.email}`, error);
+        }
+        return {
+            message: 'Support team member created successfully.',
             userId: user.id,
         };
     }
@@ -129,7 +387,7 @@ let AuthService = AuthService_1 = class AuthService {
         const refreshToken = this.generateRefreshToken(user);
         const refreshExpiresInMs = this.parseTimeToMs(this.configService.get('jwt.refreshExpiresIn', '7d'));
         const expiresAt = new Date(Date.now() + refreshExpiresInMs);
-        const session = await this.sessionService.createSession(user.id, refreshToken, metadata === null || metadata === void 0 ? void 0 : metadata.ipAddress, metadata === null || metadata === void 0 ? void 0 : metadata.userAgent, metadata === null || metadata === void 0 ? void 0 : metadata.deviceInfo);
+        const session = await this.sessionService.createSession(user.id, refreshToken, metadata?.ipAddress, metadata?.userAgent, metadata?.deviceInfo);
         await this.userService.updateLastLogin(user.id);
         this.eventService.emit(event_service_1.EventType.AUTH_LOGIN_SUCCESS, { userId: user.id, sessionId: session.id }, {
             userId: user.id,
@@ -155,7 +413,7 @@ let AuthService = AuthService_1 = class AuthService {
             const accessToken = this.generateAccessToken(user);
             const refreshExpiresInMs = this.parseTimeToMs(this.configService.get('jwt.refreshExpiresIn', '7d'));
             const expiresAt = new Date(Date.now() + refreshExpiresInMs);
-            const session = await this.sessionService.createSession(user.id, refreshTokenDto.refreshToken, metadata === null || metadata === void 0 ? void 0 : metadata.ipAddress, metadata === null || metadata === void 0 ? void 0 : metadata.userAgent, metadata === null || metadata === void 0 ? void 0 : metadata.deviceInfo);
+            const session = await this.sessionService.createSession(user.id, refreshTokenDto.refreshToken, metadata?.ipAddress, metadata?.userAgent, metadata?.deviceInfo);
             this.eventService.emit(event_service_1.EventType.TOKEN_REFRESHED, {
                 userId: user.id,
                 oldSessionId: session.id,
@@ -358,13 +616,12 @@ let AuthService = AuthService_1 = class AuthService {
         });
     }
     async getUserSubscriptionStatus(userId) {
-        var _a;
         const user = await this.userService.findById(userId);
         if (!user) {
             return null;
         }
-        const activeSubscriptions = ((_a = user.subscriptions) === null || _a === void 0 ? void 0 : _a.filter(sub => sub.status === 'active' &&
-            (!sub.endDate || new Date(sub.endDate) > new Date()))) || [];
+        const activeSubscriptions = user.subscriptions?.filter(sub => sub.status === 'active' &&
+            (!sub.endDate || new Date(sub.endDate) > new Date())) || [];
         return {
             hasActiveSubscription: activeSubscriptions.length > 0,
             subscriptions: activeSubscriptions,
@@ -423,17 +680,38 @@ let AuthService = AuthService_1 = class AuthService {
     async handleSubscriptionCanceled(userId, notification) {
         this.logger.log(`Subscription canceled for user ${userId}: ${notification.subscriptionId}`);
     }
+    async sendNotificationRequest(endpoint, data) {
+        try {
+            const notificationServiceUrl = this.configService.get('NOTIFICATION_SERVICE_URL');
+            if (!notificationServiceUrl) {
+                this.logger.warn('Notification service URL not configured, skipping notification');
+                return;
+            }
+            const serviceToken = await this.generateServiceToken();
+            await (0, rxjs_1.firstValueFrom)(this.httpService.post(`${notificationServiceUrl}/api/${endpoint}`, data, {
+                headers: {
+                    Authorization: `Bearer ${serviceToken}`,
+                },
+            }));
+            this.logger.log(`Notification sent to ${endpoint}`);
+        }
+        catch (error) {
+            this.logger.error(`Failed to send notification to ${endpoint}: ${error.message}`, error.stack);
+            throw error;
+        }
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = AuthService_1 = __decorate([
     (0, common_1.Injectable)(),
+    __param(7, (0, typeorm_1.InjectRepository)(therapist_entity_1.Therapist)),
     __metadata("design:paramtypes", [jwt_1.JwtService,
         config_1.ConfigService,
-        email_service_1.EmailService,
+        axios_1.HttpService,
         session_service_1.SessionService,
         event_service_1.EventService,
         user_service_1.UserService,
         redis_service_1.RedisService,
-        axios_1.HttpService])
+        typeorm_2.Repository])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

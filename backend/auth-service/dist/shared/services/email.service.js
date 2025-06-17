@@ -14,9 +14,13 @@ exports.EmailService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 let EmailService = EmailService_1 = class EmailService {
+    configService;
+    logger = new common_1.Logger(EmailService_1.name);
+    isDev;
+    frontendUrl;
+    fromEmail;
     constructor(configService) {
         this.configService = configService;
-        this.logger = new common_1.Logger(EmailService_1.name);
         this.isDev = configService.get('environment') === 'development';
         this.frontendUrl = configService.get('frontend.url');
         this.fromEmail = configService.get('email.from');
@@ -46,6 +50,50 @@ let EmailService = EmailService_1 = class EmailService {
             return;
         }
         this.logger.log(`Sending login notification to ${email}`);
+    }
+    async sendGuardianNotification(guardianEmail, userName, userEmail) {
+        if (this.isDev) {
+            this.logger.debug(`[DEV] Guardian notification email to ${guardianEmail} for user ${userName} (${userEmail})`);
+            return;
+        }
+        this.logger.log(`Guardian notification email sent to ${guardianEmail} for user ${userName}`);
+    }
+    async sendTherapistApprovalEmail(email, therapistName, approvalNotes) {
+        if (this.isDev) {
+            this.logger.debug(`[DEV MODE] Sending therapist approval email to ${email}`);
+            this.logger.debug(`Therapist: ${therapistName}`);
+            this.logger.debug(`Approval notes: ${approvalNotes || 'None'}`);
+            return;
+        }
+        this.logger.log(`Sending therapist approval email to ${email}`);
+    }
+    async sendTherapistRejectionEmail(email, therapistName, reason, notes) {
+        if (this.isDev) {
+            this.logger.debug(`[DEV MODE] Sending therapist rejection email to ${email}`);
+            this.logger.debug(`Therapist: ${therapistName}`);
+            this.logger.debug(`Rejection reason: ${reason}`);
+            this.logger.debug(`Additional notes: ${notes || 'None'}`);
+            return;
+        }
+        this.logger.log(`Sending therapist rejection email to ${email}`);
+    }
+    async sendTherapistSuspensionEmail(email, therapistName, reason, notes) {
+        if (this.isDev) {
+            this.logger.debug(`[DEV MODE] Sending therapist suspension email to ${email}`);
+            this.logger.debug(`Therapist: ${therapistName}`);
+            this.logger.debug(`Suspension reason: ${reason}`);
+            this.logger.debug(`Additional notes: ${notes || 'None'}`);
+            return;
+        }
+        this.logger.log(`Sending therapist suspension email to ${email}`);
+    }
+    async sendTherapistReactivationEmail(email, therapistName) {
+        if (this.isDev) {
+            this.logger.debug(`[DEV MODE] Sending therapist reactivation email to ${email}`);
+            this.logger.debug(`Therapist: ${therapistName}`);
+            return;
+        }
+        this.logger.log(`Sending therapist reactivation email to ${email}`);
     }
 };
 exports.EmailService = EmailService;

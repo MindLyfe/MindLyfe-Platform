@@ -1,12 +1,12 @@
-import { Injectable, ConflictException, NotFoundException, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, ConflictException, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { User, UserStatus } from '../entities/user.entity';
-import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, RefreshTokenDto, VerifyEmailDto, ChangePasswordDto } from './dto/auth.dto';
-import { EmailService } from '../shared/services/email.service';
+import { User, UserStatus, UserRole, UserType } from '../entities/user.entity';
+import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, RefreshTokenDto, VerifyEmailDto, ChangePasswordDto, TherapistRegisterDto, OrganizationUserDto, SupportTeamUserDto } from './dto/auth.dto';
+// Removed EmailService - notifications handled by notification service
 import { SessionService } from './session/session.service';
 import { EventService, EventType } from '../shared/events/event.service';
 import * as bcrypt from 'bcrypt';
@@ -15,6 +15,7 @@ import { UserService, SafeUser } from '../user/user.service';
 import { RedisService } from '../shared/services/redis.service';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { Therapist, TherapistStatus } from '../entities/therapist.entity';
 
 interface TokenPayload {
   sub: string;
@@ -47,12 +48,14 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly emailService: EmailService,
+    private readonly httpService: HttpService,
+    // EmailService removed - using notification service instead
     private readonly sessionService: SessionService,
     private readonly eventService: EventService,
     private readonly userService: UserService,
     private readonly redisService: RedisService,
-    private readonly httpService: HttpService,
+    @InjectRepository(Therapist)
+    private readonly therapistRepository: Repository<Therapist>,
   ) {}
 
   // Generate access token for a user
@@ -70,7 +73,7 @@ export class AuthService {
 
   // User registration
   async register(registerDto: RegisterDto, metadata?: AuthMetadata) {
-    const { email } = registerDto;
+    const { email, dateOfBirth, guardianEmail, guardianPhone } = registerDto;
     
     // Check if user already exists
     const existingUser = await this.userService.findByEmail(email);
@@ -79,25 +82,90 @@ export class AuthService {
       throw new ConflictException('User with this email already exists');
     }
 
+    // Validate minor registration requirements
+    if (dateOfBirth) {
+      const today = new Date();
+      const birthDate = new Date(dateOfBirth);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      
+      // If user is a minor, require guardian information
+      if (age < 18) {
+        if (!guardianEmail || !guardianPhone) {
+          throw new BadRequestException('Guardian email and phone are required for users under 18');
+        }
+        
+        // Validate guardian email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(guardianEmail)) {
+          throw new BadRequestException('Invalid guardian email format');
+        }
+        
+        this.logger.log(`Minor registration detected for user ${email}, age: ${age}`);
+      }
+    }
+
     // Create verification token
     const verificationToken = uuidv4();
 
     // Create new user
-    const user = await this.userService.createUser({
+    const userData = {
       ...registerDto,
       verificationToken,
       status: UserStatus.PENDING,
-    });
+      role: UserRole.USER,
+      userType: UserType.INDIVIDUAL, // Will be updated to MINOR automatically if dateOfBirth indicates minor
+    };
+
+    // Convert dateOfBirth string to Date if provided
+    const userDataForCreation: any = { ...userData };
+    if (userDataForCreation.dateOfBirth) {
+      userDataForCreation.dateOfBirth = new Date(userDataForCreation.dateOfBirth);
+    }
+
+    const user = await this.userService.createUser(userDataForCreation);
 
     // Send verification email
     try {
-      await this.emailService.sendVerificationEmail(user.email, verificationToken);
+      // Send verification email via notification service
+      await this.sendNotificationRequest('auth/verification-email', {
+        userId: user.id,
+        email: user.email,
+        token: verificationToken,
+        firstName: user.firstName,
+        lastName: user.lastName
+      });
       this.logger.log(`Verification email sent to ${user.email}`);
+      
+      // If user is a minor, also send notification to guardian
+      if (user.isMinor && guardianEmail) {
+        try {
+            // Send guardian notification via notification service
+          await this.sendNotificationRequest('auth/guardian-notification', {
+            guardianEmail,
+            userName: `${user.firstName} ${user.lastName}`,
+            userEmail: user.email,
+            userId: user.id
+          });
+          this.logger.log(`Guardian notification sent to ${guardianEmail}`);
+        } catch (error) {
+          this.logger.error(`Failed to send guardian notification to ${guardianEmail}`, error);
+        }
+      }
       
       // Emit event
       this.eventService.emit(
         EventType.USER_CREATED,
-        { userId: user.id, email: user.email },
+        { 
+          userId: user.id, 
+          email: user.email, 
+          isMinor: user.isMinor,
+          userType: user.userType 
+        },
         { 
           userId: user.id,
           metadata
@@ -121,8 +189,240 @@ export class AuthService {
     // After user is created successfully, send welcome notification
     await this.sendWelcomeNotification(user);
 
+    const message = user.isMinor 
+      ? 'Registration successful. Please check your email to verify your account. A notification has been sent to your guardian.'
+      : 'Registration successful. Please check your email to verify your account.';
+
     return {
-      message: 'Registration successful. Please check your email to verify your account.',
+      message,
+      userId: user.id,
+      isMinor: user.isMinor,
+    };
+  }
+
+  // Therapist registration
+  async registerTherapist(therapistDto: TherapistRegisterDto, metadata?: AuthMetadata) {
+    const { email, licenseNumber, specialization, credentials, hourlyRate, ...userDto } = therapistDto;
+    
+    // Check if user already exists
+    const existingUser = await this.userService.findByEmail(email);
+    if (existingUser) {
+      this.logger.warn(`Therapist registration attempt with existing email: ${email}`);
+      throw new ConflictException('User with this email already exists');
+    }
+
+    // Check if license number already exists
+    const existingTherapist = await this.therapistRepository.findOne({
+      where: { licenseNumber }
+    });
+    if (existingTherapist) {
+      this.logger.warn(`Therapist registration attempt with existing license: ${licenseNumber}`);
+      throw new ConflictException('Therapist with this license number already exists');
+    }
+
+    // Create verification token
+    const verificationToken = uuidv4();
+
+    // Create new user with therapist role
+    const userData = {
+      ...userDto,
+      email,
+      verificationToken,
+      status: UserStatus.PENDING,
+      role: UserRole.THERAPIST,
+      userType: UserType.INDIVIDUAL,
+    };
+
+    // Convert dateOfBirth string to Date if provided
+    const userDataForCreation: any = { ...userData };
+    if (userDataForCreation.dateOfBirth) {
+      userDataForCreation.dateOfBirth = new Date(userDataForCreation.dateOfBirth);
+    }
+
+    const user = await this.userService.createUser(userDataForCreation);
+
+    // Create therapist profile
+    const therapist = this.therapistRepository.create({
+      userId: user.id,
+      licenseNumber,
+      licenseState: 'PENDING', // Default value, will be updated during verification
+      specialization: Array.isArray(specialization) ? specialization.join(', ') : specialization,
+      credentials: credentials ? {
+        education: [],
+        certifications: credentials,
+        experience: ''
+      } : undefined,
+      hourlyRate: hourlyRate || 0,
+      status: TherapistStatus.PENDING_VERIFICATION,
+      isAcceptingNewClients: false,
+    });
+
+    await this.therapistRepository.save(therapist);
+
+    // Send verification email
+    try {
+      // Send verification email via notification service
+      await this.sendNotificationRequest('auth/verification-email', {
+        userId: user.id,
+        email: user.email,
+        token: verificationToken,
+        firstName: user.firstName,
+        lastName: user.lastName
+      });
+      this.logger.log(`Therapist verification email sent to ${user.email}`);
+      
+      // Emit events
+      this.eventService.emit(
+        EventType.USER_CREATED,
+        { userId: user.id, email: user.email, role: UserRole.THERAPIST },
+        { userId: user.id, metadata }
+      );
+      
+      this.eventService.emit(
+        EventType.EMAIL_VERIFICATION_SENT,
+        { userId: user.id, email: user.email },
+        { userId: user.id, metadata }
+      );
+    } catch (error) {
+      this.logger.error(`Failed to send therapist verification email to ${user.email}`, error);
+    }
+
+    return {
+      message: 'Therapist registration successful. Please check your email to verify your account and await license verification.',
+      userId: user.id,
+      therapistId: therapist.id,
+    };
+  }
+
+  // Organization user registration (admin only)
+  async registerOrganizationUser(orgUserDto: OrganizationUserDto, adminUserId: string, metadata?: AuthMetadata) {
+    const { email, organizationId, ...userDto } = orgUserDto;
+    
+    // Verify admin has permission to add users to this organization
+    const adminUser = await this.userService.findById(adminUserId);
+    if (!adminUser || (adminUser.role !== UserRole.ADMIN && adminUser.organizationId !== organizationId)) {
+      throw new UnauthorizedException('Insufficient permissions to add organization users');
+    }
+
+    // Check if user already exists
+    const existingUser = await this.userService.findByEmail(email);
+    if (existingUser) {
+      this.logger.warn(`Organization user registration attempt with existing email: ${email}`);
+      throw new ConflictException('User with this email already exists');
+    }
+
+    // Create verification token
+    const verificationToken = uuidv4();
+
+    // Create new organization user
+    const userData = {
+      ...userDto,
+      email,
+      verificationToken,
+      status: UserStatus.ACTIVE, // Organization users are active by default
+      role: UserRole.USER,
+      userType: UserType.ORGANIZATION_MEMBER,
+      organizationId,
+    };
+
+    // Convert dateOfBirth string to Date if provided
+    const userDataForCreation: any = { ...userData };
+    if (userDataForCreation.dateOfBirth) {
+      userDataForCreation.dateOfBirth = new Date(userDataForCreation.dateOfBirth);
+    }
+
+    const user = await this.userService.createUser(userDataForCreation);
+
+    // Send welcome email
+    try {
+      // Send verification email via notification service
+      await this.sendNotificationRequest('auth/verification-email', {
+        userId: user.id,
+        email: user.email,
+        token: verificationToken,
+        firstName: user.firstName,
+        lastName: user.lastName
+      });
+      this.logger.log(`Organization user welcome email sent to ${user.email}`);
+      
+      // Emit events
+      this.eventService.emit(
+        EventType.USER_CREATED,
+        { userId: user.id, email: user.email, organizationId },
+        { userId: user.id, metadata }
+      );
+    } catch (error) {
+      this.logger.error(`Failed to send organization user welcome email to ${user.email}`, error);
+    }
+
+    return {
+      message: 'Organization user created successfully.',
+      userId: user.id,
+    };
+  }
+
+  // Support team registration (admin only)
+  async registerSupportTeam(supportDto: SupportTeamUserDto, adminUserId: string, metadata?: AuthMetadata) {
+    const { email, department, ...userDto } = supportDto;
+    
+    // Verify admin has permission
+    const adminUser = await this.userService.findById(adminUserId);
+    if (!adminUser || adminUser.role !== UserRole.ADMIN) {
+      throw new UnauthorizedException('Only administrators can add support team members');
+    }
+
+    // Check if user already exists
+    const existingUser = await this.userService.findByEmail(email);
+    if (existingUser) {
+      this.logger.warn(`Support team registration attempt with existing email: ${email}`);
+      throw new ConflictException('User with this email already exists');
+    }
+
+    // Create verification token
+    const verificationToken = uuidv4();
+
+    // Create new support team user
+    const userData = {
+      ...userDto,
+      email,
+      verificationToken,
+      status: UserStatus.ACTIVE, // Support team users are active by default
+      role: UserRole.ADMIN, // Support team members get admin role
+      userType: UserType.INDIVIDUAL,
+    };
+
+    // Convert dateOfBirth string to Date if provided
+    const userDataForCreation: any = { ...userData };
+    if (userDataForCreation.dateOfBirth) {
+      userDataForCreation.dateOfBirth = new Date(userDataForCreation.dateOfBirth);
+    }
+
+    const user = await this.userService.createUser(userDataForCreation);
+
+    // Send welcome email
+    try {
+      // Send verification email via notification service
+      await this.sendNotificationRequest('auth/verification-email', {
+        userId: user.id,
+        email: user.email,
+        token: verificationToken,
+        firstName: user.firstName,
+        lastName: user.lastName
+      });
+      this.logger.log(`Support team welcome email sent to ${user.email}`);
+      
+      // Emit events
+      this.eventService.emit(
+        EventType.USER_CREATED,
+        { userId: user.id, email: user.email, role: UserRole.ADMIN, department },
+        { userId: user.id, metadata }
+      );
+    } catch (error) {
+      this.logger.error(`Failed to send support team welcome email to ${user.email}`, error);
+    }
+
+    return {
+      message: 'Support team member created successfully.',
       userId: user.id,
     };
   }
@@ -709,5 +1009,38 @@ export class AuthService {
     this.logger.log(`Subscription canceled for user ${userId}: ${notification.subscriptionId}`);
     
     // Could deactivate premium features, update user status, etc.
+  }
+
+  /**
+   * Send notification request to notification service
+   */
+  private async sendNotificationRequest(endpoint: string, data: any): Promise<void> {
+    try {
+      const notificationServiceUrl = this.configService.get<string>('NOTIFICATION_SERVICE_URL');
+      
+      if (!notificationServiceUrl) {
+        this.logger.warn('Notification service URL not configured, skipping notification');
+        return;
+      }
+      
+      const serviceToken = await this.generateServiceToken();
+      
+      await firstValueFrom(
+        this.httpService.post(
+          `${notificationServiceUrl}/api/${endpoint}`,
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${serviceToken}`,
+            },
+          }
+        )
+      );
+      
+      this.logger.log(`Notification sent to ${endpoint}`);
+    } catch (error) {
+      this.logger.error(`Failed to send notification to ${endpoint}: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 }

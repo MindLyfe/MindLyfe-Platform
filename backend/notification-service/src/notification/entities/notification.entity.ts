@@ -28,6 +28,9 @@ export enum NotificationType {
   MARKETING = 'marketing',
   PAYMENT = 'payment',
   SUBSCRIPTION = 'subscription',
+  SUPPORT = 'support',
+  SUPPORT_SHIFT = 'support_shift',
+  SUPPORT_REQUEST = 'support_request',
 }
 
 @Entity('notifications')
@@ -91,4 +94,4 @@ export class NotificationEntity {
 
   @Column({ nullable: true })
   sentAt: Date;
-} 
+}

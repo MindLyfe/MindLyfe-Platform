@@ -36,9 +36,11 @@ var EventType;
     EventType["EMAIL_PASSWORD_RESET_SENT"] = "email.password.reset.sent";
 })(EventType || (exports.EventType = EventType = {}));
 let EventService = EventService_1 = class EventService {
+    configService;
+    logger = new common_1.Logger(EventService_1.name);
+    isDev;
     constructor(configService) {
         this.configService = configService;
-        this.logger = new common_1.Logger(EventService_1.name);
         this.isDev = configService.get('environment') === 'development';
     }
     emit(eventType, payload, metadata = {}) {

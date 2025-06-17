@@ -19,6 +19,7 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const service_token_guard_1 = require("../auth/guards/service-token.guard");
 const subscription_service_1 = require("./subscription.service");
 let SubscriptionController = class SubscriptionController {
+    subscriptionService;
     constructor(subscriptionService) {
         this.subscriptionService = subscriptionService;
     }
@@ -29,14 +30,20 @@ let SubscriptionController = class SubscriptionController {
         return await this.subscriptionService.getUserSubscriptionStatus(req.user.id);
     }
     async createSubscription(req, createDto) {
-        const fullDto = Object.assign(Object.assign({}, createDto), { userId: req.user.id });
+        const fullDto = {
+            ...createDto,
+            userId: req.user.id
+        };
         return await this.subscriptionService.createSubscription(fullDto);
     }
     async purchaseCredits(req, purchaseDto) {
         if (purchaseDto.credits <= 0 || purchaseDto.credits > 20) {
             throw new common_1.BadRequestException('Credits must be between 1 and 20');
         }
-        const fullDto = Object.assign(Object.assign({}, purchaseDto), { userId: req.user.id });
+        const fullDto = {
+            ...purchaseDto,
+            userId: req.user.id
+        };
         return await this.subscriptionService.purchaseCredits(fullDto);
     }
     async confirmPayment(paymentId) {
@@ -122,7 +129,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SubscriptionController.prototype, "consumeSession", null);
 exports.SubscriptionController = SubscriptionController = __decorate([
-    (0, swagger_1.ApiTags)('Subscriptions'),
+    (0, swagger_1.ApiTags)('subscriptions'),
     (0, common_1.Controller)('subscriptions'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

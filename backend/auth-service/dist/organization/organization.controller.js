@@ -18,22 +18,34 @@ const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const organization_service_1 = require("./organization.service");
 let OrganizationController = class OrganizationController {
+    organizationService;
     constructor(organizationService) {
         this.organizationService = organizationService;
     }
     async createOrganization(req, createDto) {
-        const fullDto = Object.assign(Object.assign({}, createDto), { adminUserId: req.user.id });
+        const fullDto = {
+            ...createDto,
+            adminUserId: req.user.id
+        };
         return await this.organizationService.createOrganization(fullDto);
     }
     async createOrganizationSubscription(req, organizationId, subscriptionDto) {
-        const fullDto = Object.assign(Object.assign({}, subscriptionDto), { organizationId, adminUserId: req.user.id });
+        const fullDto = {
+            ...subscriptionDto,
+            organizationId,
+            adminUserId: req.user.id
+        };
         return await this.organizationService.createOrganizationSubscription(fullDto);
     }
     async confirmOrganizationPayment(paymentId) {
         return await this.organizationService.confirmOrganizationPayment(paymentId);
     }
     async addUserToOrganization(req, organizationId, addUserDto) {
-        const fullDto = Object.assign(Object.assign({}, addUserDto), { organizationId, adminUserId: req.user.id });
+        const fullDto = {
+            ...addUserDto,
+            organizationId,
+            adminUserId: req.user.id
+        };
         return await this.organizationService.addUserToOrganization(fullDto);
     }
     async removeUserFromOrganization(req, organizationId, userId) {
@@ -125,7 +137,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], OrganizationController.prototype, "getMyOrganization", null);
 exports.OrganizationController = OrganizationController = __decorate([
-    (0, swagger_1.ApiTags)('Organizations'),
+    (0, swagger_1.ApiTags)('organizations'),
     (0, common_1.Controller)('organizations'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

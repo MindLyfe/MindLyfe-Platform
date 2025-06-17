@@ -26,6 +26,23 @@ var SubscriptionStatus;
     SubscriptionStatus["PENDING"] = "pending";
 })(SubscriptionStatus || (exports.SubscriptionStatus = SubscriptionStatus = {}));
 let Subscription = class Subscription {
+    id;
+    userId;
+    user;
+    type;
+    status;
+    amount;
+    sessionsIncluded;
+    sessionsUsed;
+    creditsAvailable;
+    startDate;
+    endDate;
+    lastSessionDate;
+    autoRenew;
+    paymentReference;
+    notes;
+    createdAt;
+    updatedAt;
     get remainingSessions() {
         return Math.max(0, this.sessionsIncluded - this.sessionsUsed);
     }

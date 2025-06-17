@@ -1,19 +1,20 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ScheduleModule } from '@nestjs/schedule';
-
-import { NotificationController } from './notification.controller';
 import { NotificationService } from './notification.service';
+import { NotificationController } from './notification.controller';
+import { SupportNotificationService } from './support-notification.service';
+import { SupportNotificationController } from './support-notification.controller';
 import { NotificationEntity } from './entities/notification.entity';
 import { NotificationChannelEntity } from './entities/notification-channel.entity';
 import { NotificationTemplateEntity } from './entities/notification-template.entity';
 import { NotificationPreferenceEntity } from './entities/notification-preference.entity';
+import { EmailModule } from '../email/email.module';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationChannelFactory } from './channels/notification-channel.factory';
 import { EmailAdapter } from './channels/email.adapter';
 import { SmsAdapter } from './channels/sms.adapter';
 import { PushAdapter } from './channels/push.adapter';
 import { InAppAdapter } from './channels/in-app.adapter';
-import { NotificationChannelFactory } from './channels/notification-channel.factory';
 import { NotificationQueueService } from './queue/notification-queue.service';
 
 @Module({
@@ -24,19 +25,20 @@ import { NotificationQueueService } from './queue/notification-queue.service';
       NotificationTemplateEntity,
       NotificationPreferenceEntity,
     ]),
+    EmailModule,
     AuthModule,
-    ScheduleModule.forRoot(),
   ],
-  controllers: [NotificationController],
+  controllers: [NotificationController, SupportNotificationController],
   providers: [
     NotificationService,
+    SupportNotificationService,
+    NotificationChannelFactory,
     EmailAdapter,
     SmsAdapter,
     PushAdapter,
     InAppAdapter,
-    NotificationChannelFactory,
     NotificationQueueService,
   ],
-  exports: [NotificationService],
+  exports: [NotificationService, SupportNotificationService, NotificationQueueService],
 })
-export class NotificationModule {} 
+export class NotificationModule {}
