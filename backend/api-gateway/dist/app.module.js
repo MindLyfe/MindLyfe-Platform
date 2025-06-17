@@ -31,6 +31,9 @@ const chat_module_1 = require("./modules/chat.module");
 const gamification_module_1 = require("./modules/gamification.module");
 const journal_module_1 = require("./modules/journal.module");
 const support_module_1 = require("./modules/support.module");
+const recommender_module_1 = require("./modules/recommender.module");
+const reporting_module_1 = require("./modules/reporting.module");
+const user_module_2 = require("./modules/user.module");
 const docs_module_1 = require("./docs/docs.module");
 let AppModule = class AppModule {
 };
@@ -65,6 +68,9 @@ AppModule = __decorate([
             gamification_module_1.GamificationModule,
             journal_module_1.JournalModule,
             support_module_1.SupportModule,
+            recommender_module_1.RecommenderModule,
+            reporting_module_1.ReportingModule,
+            user_module_2.UserModule,
             docs_module_1.DocsModule,
         ],
         controllers: [

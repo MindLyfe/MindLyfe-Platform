@@ -33,13 +33,31 @@ export class NotificationsService {
     }
   }
 
-  async findAllForUser(userId: string, filters: any) {
+  async findMyNotifications(userId: string, filters: any) {
     try {
       const queryString = new URLSearchParams(filters).toString();
       const response = await firstValueFrom(
         this.httpService.get(`${this.notificationServiceUrl}/api/notification/my?${queryString}`, {
           headers: { 'x-user-id': userId }
         }).pipe(
+          catchError((error: AxiosError) => {
+            this.logger.error(`Find my notifications failed: ${error.message}`);
+            throw error;
+          }),
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      this.logger.error(`Find my notifications error: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async findAllForUser(userId: string, filters: any) {
+    try {
+      const queryString = new URLSearchParams(filters).toString();
+      const response = await firstValueFrom(
+        this.httpService.get(`${this.notificationServiceUrl}/api/notification/user/${userId}?${queryString}`).pipe(
           catchError((error: AxiosError) => {
             this.logger.error(`Find notifications for user failed: ${error.message}`);
             throw error;
@@ -53,10 +71,13 @@ export class NotificationsService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId?: string) {
     try {
+      const headers = userId ? { 'x-user-id': userId } : {};
       const response = await firstValueFrom(
-        this.httpService.get(`${this.notificationServiceUrl}/api/notification/${id}`).pipe(
+        this.httpService.get(`${this.notificationServiceUrl}/api/notification/${id}`, {
+          headers
+        }).pipe(
           catchError((error: AxiosError) => {
             this.logger.error(`Find notification failed: ${error.message}`);
             throw error;

@@ -48,7 +48,7 @@ export class NotificationsController {
     @Query('type') type?: string,
     @Query('read') read?: boolean,
   ) {
-    return this.notificationsService.findAllForUser(req.user.userId, {
+    return this.notificationsService.findMyNotifications(req.user.userId, {
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
       type,
@@ -86,8 +86,8 @@ export class NotificationsController {
   @ApiOperation({ summary: 'Get specific notification', description: 'Get notification by ID' })
   @ApiResponse({ status: 200, description: 'Notification retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Notification not found' })
-  async findOne(@Param('id') id: string) {
-    return this.notificationsService.findOne(id);
+  async findOne(@Param('id') id: string, @Req() req: any) {
+    return this.notificationsService.findOne(id, req.user.userId);
   }
 
   @Patch(':id/read')

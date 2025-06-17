@@ -33,6 +33,9 @@ import { ChatModule } from './modules/chat.module';
 import { GamificationModule } from './modules/gamification.module';
 import { JournalModule } from './modules/journal.module';
 import { SupportModule } from './modules/support.module';
+import { RecommenderModule } from './modules/recommender.module';
+import { ReportingModule } from './modules/reporting.module';
+import { UserModule as UserProfileModule } from './modules/user.module';
 import { DocsModule } from './docs/docs.module';
 
 @Module({
@@ -74,6 +77,9 @@ import { DocsModule } from './docs/docs.module';
     GamificationModule,
     JournalModule,
     SupportModule,
+    RecommenderModule,
+    ReportingModule,
+    UserProfileModule,
     DocsModule,
   ],
   controllers: [
